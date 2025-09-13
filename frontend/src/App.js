@@ -3,6 +3,7 @@ import CreateImageToPoll from "./pages/CreateImageToPoll";
 import CreateTextToPoll from "./pages/CreateTextToPoll";
 import PreviewImageToPoll from "./pages/PreviewImageToPoll";
 import PreviewTextToPoll from "./pages/PreviewTextToPoll";
+import TrendingPage from "./pages/TrendingPage";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/create-text-to-poll" element={<CreateTextToPoll />} />
         <Route path="/preview-image-to-poll" element={<PreviewImageToPoll />} />
         <Route path="/preview-text-to-poll" element={<PreviewTextToPoll />} />
+        <Route path="/trending" element={<TrendingPage />} />
       </Routes>
     </Router>
   );
