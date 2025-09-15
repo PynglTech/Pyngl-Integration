@@ -1,7 +1,8 @@
 // src/pages/Analytics.js
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { ArrowLeft, Bell, Filter } from "lucide-react";
 import FilterDrawer from "../components/FilterDrawer";
+import PollDetailPopup from "../components/PollDetailPopup"; // ✅ import popup
 
 export default function Analytics() {
   const [activeTab, setActiveTab] = useState("My Pings");
@@ -9,11 +10,12 @@ export default function Analytics() {
   const [showFilter, setShowFilter] = useState(false);
   const [statusFilter, setStatusFilter] = useState("All");
   const [platformFilter, setPlatformFilter] = useState("All");
+  const [selectedPoll, setSelectedPoll] = useState(null); // ✅ popup state
 
   const [polls, setPolls] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Fetch polls from API
+  // sample data (replace with API data)
   useEffect(() => {
     const fetchPolls = async () => {
       try {
@@ -33,14 +35,12 @@ export default function Analytics() {
 
     fetchPolls();
   }, []);
-
-  // ✅ Split polls based on tab
+  // tab filtering
   const filteredByTab =
     activeTab === "My Pings"
       ? polls.filter((p) => !p.participated) // user-created polls
-      : polls.filter((p) => p.participated); // polls user participated in
-
-  // ✅ Apply search + filters
+      : polls.filter((p) => p.participated); // polls user participated
+  // apply search + filters
   const finalPolls = filteredByTab.filter((poll) => {
     const matchSearch =
       poll.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -89,12 +89,8 @@ export default function Analytics() {
           onClick={() => setShowFilter(true)}
           className="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200"
         >
-          <Filter
-            className="w-5 h-5"
-            style={{
-              stroke: "url(#grad1)",
-            }}
-          />
+          <Filter className="w-5 h-5" style={{ stroke: "url(#grad1)" }} />
+          {/* Gradient Definition */}
           <svg width="0" height="0">
             <defs>
               <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -145,69 +141,62 @@ export default function Analytics() {
 
       {/* Poll Cards */}
       <div className="mt-3 px-4 space-y-4 pb-24 pt-4">
-        {loading && <p className="text-center text-gray-500">Loading polls...</p>}
-
-        {!loading && finalPolls.length === 0 && (
+        {finalPolls.length === 0 && (
           <p className="text-center text-gray-500 mt-10">No results found</p>
         )}
 
-        {!loading &&
-          finalPolls.map((poll) => {
-            const totalVotes = poll.options.reduce(
-              (sum, o) => sum + o.votes,
-              0
-            );
+        {finalPolls.map((poll) => {
+          const totalVotes = poll.options.reduce((sum, o) => sum + o.votes, 0);
 
-            return (
-              <div
-                key={poll.id}
-                className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm"
-              >
-                {poll.imageUrl && (
-                  <img
-                    src={poll.imageUrl}
-                    alt=""
-                    className="w-full h-40 sm:h-48 object-cover"
-                  />
-                )}
+          return (
+            <div
+              key={poll.id}
+              className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition"
+              onClick={() => setSelectedPoll(poll)} // ✅ open popup
+            >
+              {poll.imageUrl && (
+                <img
+                  src={poll.imageUrl}
+                  alt=""
+                  className="w-full h-40 sm:h-48 object-cover"
+                />
+              )}
 
-                <div className="p-4">
-                  <h3 className="font-medium mb-3">{poll.question}</h3>
+              <div className="p-4">
+                <h3 className="font-medium mb-3">{poll.question}</h3>
 
-                  {/* Options */}
-                  <div className="space-y-2 mb-3">
-                    {poll.options.map((option, index) => {
-                      const percent =
-                        totalVotes > 0
-                          ? Math.round((option.votes / totalVotes) * 100)
-                          : 0;
+                <div className="space-y-2 mb-3">
+                  {poll.options.map((option, index) => {
+                    const percent =
+                      totalVotes > 0
+                        ? Math.round((option.votes / totalVotes) * 100)
+                        : 0;
 
-                      return (
-                        <div key={index}>
-                          <div className="flex justify-between text-xs mb-1">
-                            <span className="text-gray-700">{option.text}</span>
-                            <span className="text-gray-500">{percent}%</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div
-                              className="h-2 rounded-full bg-gradient-to-r from-blue-400 to-pink-400"
-                              style={{ width: `${percent}%` }}
-                            />
-                          </div>
+                    return (
+                      <div key={index}>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="text-gray-700">{option.text}</span>
+                          <span className="text-gray-500">{percent}%</span>
                         </div>
-                      );
-                    })}
-                  </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className="h-2 rounded-full bg-gradient-to-r from-blue-400 to-pink-400"
+                            style={{ width: `${percent}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
 
-                  {/* Footer */}
-                  <div className="flex justify-between text-xs text-gray-500">
-                    {poll.daysLeft && <span>{poll.daysLeft} Days Left</span>}
-                    <span>{poll.platform}</span>
-                  </div>
+                <div className="flex justify-between text-xs text-gray-500">
+                  {poll.daysLeft && <span>{poll.daysLeft} Days Left</span>}
+                  <span>{poll.platform}</span>
                 </div>
               </div>
-            );
-          })}
+            </div>
+          );
+        })}
       </div>
 
       {/* Filter Drawer */}
@@ -219,6 +208,15 @@ export default function Analytics() {
           setStatusFilter={setStatusFilter}
           platformFilter={platformFilter}
           setPlatformFilter={setPlatformFilter}
+        />
+      )}
+
+      {/* Poll Detail Popup */}
+      {selectedPoll && (
+        <PollDetailPopup
+          poll={selectedPoll}
+          onClose={() => setSelectedPoll(null)}
+          onSeeAnalytics={() => alert("Go to Analytics for " + selectedPoll.id)}
         />
       )}
     </div>
