@@ -1,0 +1,193 @@
+/* General Styling for the Home Page Container */
+.home-container {
+     font-weight: 500;
+  padding: 1rem;
+  background-color: #f7f7f7; /* A light background for the page */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Space between sections */
+  max-width: 400px; /* Typical mobile screen width */
+  margin: 0 auto; /* Center the container */
+}
+
+/* ====== Upgrade Card Section ====== */
+.upgrade-card-wrapper {
+  width: 100%; /* Ensure it fits the container */
+  max-width: 360.68px; /* Your specified width */
+  margin: 0 auto;
+}
+
+.upgrade-card {
+  display: flex;
+  width: 100%;
+  height: 175px;
+  border-radius: 16px;
+  overflow: hidden; /* This is crucial for the border-radius to work */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.upgrade-image-container {
+  position: relative;
+  width: 314px; /* Your specified width */
+  height: 100%;
+}
+
+.promo-image {    
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures the image covers the area without distortion */
+}
+
+.gradient-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* This interprets your gradient specs into a dark overlay fading from left to right */
+  background: linear-gradient(to right, 
+    rgba(0, 0, 0,0.91) 8.9%, 
+    rgba(155, 153, 179, 0.19) 84%,
+    rgba(0, 0, 0, 0.8) 100%
+  );
+}
+
+.upgrade-text-content {
+  position: absolute;
+  top: 10px;
+  left: 15px;
+  color: white;
+  padding: 10px;
+}
+
+.upgrade-text-content h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 100%;
+}
+
+.upgrade-text-content p {
+  margin: 5px 0 0;
+  font-size: 0.8rem;
+  max-width: 180px;
+}
+
+.upgrade-now-button {
+  width: 43px; /* Your specified width */
+  height: 135px; /* Your specified height */
+  border: none;
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  /* Your specified gradient */
+  background: linear-gradient(180deg, #20D9E8, #4C9CFA 33%, #7B4CFF 67%, #E741D2 94%);
+  /* For the vertical text */
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 1px;
+}
+
+/* ====== Poll Options Section ====== */
+.poll-options-panel {
+
+  display: flex;
+  justify-content: space-between;
+  gap: 14px; /* Creates space between the two cards */
+}
+
+.poll-card {
+  width: 173px;
+  height: 187px;
+  border-radius: 20px;
+  padding: 15px;
+  box-sizing: border-box; /* Ensures padding doesn't affect final dimensions */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.poll-card h4 {
+  margin: 5px 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.poll-card p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #555;
+  line-height: 1.3;
+}
+
+.poll-card-icon-wrapper {
+  background-color: rgba(255, 255, 255, 0.7);
+  width: 40px;
+  height: 40px; /* This MUST be the same as the width */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Specific gradients for each poll card */
+.text-poll-card {
+  background: linear-gradient(135deg, #9EF5E3 20%, #C7F9ED 90%, #CDF8E9 95%, #E7FEF1 100%);
+  border: 1px solid;
+  border-color: #58C58B ;
+}
+
+.image-poll-card {
+  background: linear-gradient(135deg, #FED98C 0%, #FFE2AA 50%, #FEEBC6 75%, #FFF4E0 88%, #FDF9EE 100%);
+    
+    border:1px solid #F5B642 ;
+}
+
+.start-button {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 999px; /* Changed from 40% for a capsule shape */
+  margin-top: 10px;
+  padding-bottom: 2px;
+  cursor: pointer;
+  font-weight: 500;
+  align-self: flex-start; /* Aligns button to the left */
+}
+
+/* ====== Live Polls Section ====== */
+.live-polls-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 5px; /* Align with card content */
+}
+
+.live-polls-header h3 {
+  margin: 0;
+}
+
+.live-polls-header a {
+  text-decoration: none;
+  color: #007bff;
+  font-weight: 500;
+}
+.upgradeButton{
+    height: 175px;
+    margin-left: 10px;
+    border-radius: 16px;
+}
+.butStart{
+    
+    color: white;
+    background-color: #7B4CFF;
+    height: 34px;
+    width: 65px;
+    font-size: 12px;
+}

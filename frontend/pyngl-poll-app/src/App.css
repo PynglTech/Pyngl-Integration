@@ -1,0 +1,65 @@
+.bg-pyngl-pink{
+    background-color: #FF4DA6;
+    color: white;
+}
+.border-pyngl-teal{
+  color: #008080;
+  border-color: #008080;
+}
+.bg-pyngl-purple {
+  background-color: #7B4CFF;
+  color: white;
+
+}
+.text-pyngl-purple {
+  color: #7B4CFF;
+}
+.homeCard{
+background-color: #0A0A0A;
+}
+/* For the background overlay fade-in */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* For the bottom sheet slide-up animation */
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.animate-slide-up {
+    animation: slideUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* --- NEW LOADER ANIMATIONS --- */
+
+/* Animation for the gradient ring spin */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Animation for the pulsating bars */
+@keyframes bar-dance {
+    0%, 100% { transform: scaleY(0.4); }
+    50% { transform: scaleY(1); }
+}
+
+.bar {
+    width: 8px;
+    height: 30px;
+    background-color: #7B4CFF; /* Use the base purple color */
+    border-radius: 4px;
+    animation: bar-dance 1.2s cubic-bezier(0.2, 0.68, 0.18, 1.08) infinite;
+}
+
+.bar-1 { animation-delay: 0.1s; }
+.bar-2 { animation-delay: 0.2s; }
+.bar-3 { animation-delay: 0.3s; }
+
