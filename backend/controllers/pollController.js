@@ -1,5 +1,8 @@
 import axios from 'axios';
 import Poll from '../models/Poll.js';
+import { handleUpload } from '../config/cloudinary.js'; 
+
+import FormData from 'form-data';
 
 // ✅ Generate image with Stability AI
 export const generateImage = async (req, res) => {
@@ -29,8 +32,8 @@ export const generateImage = async (req, res) => {
             }
         );
 
-        const imageBase64 = response.data.artifacts[0].base64;
-        const imageUrl = `data:image/png;base64,${imageBase64}`;
+            const imageBase64 = response.data.artifacts[0].base64;
+            const imageUrl = `data:image/png;base64,${imageBase64}`;
 
         res.status(200).json({ imageUrl });
     } catch (error) {
@@ -167,5 +170,100 @@ export const getParticipatedPolls = async (req, res) => {
     } catch (error) {
         console.error("Error fetching participated polls:", error);
         res.status(500).json({ error: "Failed to fetch participated polls." });
+    }
+};
+export const generateBrandedVariant = (masterImageSrc, logoSrc, options) => {
+    return new Promise((resolve, reject) => {
+        const masterImage = new Image();
+        const logoImage = new Image();
+        
+        masterImage.crossOrigin = "Anonymous";
+        logoImage.crossOrigin = "Anonymous";
+
+        let loadedCount = 0;
+        const onImageLoad = () => {
+            loadedCount++;
+            if (loadedCount === 2) {
+                const canvas = document.createElement('canvas');
+                canvas.width = options.width;
+                canvas.height = options.height;
+                const ctx = canvas.getContext('2d');
+
+                // --- Smart Center-Crop Logic ---
+                const masterRatio = masterImage.width / masterImage.height;
+                const targetRatio = options.width / options.height;
+                let sourceX = 0, sourceY = 0, sourceWidth = masterImage.width, sourceHeight = masterImage.height;
+
+                if (masterRatio > targetRatio) { // Master is wider than target
+                    sourceWidth = masterImage.height * targetRatio;
+                    sourceX = (masterImage.width - sourceWidth) / 2;
+                } else { // Master is taller than target
+                    sourceHeight = masterImage.width / targetRatio;
+                    sourceY = (masterImage.height - sourceHeight) / 2;
+                }
+                
+                ctx.drawImage(masterImage, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, options.width, options.height);
+                
+                // --- Branding Overlay Logic ---
+                const logoMargin = 40; // 40px margin from the edges
+                const logoWidth = canvas.width * 0.15; // Logo is 15% of the banner width
+                const logoHeight = (logoImage.height / logoImage.width) * logoWidth;
+                ctx.drawImage(logoImage, canvas.width - logoWidth - logoMargin, canvas.height - logoHeight - logoMargin, logoWidth, logoHeight);
+                
+                // Convert canvas to a File object
+                canvas.toBlob((blob) => {
+                    const newFile = new File([blob], `pyngl_share_${options.width}x${options.height}.jpg`, { type: 'image/jpeg' });
+                    resolve(newFile);
+                }, 'image/jpeg', 0.92); // High-quality JPEG
+            }
+        };
+
+        masterImage.onload = onImageLoad;
+        logoImage.onload = onImageLoad;
+        masterImage.onerror = reject;
+        logoImage.onerror = reject;
+
+        masterImage.src = masterImageSrc;
+        logoImage.src = logoSrc;
+    });
+};
+// REVISED: This is the updated uploadImage function
+export const uploadImage = async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: "No image file provided." });
+    }
+
+    try {
+        let focalPoint = null;
+
+        // --- Call Python Microservice for Face Detection ---
+        try {
+            const form = new FormData();
+            form.append('image', req.file.buffer, { filename: req.file.originalname });
+
+            const response = await axios.post('http://localhost:5002/analyze', form, {
+                headers: form.getHeaders(),
+            });
+            focalPoint = response.data.focalPoint;
+        } catch (analysisError) {
+            console.error("Image analysis failed:", analysisError.message);
+            // It's okay to continue without a focal point if analysis fails
+        }
+
+        // --- Upload the original image to Cloudinary for storage ---
+        // This line will now work because handleUpload is imported correctly
+        const uploadResult = await handleUpload(req.file.buffer);
+
+        // --- Send the combined result to the frontend ---
+        res.status(200).json({
+            message: "Image uploaded and analyzed successfully!",
+            imagePublicId: uploadResult.public_id,
+            imageUrl: uploadResult.secure_url,
+            focalPoint: focalPoint 
+        });
+
+    } catch (error) {
+        console.error("Error in image upload process:", error);
+        res.status(500).json({ error: "Failed to upload and analyze image." });
     }
 };

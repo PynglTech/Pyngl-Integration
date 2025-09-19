@@ -3,11 +3,9 @@ import useAuthStore from './store/useAuthStore';
 import LoadingScreen from './components/common/LoadingScreen';
 import AppRoutes from './routes/AppRoutes';
 import './App.css';
-
 export default function App() {
     const { isInitialized, userInfo, loading } = useAuthStore();
     const [showDelayedLoader, setShowDelayedLoader] = useState(false);
-
     useEffect(() => {
         let timer;
         if (loading && userInfo) {
@@ -19,14 +17,11 @@ export default function App() {
         }
         return () => clearTimeout(timer);
     }, [loading, userInfo]);
-
     if (!isInitialized) {
         return <LoadingScreen text="Loading..." />;
     }
-    
     if (showDelayedLoader) {
         return <LoadingScreen text="Getting your feed ready..." />;
     }
-
     return <AppRoutes />;
 }

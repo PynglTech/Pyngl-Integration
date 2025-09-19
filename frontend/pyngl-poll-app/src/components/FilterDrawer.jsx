@@ -26,7 +26,7 @@ export default function FilterDrawer({
         {/* Header */}
         <div className="flex justify-between items-center border-b pb-4 mb-6">
           <h2 className="text-lg font-semibold flex items-center gap-2">
-            <img src="/logo.svg" alt="Pyngl" className="h-6 object-contain" />
+            <img src="./pynglLogoImage.png" alt="Pyngl" className="h-6 object-contain" />
           </h2>
           <button
             onClick={() => setShow(false)}

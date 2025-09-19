@@ -11,11 +11,13 @@ import PreviewImageToPoll from "../pages/PreviewImageToPoll";
 import PreviewTextToPoll from "../pages/PreviewTextToPoll";
 import VoteOnPollPage from '../pages/VoteOnPollPage';
 import TrendingPolls from '../pages/TrendingPolls';
+import ProfilePage from '../pages/ProfilePage';
 import Analytics from '../pages/Analytics';
+import LinkedInPublisher from '../pages/LinkedInPublisher';
 // Simple placeholder components for the new pages
 const TrendingPage = () => <div className="p-6"><h2>Trending Page</h2></div>;
 const AnalyticsPage = () => <div className="p-6"><h2>Analytics Page</h2></div>;
-const ProfilePage = () => <div className="p-6"><h2>Profile Page</h2></div>;
+
 
 const AppRoutes = () => {
     return (
@@ -35,7 +37,8 @@ const AppRoutes = () => {
                         <Route path="/preview-image-poll" element={<PreviewImageToPoll />} />
                         <Route path="/preview-text-poll" element={<PreviewTextToPoll />} />
                         <Route path="/poll/:pollId" element={<VoteOnPollPage />} />
-                        
+                        <Route path="/share-linkedin" element={<LinkedInPublisher />} />
+                        <Route path='/profile' element={<ProfilePage/>} />
                     </Route>
                 </Route>
             </Routes>

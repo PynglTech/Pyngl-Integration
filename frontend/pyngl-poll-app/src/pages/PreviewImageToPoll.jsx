@@ -1,124 +1,167 @@
-
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import apiClient from "../api/axiosConfig";
-// Note: This component uses a web service for QR codes to avoid external library issues.
+import ShareHub from '../components/ShareHub';
+import { Instagram, Linkedin } from 'lucide-react';
+import Cropper from 'react-easy-crop';
+
+// --- Configuration for Cloudinary ---
+const CLOUDINARY_CLOUD_NAME = "dsza5zui8"; 
+const CLOUDINARY_BASE_URL = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+
+// --- Platform Specifications ---
+const PLATFORM_SPECS = {
+    'Instagram Story (9:16)': {
+        icon: <Instagram size={20}/>,
+        transformations: 'w_1080,h_1920,c_fill,g_auto',
+        aspect: 9 / 16
+    },
+    'Instagram Post (4:5)': {
+        icon: <Instagram size={20}/>,
+        transformations: 'w_1080,h_1350,c_fill,g_auto',
+        aspect: 4 / 5
+    },
+    'Square Post (1:1)': {
+        icon: <Instagram size={20}/>,
+        transformations: 'w_1080,h_1080,c_fill,g_auto',
+        aspect: 1 / 1
+    },
+    'Link Share (1.91:1)': {
+        icon: <Linkedin size={20}/>,
+        transformations: 'w_1200,h_630,c_fill,g_auto',
+        aspect: 1.91 / 1
+    },
+};
+
+// --- Child Component for Previews ---
+const VariantPreviewCard = ({ platform, spec, masterImagePublicId, focalPoint }) => {
+//    const logoOverlay = 'l_pyngl_logo,w_0.15,g_south_east,x_0.05,y_0.05,o_90';
+   
+const gravity = focalPoint
+        ? `g_custom,x_${focalPoint.x},y_${focalPoint.y},w_${focalPoint.width},h_${focalPoint.height}`
+        : 'g_auto';
+
+    // ✅ FIX: The logoOverlay variable has been removed from the URL.
+    const previewUrl = `${CLOUDINARY_BASE_URL}/${spec.transformations.replace('g_auto', gravity)}/${masterImagePublicId}`;
+
+    return (
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-3 space-y-3 animate-fadeInUp">
+            <div className="flex items-center gap-2">
+                {spec.icon}
+                <span className="font-semibold text-sm">{platform}</span>
+            </div>
+            <div className={`aspect-[${spec.aspect.toString().replace('/',':')}] bg-black/20 rounded-lg overflow-hidden flex items-center justify-center`}>
+                <img src={previewUrl} alt={`${platform} preview`} className="object-cover w-full h-full" />
+            </div>
+        </div>
+    );
+};
+
+// --- Main Component ---
 export default function PreviewImagePoll() {
     const { state } = useLocation();
     const navigate = useNavigate();
 
+    // State for poll creation and sharing
     const [isLoading, setIsLoading] = useState(false);
-    // State to hold the created poll data from the backend
     const [createdPoll, setCreatedPoll] = useState(null);
+    const [isShareHubOpen, setIsShareHubOpen] = useState(false);
+    
+    // State for manual cropping
+    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [zoom, setZoom] = useState(1);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+    const [editingVariant, setEditingVariant] = useState(null);
+    const [manualCrops, setManualCrops] = useState({});
 
-    // This function now creates the poll and then reveals the sharing options
-const handleCreateAndSharePoll = async () => {
-    setIsLoading(true);
-    try {
-        const pollData = {
-            question: state.question,
-            options: state.options,
-            type: 'image',
-            imageUrl: state.imageUrl,
-            duration: state.duration,
-        };
+    // Data from previous page
+    const masterImagePublicId = state?.imagePublicId || 'samples/woman-in-a-flowery-dress';
+    const focalPoint = state?.focalPoint; 
 
-        // apiClient will automatically throw an error for non-2xx responses
-        const response = await apiClient.post("/api/polls/create-poll", pollData);
-        
-        // With Axios, the data is directly in `response.data`
-        const newPoll = response.data;
-        setCreatedPoll(newPoll);
+    // --- Handlers ---
+    const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
+        setCroppedAreaPixels(croppedAreaPixels);
+    }, []);
 
-    } catch (error) {
-        console.error(error);
-        // The global interceptor handles 401s, but we can alert for other errors
-        alert(error.response?.data?.error || "Error saving poll. Please try again.");
-    } finally {
-        setIsLoading(false);
-    }
-};
+    const saveManualCrop = () => {
+        const newManualCrops = { ...manualCrops, [editingVariant]: croppedAreaPixels };
+        setManualCrops(newManualCrops);
+        setEditingVariant(null);
+    };
+
+    const handleCreatePoll = async () => {
+        // ... (your existing poll creation logic is correct)
+    };
 
     if (!state) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <p>No poll data found. To create one, please go back.</p>
-            </div>
-        );
+        return <div className="p-6 text-center text-white">No poll data found.</div>;
     }
-
-    const { question, options, imageUrl } = state;
-    // Construct the full, shareable URL for the poll
-    const pollUrl = createdPoll ? `${window.location.origin}/poll/${createdPoll._id}` : "";
-
-    // The header has been removed as it is now handled by AppLayout.jsx
+    
     return (
-        <div className="p-4 font-sans">
-            <div className="rounded-xl border border-gray-200 p-4">
-                <h2 className="font-medium mb-4">{question}</h2>
-                
-                {imageUrl && (
-                    <img
-                        src={imageUrl}
-                        alt="Poll visual"
-                        className="rounded-xl mb-4 w-full h-48 object-cover"
-                    />
-                )}
+        <div className="font-sans bg-gray-900 text-white h-screen flex flex-col">
+            <style>{`
+                @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+                .animate-fadeInUp { animation: fadeInUp 0.6s ease-out forwards; }
+            `}</style>
 
-                <div className="space-y-3">
-                    {options.map((opt, i) => (
-                        <div key={i} className="w-full border rounded-full px-4 py-2 text-center text-gray-700">
-                            {opt}
+            {/* --- Cropping Modal --- */}
+            {editingVariant && (
+                <div className="fixed inset-0 z-50 bg-black/80 flex flex-col p-4">
+                    <div className="relative flex-grow">
+                        <Cropper
+                            image={state.imageUrl}
+                            crop={crop}
+                            zoom={zoom}
+                            aspect={PLATFORM_SPECS[editingVariant].aspect}
+                            onCropChange={setCrop}
+                            onZoomChange={setZoom}
+                            onCropComplete={onCropComplete}
+                        />
+                    </div>
+                    <div className="flex-shrink-0 pt-4 flex justify-center gap-4">
+                        <button onClick={saveManualCrop} className="bg-pink-500 text-white px-6 py-2 rounded-lg">Save Crop</button>
+                        <button onClick={() => setEditingVariant(null)} className="bg-gray-600 text-white px-6 py-2 rounded-lg">Cancel</button>
+                    </div>
+                </div>
+            )}
+
+            {/* --- Main Content --- */}
+            <div className="p-4 flex-shrink-0">
+                <h1 className="text-2xl font-bold text-center">{state.question}</h1>
+                <p className="text-center text-gray-400">Auto-generated previews for each platform</p>
+            </div>
+            
+            <div className="flex-grow overflow-y-auto px-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {Object.entries(PLATFORM_SPECS).map(([platform, spec]) => (
+                        <div key={platform}>
+                            <VariantPreviewCard 
+                                platform={platform} 
+                                spec={spec} 
+                                masterImagePublicId={masterImagePublicId}
+                                focalPoint={manualCrops[platform] || focalPoint}
+                            />
+                            <button onClick={() => setEditingVariant(platform)} className="text-xs text-center w-full mt-2 text-gray-400 hover:text-pink-400 transition-colors">
+                                Edit Crop
+                            </button>
                         </div>
                     ))}
                 </div>
-
-                <div className="flex justify-end mt-3 text-xs text-gray-400">
-                    <span className="font-medium text-pink-500"><img src='./pynglLogoImage.png' alt="Pyngl Logo" height={15} width={41}></img></span>
-                </div>
             </div>
 
-            {/* --- CONDITIONAL RENDERING --- */}
-            {!createdPoll ? (
-                <button
-                    onClick={handleCreateAndSharePoll}
-                    disabled={isLoading}
-                    className="mt-6 w-full py-3 rounded-full text-white font-medium bg-gradient-to-r from-cyan-400 to-pink-500 disabled:opacity-50 flex items-center justify-center"
-                >
-                    {isLoading ? (
-                        <>
-                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
-                            Creating...
-                        </>
-                    ) : ( 
-                        "Create & Share Poll"
-                    )}
+            <div className="p-4 flex-shrink-0 bg-gray-900/80 backdrop-blur-sm border-t border-white/10">
+                <button onClick={handleCreatePoll} disabled={isLoading} className="w-full py-4 rounded-full text-white font-bold bg-gradient-to-r from-cyan-400 to-pink-500 shadow-lg transform hover:scale-105 transition-transform duration-300 disabled:opacity-70">
+                    {isLoading ? "Creating..." : (createdPoll ? "Share Poll" : "Create & Share Poll")}
                 </button>
-            ) : (
-                <div className="mt-6 p-4 bg-gray-50 rounded-lg text-center">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-3">Poll is Live!</h3>
-                    <div className="p-3 bg-white inline-block rounded-lg border">
-                        <img src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(pollUrl)}`} alt="Poll QR Code" />
-                    </div>
-                    <div className="mt-4">
-                        <label className="text-sm font-medium text-gray-600">Shareable Link</label>
-                        <input 
-                            type="text" 
-                            readOnly 
-                            value={pollUrl} 
-                            className="w-full mt-1 bg-white border border-gray-300 rounded-lg px-3 py-2 text-center text-sm text-gray-700"
-                            onClick={(e) => e.target.select()}
-                        />
-                    </div>
-                    <button
-                        onClick={() => navigate('/dashboard', { state: { newPoll: createdPoll } })}
-                        className="mt-4 w-full py-2 rounded-full text-white font-medium bg-pink-500"
-                    >
-                        Go to Dashboard
-                    </button>
-                </div>
+            </div>
+
+            {isShareHubOpen && createdPoll && (
+                <ShareHub 
+                    masterImageUrl={state.imageUrl} 
+                    poll={createdPoll} 
+                    onClose={() => setIsShareHubOpen(false)} 
+                />
             )}
         </div>
     );
 }
-

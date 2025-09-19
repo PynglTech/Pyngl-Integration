@@ -9,7 +9,7 @@ server: {
     proxy: {
       // This will proxy any request starting with /api to your backend
       '/api': {
-        target: 'http://192.168.1.4:5000', // IMPORTANT: Replace with your backend server's address
+        target: 'http://localhost:5000', // IMPORTANT: Replace with your backend server's address
         changeOrigin: true, // Recommended for virtual hosted sites
         secure: false,      // Can be needed if backend is not https
       },
