@@ -10,7 +10,8 @@ import {
     getMyPolls, 
     getParticipatedPolls,
     generateImage,
-    uploadImage
+    uploadImage,
+    generatePollCard 
 } from '../controllers/pollController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -20,7 +21,7 @@ const router = express.Router();
 router.get('/all', getAllPolls);
 router.get('/live', getLivePolls);
 router.post('/generate-image', generateImage);
-
+router.get('/:pollId/generate-card', generatePollCard);
 // --- Protected Routes ---
 router.post('/create-poll', protect, createPoll);
 router.post('/:pollId/vote', protect, voteOnPoll);

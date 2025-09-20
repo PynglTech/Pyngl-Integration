@@ -1,9 +1,8 @@
 import axios from 'axios';
 import Poll from '../models/Poll.js';
 import { handleUpload } from '../config/cloudinary.js'; 
-
 import FormData from 'form-data';
-
+import { cloudinary } from '../config/cloudinary.js';
 // ✅ Generate image with Stability AI
 export const generateImage = async (req, res) => {
     const { prompt } = req.body;
@@ -227,43 +226,190 @@ export const generateBrandedVariant = (masterImageSrc, logoSrc, options) => {
         logoImage.src = logoSrc;
     });
 };
-// REVISED: This is the updated uploadImage function
 export const uploadImage = async (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ error: "No image file provided." });
-    }
-
     try {
-        let focalPoint = null;
-
-        // --- Call Python Microservice for Face Detection ---
-        try {
-            const form = new FormData();
-            form.append('image', req.file.buffer, { filename: req.file.originalname });
-
-            const response = await axios.post('http://localhost:5002/analyze', form, {
-                headers: form.getHeaders(),
-            });
-            focalPoint = response.data.focalPoint;
-        } catch (analysisError) {
-            console.error("Image analysis failed:", analysisError.message);
-            // It's okay to continue without a focal point if analysis fails
+        // The 'upload' middleware from cloudinary.js has already done the hard work.
+        // If the upload failed, it would have already sent an error.
+        // If it succeeds, the file details are now available in req.file.
+        if (!req.file) {
+            return res.status(400).json({ error: "No image file was provided." });
         }
-
-        // --- Upload the original image to Cloudinary for storage ---
-        // This line will now work because handleUpload is imported correctly
-        const uploadResult = await handleUpload(req.file.buffer);
-
-        // --- Send the combined result to the frontend ---
+        
+        // Send the secure URL and public ID back to the frontend.
         res.status(200).json({
-            message: "Image uploaded and analyzed successfully!",
-            imagePublicId: uploadResult.public_id,
-            imageUrl: uploadResult.secure_url,
-            focalPoint: focalPoint 
+            message: "Image uploaded successfully!",
+            imageUrl: req.file.path,
+            imagePublicId: req.file.filename 
+            // The focal point detection from the microservice would be added here if needed.
         });
 
     } catch (error) {
-        console.error("Error in image upload process:", error);
-        res.status(500).json({ error: "Failed to upload and analyze image." });
+        console.error("Error in uploadImage controller:", error);
+        res.status(500).json({ error: "Server error during image upload." });
+    }
+};
+
+
+
+// export const generatePollCard = async (req, res) => {
+//     try {
+//         const { pollId } = req.params;
+//         const poll = await Poll.findById(pollId);
+
+//         if (!poll) {
+//             return res.status(404).json({ error: "Poll not found." });
+//         }
+
+//         // --- Start with a clean transformations array ---
+//         const transformations = [];
+
+//         // --- Add the Poll Question as a text overlay ---
+//         // This uses Cloudinary's text overlay feature
+//         transformations.push({
+//             overlay: { 
+//                 font_family: "Arial", 
+//                 font_size: 60, 
+//                 font_weight: "bold", 
+//                 text: poll.question 
+//             },
+//             color: "#FFFFFF",
+//             gravity: "north",
+//             y: 100 // 100 pixels from the top
+//         });
+        
+//         // --- Add each Poll Option as a text overlay ---
+//         poll.options.forEach((option, index) => {
+//             const yOffset = 250 + (index * 70); // Stagger the options vertically
+//             transformations.push({
+//                 overlay: { 
+//                     font_family: "Arial", 
+//                     font_size: 48, 
+//                     text: `- ${option.text}` 
+//                 },
+//                 color: "#FFFFFF",
+//                 gravity: "center",
+//                 y: yOffset
+//             });
+//         });
+
+//         // --- Add your logo as a final overlay ---
+//         transformations.push({
+//             overlay: 'pyngl_logo', // Assumes your logo has the Public ID 'pyngl_logo'
+//             width: "0.15", // 15% of the image width
+//             gravity: "south_east",
+//             x: 40, // 40px margin from the right
+//             y: 40, // 40px margin from the bottom
+//             opacity: 90,
+//             flags: "relative"
+//         });
+
+//         // --- Generate the Final URL ---
+//         // This starts with a blank canvas and applies all the transformations
+//         const pollCardUrl = cloudinary.url('transparent_base', {
+//             transformation: [
+//                 { width: 1080, height: 1080, crop: "fill", background: "rgb:1a202c", radius: 20 },
+//                 ...transformations
+//             ],
+//             secure: true 
+//         });
+
+//         res.status(200).json({ pollCardUrl });
+
+//     } catch (error) {
+//         console.error("----------- ERROR GENERATING POLL CARD -----------");
+//         console.error("Poll ID:", req.params.pollId);
+//         console.error("Caught Error:", error);
+//         console.error("-------------------------------------------------");
+//         res.status(500).json({ error: "Failed to generate poll card image." });
+//     }
+// };
+export const generatePollCard = async (req, res) => {
+    try {
+        const { pollId } = req.params;
+        const poll = await Poll.findById(pollId);
+
+        if (!poll) {
+            return res.status(404).json({ error: "Poll not found." });
+        }
+
+        const transformations = [];
+
+        // Add question text
+        transformations.push({
+            overlay: { 
+                font_family: "Arial", 
+                font_size: 60, 
+                font_weight: "bold", 
+                text: poll.question 
+            },
+            color: "#FFFFFF",
+            gravity: "north",
+            y: 100
+        });
+        
+        // Add image if it exists
+        if (poll.type === 'image' && poll.imageUrl) {
+            const uploadStr = '/upload/';
+            const afterUpload = poll.imageUrl.substring(poll.imageUrl.indexOf(uploadStr) + uploadStr.length);
+            let publicId = afterUpload.replace(/v\d+\//, '').replace(/\.[^/.]+$/, '');
+            publicId = publicId.replace(/\//g, ':');
+            
+            transformations.push({
+                overlay: { public_id: publicId },
+                width: 800, 
+                height: 450, 
+                crop: "fill", 
+                gravity: "center", 
+                y: -50,
+                radius: 20
+            });
+        }
+        
+        // Add each Poll Option as a text overlay
+        poll.options.forEach((option, index) => {
+            const yOffset = poll.type === 'image' ? 250 + (index * 60) : 200 + (index * 70);
+            transformations.push({
+                overlay: { 
+                    font_family: "Arial", 
+                    font_size: 48, 
+                    text: `- ${option.text}` 
+                },
+                color: "#FFFFFF",
+                gravity: "center",
+                y: yOffset
+            });
+        });
+
+        // Add your logo as a final overlay
+        transformations.push({
+            overlay: 'pyngl_logo', // Assumes a 'pyngl_logo' Public ID exists
+            width: "0.15",
+            gravity: "south_east",
+            x: 40,
+            y: 40,
+            opacity: 90,
+            flags: "relative"
+        });
+
+        // --- THIS IS THE FIX ---
+        // The function now looks for your base image inside the correct folder.
+        const baseImagePublicId = 'uploads/pyngl/transparent_base';
+
+        const pollCardUrl = cloudinary.url(baseImagePublicId, {
+            transformation: [
+                { width: 1080, height: 1080, crop: "fill", background: "rgb:1a202c", radius: 20 },
+                ...transformations
+            ],
+            secure: true 
+        });
+
+        res.status(200).json({ pollCardUrl });
+
+    } catch (error) {
+        console.error("----------- ERROR GENERATING POLL CARD -----------");
+        console.error("Poll ID:", req.params.pollId);
+        console.error("Caught Error:", error);
+        console.error("-------------------------------------------------");
+        res.status(500).json({ error: "Failed to generate poll card image." });
     }
 };

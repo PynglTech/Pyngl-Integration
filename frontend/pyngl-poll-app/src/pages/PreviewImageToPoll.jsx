@@ -88,9 +88,40 @@ export default function PreviewImagePoll() {
         setManualCrops(newManualCrops);
         setEditingVariant(null);
     };
-
     const handleCreatePoll = async () => {
-        // ... (your existing poll creation logic is correct)
+        // If the poll is already created, just open the share hub again.
+        if (createdPoll) {
+            setIsShareHubOpen(true);
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            // 1. Prepare the poll data to send to the server
+            const pollData = {
+                question: state.question,
+                options: state.options,
+                type: 'image',
+                imageUrl: state.imageUrl, // The master Cloudinary URL
+                duration: state.duration,
+            };
+
+            // 2. Call your backend API to save the poll
+            const response = await apiClient.post("/api/polls/create-poll", pollData);
+            
+            // 3. Store the newly created poll from the server's response
+            setCreatedPoll(response.data);
+            
+            // 4. Open the Share Hub
+            setIsShareHubOpen(true);
+
+        } catch (error) {
+            console.error("Error creating poll:", error);
+            alert(error.response?.data?.error || "Could not save the poll. Please try again.");
+        } finally {
+            // 5. Ensure the loading state is turned off
+            setIsLoading(false);
+        }
     };
 
     if (!state) {
@@ -156,11 +187,14 @@ export default function PreviewImagePoll() {
             </div>
 
             {isShareHubOpen && createdPoll && (
-                <ShareHub 
-                    masterImageUrl={state.imageUrl} 
-                    poll={createdPoll} 
-                    onClose={() => setIsShareHubOpen(false)} 
-                />
+                 <ShareHub 
+        poll={createdPoll} 
+        onClose={() => setIsShareHubOpen(false)}
+        // ✅ ADD THESE PROPS
+        masterImagePublicId={masterImagePublicId}
+        focalPoint={focalPoint}
+        manualCrops={manualCrops}
+    />
             )}
         </div>
     );
