@@ -1,0 +1,44 @@
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 400px; /* Match the max-width of your app layout */
+    margin: 0 auto;
+    
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    
+    height: 65px;
+    background-color: #ffffff;
+    border-top: 1px solid #e0e0e0;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+}
+
+.nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #888888; /* Default inactive color */
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: color 0.2s ease-in-out;
+}
+
+/* This is the magic for the active state! */
+.nav-link.active {
+    color: #F72AA0; /* Your Pyngl pink color */
+}
+
+/* Lucide icons use 'stroke' for color, so we target the svg inside */
+.nav-link.active svg {
+    stroke: #F72AA0;
+}
+
+.nav-link span {
+    margin-top: 4px;
+}
