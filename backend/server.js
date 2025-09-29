@@ -45,7 +45,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/polls', pollRoutes);
 app.use('/api/linkedin', linkedinRoutes);
 app.use("/auth", googleRoutes);
-app.use('/api/upload', uploadRoutes);
+app.use('/api/upload', uploadRoutes); 
 
 
 // A simple route to confirm the server is running

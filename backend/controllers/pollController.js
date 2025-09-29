@@ -102,44 +102,41 @@ export const createPoll = async (req, res) => {
 // controllers/pollController.js
 export const voteOnPoll = async (req, res) => {
   const { pollId } = req.params;
-  const { optionId } = req.body;
-  const userId = req.user.id;
+  const { optionId, platform, browser, timeSpent, device } = req.body;
+  console.log("🚀 ~ voteOnPoll ~ optionId, platform, browser, timeSpent, device:", optionId, platform, browser, timeSpent, device)
+  const userId = req.user?.id; // make sure req.user is populated (auth middleware)
 
   try {
     const poll = await Poll.findById(pollId);
     if (!poll) return res.status(404).json({ msg: "Poll not found" });
 
-    // check duplicate voting
-    const alreadyVoted = poll.options.some((option) =>
-      option.votes.includes(userId)
-    );
-    if (alreadyVoted)
+    // ✅ Check if user has already voted (global)
+    if (poll.votedBy.includes(userId)) {
       return res.status(400).json({ msg: "User has already voted" });
+    }
 
-    // add vote to selected option
+    // ✅ Find option and increment vote count
     const option = poll.options.id(optionId);
     if (!option) return res.status(404).json({ msg: "Option not found" });
 
-    option.votes.push(userId);
+    option.votes += 1; // just increment the number
 
-    // ✅ --- insert analytics tracking here ---
-    const { platform, browser, timeSpent } = req.body;
-
+    // ✅ Track global vote + analytics
+    poll.votedBy.push(userId);
     poll.totalVotes += 1;
     poll.votersMeta.push({
       user: userId,
       platform,
       browser,
+      device,
       timeSpent,
     });
-
     poll.totalTimeSpent += timeSpent || 0;
-    // ✅ --- end analytics tracking ---
 
     await poll.save();
-
     res.json(poll);
   } catch (err) {
+    console.error("❌ Error in voteOnPoll:", err);
     res.status(500).json({ msg: "Server error" });
   }
 };
@@ -171,21 +168,60 @@ export const getLivePolls = async (req, res) => {
 };
 
 // ✅ Get a single poll by its ID
+// export const getPollById = async (req, res) => {
+//   try {
+//     const poll = await Poll.findById(req.params.pollId); // Assuming route is /:pollId
+//     if (!poll) {
+//       return res.status(404).json({ error: "Poll not found" });
+//     }
+//     // Increment views count
+//     poll.views += 1;
+//     await poll.save();
+//     res.status(200).json(poll);
+//   } catch (error) {
+//     console.error("Error fetching poll:", error.message);
+//     res.status(500).json({ error: "Failed to fetch poll" });
+//   }
+// };
+
 export const getPollById = async (req, res) => {
   try {
-    const poll = await Poll.findById(req.params.pollId); // Assuming route is /:pollId
+    const poll = await Poll.findById(req.params.pollId);
     if (!poll) {
       return res.status(404).json({ error: "Poll not found" });
     }
-    // Increment views count
-    poll.views += 1;
-    await poll.save();
+
+    const userId = req.user?._id; // from auth middleware
+    const ipAddress = req.ip;     // fallback if no user logged in
+
+    let shouldIncrement = false;
+
+    if (userId) {
+      if (!poll.viewedBy.includes(userId)) {
+        poll.viewedBy.push(userId);
+        poll.views += 1;
+        shouldIncrement = true;
+      }
+    } else {
+      // anonymous users: use IP
+      if (!poll.viewedBy.includes(ipAddress)) {
+        poll.viewedBy.push(ipAddress);
+        poll.views += 1;
+        shouldIncrement = true;
+      }
+    }
+
+    if (shouldIncrement) {
+      await poll.save();
+    }
+
     res.status(200).json(poll);
   } catch (error) {
     console.error("Error fetching poll:", error.message);
     res.status(500).json({ error: "Failed to fetch poll" });
   }
 };
+
 
 // ✅ Get all polls created by the logged-in user
 export const getMyPolls = async (req, res) => {
@@ -629,60 +665,119 @@ export const resultsPoll = async (req, res) => {
 
 
 // analytics data
-export const trackClick = async (req, res) => {
-  const { pollId } = req.params;
-  try {
-    const poll = await Poll.findById(pollId);
-    if (!poll) return res.status(404).json({ msg: "Poll not found" });
+// export const trackClick = async (req, res) => {
+//   const { pollId } = req.params;
+//   try {
+//     const poll = await Poll.findById(pollId);
+//     if (!poll) return res.status(404).json({ msg: "Poll not found" });
 
-    poll.clicks += 1;
-    await poll.save();
+//     poll.clicks += 1;
+//     await poll.save();
 
-    res.json({ success: true, clicks: poll.clicks });
-  } catch (err) {
-    res.status(500).json({ msg: "Server error" });
-  }
-};
+//     res.json({ success: true, clicks: poll.clicks });
+//   } catch (err) {
+//     res.status(500).json({ msg: "Server error" });
+//   }
+// };
+
+// export const getPollAnalytics = async (req, res) => {
+//   try {
+//     const { pollId } = req.params;
+//     const poll = await Poll.findById(pollId);
+//     if (!poll) return res.status(404).json({ error: "Poll not found" });
+
+//     const responseRate = poll.views > 0 
+//       ? ((poll.totalVotes / poll.views) * 100).toFixed(2) + "%"
+//       : "0%";
+
+//     // Aggregate breakdowns
+//     const platformBreakdown = {};
+//     const browserBreakdown = {};
+//     poll.votersMeta.forEach(({ platform, browser }) => {
+//       if (platform) platformBreakdown[platform] = (platformBreakdown[platform] || 0) + 1;
+//       if (browser) browserBreakdown[browser] = (browserBreakdown[browser] || 0) + 1;
+//     });
+
+//     res.json({
+//   ...poll.toObject(),
+//   responseRate,
+//   platformBreakdown,
+//   browserBreakdown,
+//   views: poll.views || 0,          // users who visited poll link
+//   clicks: poll.totalVotes || 0,    // users who actually voted
+//   avgTime: poll.totalVotes > 0 
+//     ? `${Math.round(poll.totalTimeSpent / poll.totalVotes)}s`
+//     : "0s",
+// });
+//   } catch (err) {
+//     console.error("Error fetching analytics:", err);
+//     res.status(500).json({ error: "Server error" });
+//   }
+// };
 
 export const getPollAnalytics = async (req, res) => {
   try {
-    const poll = await Poll.findById(req.params.pollId);
-    if (!poll) return res.status(404).json({ msg: "Poll not found" });
+    const { pollId } = req.params;
+    const poll = await Poll.findById(pollId);
+    if (!poll) return res.status(404).json({ error: "Poll not found" });
 
-    const responseRate = poll.views > 0 ? (poll.totalVotes / poll.views) * 100 : 0;
-    const avgTime = poll.totalVotes > 0 ? poll.totalTimeSpent / poll.totalVotes : 0;
+    const now = new Date();
+    const expiresDate = poll.expiresAt;
+    const pollStartDate = poll.createdAt; // poll start
+    const pollDurationMs = expiresDate.getTime() - pollStartDate.getTime();
+    const halfDurationMs = pollDurationMs / 2;
 
-    // Early vs late voters
-    const midPoint = poll.votersMeta.length / 2;
-    const earlyVoters = poll.votersMeta.slice(0, Math.floor(midPoint));
-    const lateVoters = poll.votersMeta.slice(Math.floor(midPoint));
+    let earlyVoters = 0;
+    let lateVoters = 0;
 
-    // Platform breakdown
-    const platformStats = {};
-    poll.votersMeta.forEach((v) => {
-      platformStats[v.platform] = (platformStats[v.platform] || 0) + 1;
+    poll.votersMeta.forEach(({ votedAt }) => {
+      const voteTime = new Date(votedAt).getTime();
+      const voteOffset = voteTime - pollStartDate.getTime();
+
+      if (voteOffset <= halfDurationMs) {
+        earlyVoters += 1;
+      } else {
+        lateVoters += 1;
+      }
     });
 
-    // Browser breakdown
-    const browserStats = {};
-    poll.votersMeta.forEach((v) => {
-      browserStats[v.browser] = (browserStats[v.browser] || 0) + 1;
+    const uniqueViews = poll.viewedBy.length;
+
+    const responseRate =
+      uniqueViews > 0
+        ? ((poll.totalVotes / uniqueViews) * 100).toFixed(2) + "%"
+        : "0%";
+
+    // Aggregate breakdowns
+    const platformBreakdown = {};
+    const browserBreakdown = {};
+    const deviceBreakdown = {};
+    poll.votersMeta.forEach(({ platform, browser, device }) => {
+      if (platform) platformBreakdown[platform] = (platformBreakdown[platform] || 0) + 1;
+      if (browser) browserBreakdown[browser] = (browserBreakdown[browser] || 0) + 1;
+      if (device) deviceBreakdown[device] = (deviceBreakdown[device] || 0) + 1;
     });
 
     res.json({
-      question: poll.question,
-      views: poll.views,
-      clicks: poll.clicks,
-      totalVotes: poll.totalVotes,
-      responseRate: responseRate.toFixed(2) + "%",
-      avgTime: avgTime.toFixed(1) + "s",
-      completed: poll.completed,
-      earlyVoters: earlyVoters.length,
-      lateVoters: lateVoters.length,
-      platformBreakdown: platformStats,
-      browserBreakdown: browserStats,
+      ...poll.toObject(),
+      views: uniqueViews,
+      clicks: poll.totalVotes || 0,
+      responseRate,
+      platformBreakdown,
+      browserBreakdown,
+      deviceBreakdown,
+      avgTime:
+        poll.totalVotes > 0
+          ? `${Math.round(poll.totalTimeSpent / poll.totalVotes)}s`
+          : "0s",
+      earlyVoters,
+      lateVoters,
     });
   } catch (err) {
-    res.status(500).json({ msg: "Server error" });
+    console.error("Error fetching analytics:", err);
+    res.status(500).json({ error: "Server error" });
   }
 };
+
+
+

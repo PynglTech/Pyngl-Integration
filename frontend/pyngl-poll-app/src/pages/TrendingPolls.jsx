@@ -252,6 +252,7 @@ export default function TrendingPolls() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ optionId: selectedOptionId }),
       });
+      console.log("🚀 ~ handleVote ~ res:", res)
       const updatedPoll = await res.json();
       if (!res.ok) throw new Error(updatedPoll.error || "Vote failed");
 

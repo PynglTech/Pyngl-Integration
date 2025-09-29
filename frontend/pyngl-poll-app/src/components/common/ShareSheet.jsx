@@ -267,7 +267,7 @@ import PlatformPreview from "../preview/PlatformPreview";
 // you need to use the actual poll URL that the backend (server) will serve,
 // e.g., 'https://yourdomain.com' or a local dev proxy.
 // I'll use a placeholder for the base domain of your backend-served poll page.
-const POLL_PAGE_DOMAIN = 'https://fluffy-parts-take.loca.lt'; // Change to your actual domain
+const POLL_PAGE_DOMAIN = 'https://slow-results-stand.loca.lt'; // Change to your actual domain
 const POLL_PREVIEW_BASE = `${POLL_PAGE_DOMAIN}/api/polls/`; // Points to your router's /:id/preview
 
 // ===== Share Links - Now using the Preview URL to trigger OG tags =====

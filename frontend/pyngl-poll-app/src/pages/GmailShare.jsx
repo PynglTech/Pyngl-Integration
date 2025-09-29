@@ -15,6 +15,7 @@ export default function SharePage() {
   const [csvFile, setCsvFile] = useState(null);
   const [csvEmails, setCsvEmails] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Fetch poll details
   useEffect(() => {
@@ -27,18 +28,30 @@ export default function SharePage() {
   }, [pollId]);
 
   // Fetch Gmail contacts
-  useEffect(() => {
-    if (connectedEmail) {
-      apiClient
-        .get(`/auth/contacts?email=${connectedEmail}`)
-        .then((res) => {
-          const fetchedContacts = res.data.contacts || [];
-          setContacts(fetchedContacts);
-          setFilteredContacts(fetchedContacts);
-        })
-        .catch((err) => console.error("Error fetching contacts:", err));
-    }
-  }, [connectedEmail]);
+useEffect(() => {
+  if (connectedEmail) {
+    apiClient
+      .get(`/auth/contacts?email=${connectedEmail}`)
+      .then((res) => {
+        const fetchedContacts = res.data.contacts || [];
+        console.log("🚀 ~ fetchedContacts:", fetchedContacts);
+
+        // Normalize: make sure email and name always exist
+        const mapped = fetchedContacts
+          .filter(c => c.email) // remove empty emails
+          .map(c => ({
+            name: c.name || "Unknown",
+            email: c.email,
+            avatar: null, // backend doesn’t send avatar yet
+          }));
+
+        setContacts(mapped);
+        setFilteredContacts(mapped);
+      })
+      .catch((err) => console.error("Error fetching contacts:", err));
+  }
+}, [connectedEmail]);
+
 
   // Filter contacts
   useEffect(() => {
@@ -104,7 +117,7 @@ export default function SharePage() {
         userEmail: connectedEmail,
       });
 
-      alert("✅ Poll shared successfully!");
+      setShowSuccessModal(true);
 
       setSelectedContacts([]);
       setManualEmails("");
@@ -116,100 +129,195 @@ export default function SharePage() {
     }
   };
 
+  const removeSelectedEmail = (email) => {
+    if (selectedContacts.includes(email)) {
+      setSelectedContacts(selectedContacts.filter((e) => e !== email));
+    }
+  };
+
   return (
     <div className="w-full h-screen bg-gray-50 flex flex-col">
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-8 mx-4 max-w-sm w-full relative">
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+            <div className="text-center">
+              <div className="w-20 h-20 mx-auto mb-4 bg-pink-100 rounded-full flex items-center justify-center">
+                <span className="text-3xl">🎉</span>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-6">
+                Image to poll shared successfully!
+              </h3>
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="w-full py-3 bg-pink-500 text-white rounded-full font-medium hover:bg-pink-600 transition-colors"
+              >
+                Thanks!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
-      <header className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white p-4 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Share Poll</h1>
-        <span className="text-sm">
-          {connectedEmail ? `Connected: ${connectedEmail}` : ""}
-        </span>
+      <header className="w-full bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          {/* <button className="text-gray-600 hover:text-gray-800">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button> */}
+          <h1 className="text-lg text-center font-semibold text-gray-800">Share via Gmail</h1>
+        </div>
+        {/* <button className="text-gray-600 hover:text-gray-800">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM9 5H4l5-5v5z" />
+          </svg>
+        </button> */}
       </header>
 
-      <main className="flex-1 p-6 overflow-y-auto">
-        {/* Search contacts */}
-        <div className="relative mb-4">
-          <input
-            type="text"
-            placeholder="Search contacts"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 border rounded-full focus:ring-2 focus:ring-pink-400 focus:outline-none"
-          />
-          <span className="absolute right-3 top-2.5 text-gray-400">🔍</span>
-        </div>
-
-        {/* Contact list */}
-        <div className="space-y-3 max-h-[40vh] overflow-y-auto mb-6">
-          {filteredContacts.map((c, idx) => (
-            <div
-              key={c.email || `contact-${idx}`}
-              className="flex items-center justify-between border rounded-xl p-2 hover:bg-gray-50"
-            >
-              <div className="flex items-center space-x-3">
-                <img
-                  src={c.avatar || "/default-avatar.png"}
-                  alt={c.name || "Unknown"}
-                  className="w-8 h-8 rounded-full"
-                />
-                <div>
-                  <p className="font-medium">{c.name || "Unknown"}</p>
-                  <p className="text-sm text-gray-500">
-                    {c.email || "No email"}
-                  </p>
-                </div>
-              </div>
-              <input
-                type="checkbox"
-                checked={selectedContacts.includes(c.email)}
-                onChange={() => toggleContact(c.email)}
-                className="w-5 h-5 accent-pink-500"
-              />
+      <main className="flex-1 p-6 overflow-y-auto space-y-6">
+        {/* Connected Account */}
+        <div className="flex items-center space-x-3 mb-6">
+          <span className="text-sm text-gray-600">Connected:</span>
+          <div className="flex items-center space-x-2">
+            <div className="w-6 h-6 bg-orange-400 rounded-full flex items-center justify-center">
+              <span className="text-xs text-white font-medium">S</span>
             </div>
-          ))}
+            <span className="text-sm font-medium text-gray-800">{connectedEmail}</span>
+          </div>
         </div>
 
-        {/* Manual emails */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-600 mb-2">
-            Add emails manually
-          </label>
-          <input
-            type="text"
+        {/* Available Gmail Accounts Section */}
+        <div className="space-y-4">
+          <h2 className="text-base font-medium text-gray-700">Available Gmail account</h2>
+          
+          {/* Search contacts */}
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search gmail accounts"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-3 bg-gray-100 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm"
+            />
+            <svg className="absolute right-4 top-3.5 w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+
+          {/* Contact list */}
+          <div className="space-y-3">
+            {filteredContacts.map((c, idx) => (
+              <div
+                key={c.email || `contact-${idx}`}
+                className="flex items-center justify-between py-2"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden">
+                    {c.avatar ? (
+                      <img
+                        src={c.avatar}
+                        alt={c.name || "Unknown"}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-sm font-medium text-gray-600">
+                        {(c.name || c.email || "?").charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-800">{c.name || "Unknown"}</p>
+                    <p className="text-sm text-gray-500">{c.email || "No email"}</p>
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={selectedContacts.includes(c.email)}
+                  onChange={() => toggleContact(c.email)}
+                  className="w-5 h-5 text-blue-500 border-2 border-gray-300 rounded focus:ring-blue-500"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Manual Email Section */}
+        <div className="space-y-4">
+          <h2 className="text-base font-medium text-gray-700">Add email manually</h2>
+          <textarea
             value={manualEmails}
             onChange={(e) => setManualEmails(e.target.value)}
-            placeholder="Type emails separated by commas"
-            className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-pink-400 focus:outline-none"
+            placeholder="Type email addresses, separated by commas"
+            className="w-full px-4 py-3 bg-gray-100 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm resize-none"
+            rows="4"
           />
-        </div>
-
-        {/* Upload CSV */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-600 mb-2">
-            Upload CSV file
-          </label>
-          <input
-            type="file"
-            accept=".csv"
-            onChange={handleCSVUpload}
-            className="w-full px-3 py-2 border rounded-xl"
-          />
-          {csvFile && (
-            <p className="text-sm text-gray-500 mt-1">
-              Selected file: {csvFile.name} ({csvEmails.length} emails)
-            </p>
+          
+          {/* Selected emails tags */}
+          {selectedContacts.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {selectedContacts.map((email) => (
+                <span
+                  key={email}
+                  className="inline-flex items-center px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-sm"
+                >
+                  {email}
+                  <button
+                    onClick={() => removeSelectedEmail(email)}
+                    className="ml-2 text-pink-500 hover:text-pink-700"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
           )}
         </div>
-      </main>
 
-      <footer className="p-4 bg-white border-t">
+        {/* Upload CSV Section */}
+        <div className="space-y-4">
+          <h2 className="text-base font-medium text-gray-700">Upload CSV file</h2>
+          <div className="relative">
+            <input
+              type="file"
+              accept=".csv"
+              onChange={handleCSVUpload}
+              className="hidden"
+              id="csv-upload"
+            />
+            <label
+              htmlFor="csv-upload"
+              className="flex items-center justify-between w-full px-4 py-3 bg-gray-100 rounded-xl border-2 border-dashed border-gray-300 cursor-pointer hover:bg-gray-200 transition-colors"
+            >
+              <span className="text-sm text-gray-600">
+                {csvFile ? csvFile.name : "No file chosen"}
+              </span>
+              <span className="text-sm text-gray-500">
+                {csvFile ? `${csvEmails.length} emails` : "Choose file"}
+              </span>
+            </label>
+          </div>
+        </div>
+
+      <div className="p-6">
         <button
           onClick={handleShare}
-          className="w-full py-3 rounded-full text-white font-medium bg-gradient-to-r from-pink-500 to-purple-500"
+          className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full font-medium text-lg flex items-center justify-center space-x-2 hover:from-blue-600 hover:to-purple-600 transition-all"
         >
-          Share poll
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+          </svg>
+          <span>Share poll</span>
         </button>
-      </footer>
+      </div>
+      </main>
     </div>
   );
 }

@@ -66,16 +66,18 @@ const pollSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
-    views: { type: Number, default: 0 }, // total poll page visits
+    // views: { type: Number, default: 0 }, // total poll page 
+    viewedBy: { type: [mongoose.Schema.Types.Mixed], default: [] },
     clicks: { type: Number, default: 0 }, // CTA clicks (e.g. share, start)
     completed: { type: Number, default: 0 }, // how many finished poll
     totalTimeSpent: { type: Number, default: 0 }, // in seconds, sum for averages
     totalVotes: { type: Number, default: 0 }, // redundant, but fast analytics
 
-    votersMeta: [
+    votersMeta: [ 
       {
         user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
         votedAt: { type: Date, default: Date.now },
+        device: { type: String }, // e.g. Mobile, Desktop     
         platform: { type: String }, // e.g. twitter, instagram
         browser: { type: String }, // e.g. Chrome, Safari
         timeSpent: { type: Number }, // in seconds
