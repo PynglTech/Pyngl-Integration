@@ -367,6 +367,7 @@ import { cloudinary } from '../config/cloudinary.js';
 import sendEmail from '../utils/sendEmail.js';
 import cron from 'node-cron'; // NEW: Imported for scheduler
 import User from '../models/User.js';
+import { sendWhatsappMessage } from '../utils/whatsappService.js';
 // @desc    Generate an image using Stability AI
 // @route   POST /api/polls/generate-image
 export const generateImage = async (req, res) => {
@@ -438,20 +439,18 @@ export const createPoll = async (req, res) => {
     }
 };
 
-// @desc    Vote on a poll
-// @route   POST /api/polls/:pollId/vote
 export const voteOnPoll = async (req, res) => {
     try {
         const { pollId } = req.params;
-        const { optionId, platform, browser, timeSpent } = req.body;
+        const { optionId, platform, browser, device, timeSpent } = req.body;
         
-        // Your superior logic for registered vs. anonymous users is preserved
         const isRegisteredUser = !!req.user;
         const voterIdentifier = isRegisteredUser ? req.user.id : req.ip;
 
         const poll = await Poll.findById(pollId);
         if (!poll) return res.status(404).json({ error: "Poll not found." });
 
+        // Your robust check for existing voters is preserved
         const alreadyVoted = poll.votedBy.some(vote =>
             (isRegisteredUser && vote.user?.toString() === voterIdentifier) ||
             (!isRegisteredUser && vote.ipAddress === voterIdentifier)
@@ -468,16 +467,20 @@ export const voteOnPoll = async (req, res) => {
         const newVote = isRegisteredUser ? { user: voterIdentifier } : { ipAddress: voterIdentifier };
         poll.votedBy.push(newVote);
 
-        // MERGED: Adding analytics tracking
+        // --- THIS IS THE UPDATE ---
         poll.totalVotes += 1;
         poll.totalTimeSpent += timeSpent || 0;
+        
+        // Save analytics metadata regardless of whether user is logged in
         if (isRegisteredUser) {
-            poll.votersMeta.push({ user: req.user.id, platform, browser, timeSpent });
+            poll.votersMeta.push({ user: req.user.id, platform, browser, device, timeSpent });
+        } else {
+            // NEW: Also save analytics for anonymous users (without the user ID)
+            poll.votersMeta.push({ platform, browser, device, timeSpent });
         }
+        // --- End of Update ---
 
         const updatedPoll = await poll.save();
-
-        // Your real-time update logic is preserved
         const io = req.app.get('io');
         io.to(pollId).emit('poll_update', updatedPoll);
         
@@ -487,7 +490,7 @@ export const voteOnPoll = async (req, res) => {
         res.status(500).json({ error: "Server error while voting." });
     }
 };
-// ✅ Get all polls for the Trending page
+// Get all polls for the Trending page
 export const getAllPolls = async (req, res) => {
     try {
         const polls = await Poll.find({}).sort({ createdAt: -1 });
@@ -498,126 +501,67 @@ export const getAllPolls = async (req, res) => {
     }
 };
 
-// ✅ Get only live (not expired) polls for the Homepage
+// Get only live (not expired) polls for the Homepage
+// export const getLivePolls = async (req, res) => {
+//     try {
+//         const now = new Date();
+//         const polls = await Poll.find({ expiresAt: { $gt: now } }).sort({
+//             createdAt: -1,
+//         });
+//         res.status(200).json(polls);
+//     } catch (error) {
+//         console.error("Error fetching live polls:", error.message);
+//         res.status(500).json({ error: "Failed to fetch live polls" });
+//     }
+// };
 export const getLivePolls = async (req, res) => {
     try {
         const now = new Date();
-        const polls = await Poll.find({ expiresAt: { $gt: now } }).sort({
-            createdAt: -1,
-        });
+        const polls = await Poll.find({ expiresAt: { $gt: now } })
+            .sort({ createdAt: -1 })
+            // 1. Only select the data needed for the list view
+            .select('question options imageUrl expiresAt author totalVotes')
+            // 2. Use lean() for a significant speed boost on read-only queries
+            .lean();
+
         res.status(200).json(polls);
     } catch (error) {
         console.error("Error fetching live polls:", error.message);
         res.status(500).json({ error: "Failed to fetch live polls" });
     }
 };
-
-// ✅ Get a single poll by its ID
-// export const getPollById = async (req, res) => {
-//     try {
-//         const poll = await Poll.findById(req.params.pollId); // Assuming route is /:pollId
-//         if (!poll) {
-//             return res.status(404).json({ error: "Poll not found" });
-//         }
-//         res.status(200).json(poll);
-//     } catch (error) {
-//         console.error("Error fetching poll:", error.message);
-//         res.status(500).json({ error: "Failed to fetch poll" });
-//     }
-// };
-// export const getPollById = async (req, res) => {
-//     try {
-//         const poll = await Poll.findById(req.params.pollId);
-//         if (!poll) {
-//             return res.status(404).json({ error: "Poll not found" });
-//         }
-
-//         // --- NEW LOGIC ---
-//         // Determine if the current visitor (logged-in or anonymous) has already voted
-//         let currentUserHasVoted = false;
-//         const isRegisteredUser = !!req.user;
-//         const voterIdentifier = isRegisteredUser ? req.user.id : req.ip;
-
-//         if (voterIdentifier) {
-//             currentUserHasVoted = poll.votedBy.some(vote => 
-//                 (isRegisteredUser && vote.user?.toString() === voterIdentifier) ||
-//                 (!isRegisteredUser && vote.ipAddress === voterIdentifier)
-//             );
-//         }
-
-//         // Convert the Mongoose document to a plain object to add the new property
-//         const pollObject = poll.toObject();
-//         pollObject.currentUserHasVoted = currentUserHasVoted;
-
-//         res.status(200).json(pollObject);
-
-//     } catch (error) {
-//         console.error("Error fetching poll:", error.message);
-//         res.status(500).json({ error: "Failed to fetch poll" });
-//     }
-// };
-// export const getPollById = async (req, res) => {
-//     try {
-//         const poll = await Poll.findById(req.params.pollId);
-//         if (!poll) {
-//             return res.status(404).json({ error: "Poll not found" });
-//         }
-
-//         // --- NEW LOGIC ---
-//         const now = new Date();
-//         const isExpired = poll.expiresAt < now;
-
-//         let currentUserHasVoted = false;
-//         const isRegisteredUser = !!req.user;
-//         const voterIdentifier = isRegisteredUser ? req.user.id : req.ip;
-
-//         if (voterIdentifier) {
-//             currentUserHasVoted = poll.votedBy.some(vote => 
-//                 (isRegisteredUser && vote.user?.toString() === voterIdentifier) ||
-//                 (!isRegisteredUser && vote.ipAddress === voterIdentifier)
-//             );
-//         }
-
-//         const pollObject = poll.toObject();
-//         pollObject.currentUserHasVoted = currentUserHasVoted;
-//         pollObject.isExpired = isExpired; // Add the expiration status to the response
-
-//         res.status(200).json(pollObject);
-
-//     } catch (error) {
-//         console.error("Error fetching poll:", error.message);
-//         res.status(500).json({ error: "Failed to fetch poll" });
-//     }
-// };
-
-// @desc    Get a single poll by its ID
-// @route   GET /api/polls/:pollId
 export const getPollById = async (req, res) => {
     try {
         const poll = await Poll.findById(req.params.pollId);
         if (!poll) return res.status(404).json({ error: "Poll not found" });
 
-        // MERGED: View tracking is included
-        poll.views += 1;
-        await poll.save();
+        // NEW: Advanced logic for tracking unique views
+        const userId = req.user?._id;
+        const ipAddress = req.ip;
+        const viewerIdentifier = userId || ipAddress;
 
-        // Your superior logic for checking vote status is preserved
+        // Only increment view count if this user/IP hasn't viewed it before
+        if (!poll.viewedBy.includes(viewerIdentifier)) {
+            poll.viewedBy.push(viewerIdentifier);
+            await poll.save();
+        }
+
+        // Your logic for checking vote status is preserved
         const now = new Date();
         const isExpired = poll.expiresAt < now;
         let currentUserHasVoted = false;
-        const isRegisteredUser = !!req.user;
-        const voterIdentifier = isRegisteredUser ? req.user.id : req.ip;
 
-        if (voterIdentifier) {
+        if (userId || ipAddress) {
             currentUserHasVoted = poll.votedBy.some(vote =>
-                (isRegisteredUser && vote.user?.toString() === voterIdentifier) ||
-                (!isRegisteredUser && vote.ipAddress === voterIdentifier)
+                (userId && vote.user?.toString() === userId) ||
+                (!userId && vote.ipAddress === ipAddress)
             );
         }
 
         const pollObject = poll.toObject();
         pollObject.currentUserHasVoted = currentUserHasVoted;
         pollObject.isExpired = isExpired;
+        pollObject.views = poll.viewedBy.length; // Return the accurate unique view count
 
         res.status(200).json(pollObject);
     } catch (error) {
@@ -626,7 +570,7 @@ export const getPollById = async (req, res) => {
     }
 };
 
-// ✅ Get all polls created by the logged-in user
+// Get all polls created by the logged-in user
 export const getMyPolls = async (req, res) => {
     try {
         const polls = await Poll.find({ author: req.user.id }).sort({
@@ -639,7 +583,7 @@ export const getMyPolls = async (req, res) => {
     }
 };
 
-// ✅ Get all polls the logged-in user has participated in
+// Get all polls the logged-in user has participated in
 export const getParticipatedPolls = async (req, res) => {
     try {
         // FIXED: The query now correctly checks the 'user' field inside the 'votedBy' array of objects.
@@ -652,33 +596,7 @@ export const getParticipatedPolls = async (req, res) => {
         res.status(500).json({ error: "Failed to fetch participated polls." });
     }
 };
-// export const addSharedPlatform = async (req, res) => {
-//   const { platform } = req.body;
-//   const pollId = req.params;
 
-//   if (!platform) {
-//     return res.status(400).json({ message: "Platform is required" });
-//   }
-
-//   try {
-//     const poll = await Poll.findById(pollId);
-//     if (!poll) return res.status(404).json({ message: "Poll not found" });
-
-//     // Initialize array if doesn't exist
-//     if (!poll.sharedPlatforms) poll.sharedPlatforms = [];
-
-//     // Add platform if not already shared
-//     if (!poll.sharedPlatforms.includes(platform)) {
-//       poll.sharedPlatforms.push(platform);
-//       await poll.save();
-//     }
-
-//     res.json({ success: true, poll });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// };
 export const addSharedPlatform = async (req, res) => {
   const { platform } = req.body;
   // --- THIS IS THE FIX ---
@@ -716,46 +634,7 @@ const getAgeRangeBounds = (rangeString) => {
     const [min, max] = rangeString.split('-').map(Number);
     return { min, max };
 };
-// export const getTrendingPolls = async (req, res) => {
 
-//     try {
-//         // 1. Get the current logged-in user's ID and age
-//         const userId = req.user._id;
-//         const user = await User.findById(userId);
-
-//         if (!user || typeof user.age === 'undefined') {
-//             // If user has no age, only show them polls with no age restrictions
-//             const publicPolls = await Poll.find({
-//                 shareToTrending: true,
-//                 ageRange: { $exists: false }, // Polls where ageRange is not set
-//                 author: { $ne: userId } // Don't show users their own polls on the trending page
-//             }).sort({ createdAt: -1 });
-//             return res.status(200).json(publicPolls);
-//         }
-
-//         const userAge = user.age;
-        
-//         // 2. Build the query to find polls based on the user's age
-//         const polls = await Poll.find({
-//             shareToTrending: true, // The poll must be marked for trending
-//             author: { $ne: userId }, // Don't show the user their own polls
-//             $or: [
-//                 { ageRange: { $exists: false } }, // Option A: Poll has NO age range (public for all)
-//                 { ageRange: "13-17", $and: [{ $expr: { $gte: [userAge, 13] } }, { $expr: { $lte: [userAge, 17] } }] },
-//                 { ageRange: "18-24", $and: [{ $expr: { $gte: [userAge, 18] } }, { $expr: { $lte: [userAge, 24] } }] },
-//                 { ageRange: "25-34", $and: [{ $expr: { $gte: [userAge, 25] } }, { $expr: { $lte: [userAge, 34] } }] },
-//                 { ageRange: "35-44", $and: [{ $expr: { $gte: [userAge, 35] } }, { $expr: { $lte: [userAge, 44] } }] },
-//                 { ageRange: "45+", $expr: { $gte: [userAge, 45] } }
-//             ]
-//         }).sort({ createdAt: -1 });
-
-//         res.status(200).json(polls);
-
-//     } catch (error) {
-//         console.error("Error fetching trending polls:", error.message);
-//         res.status(500).json({ error: "Failed to fetch trending polls" });
-//     }
-// };
 export const getTrendingPolls = async (req, res) => {
     try {
         // 1. Get the current logged-in user and their age
@@ -814,31 +693,67 @@ export const trackClick = async (req, res) => {
   }
 };
 export const getPollAnalytics = async (req, res) => {
-    try {
-        const poll = await Poll.findById(req.params.pollId);
-        if (!poll) return res.status(404).json({ msg: "Poll not found" });
+  try {
+    const { pollId } = req.params;
+    const poll = await Poll.findById(pollId);
+    if (!poll) return res.status(404).json({ error: "Poll not found" });
 
-        const responseRate = poll.views > 0 ? (poll.totalVotes / poll.views) * 100 : 0;
-        const avgTime = poll.totalVotes > 0 ? poll.totalTimeSpent / poll.totalVotes : 0;
-        
-        const platformStats = {};
-        poll.votersMeta.forEach(v => { platformStats[v.platform] = (platformStats[v.platform] || 0) + 1; });
-        
-        const browserStats = {};
-        poll.votersMeta.forEach(v => { browserStats[v.browser] = (browserStats[v.browser] || 0) + 1; });
+    const now = new Date();
+    const expiresDate = poll.expiresAt;
+    const pollStartDate = poll.createdAt; // poll start
+    const pollDurationMs = expiresDate.getTime() - pollStartDate.getTime();
+    const halfDurationMs = pollDurationMs / 2;
 
-        res.json({
-            question: poll.question,
-            views: poll.views,
-            totalVotes: poll.totalVotes,
-            responseRate: `${responseRate.toFixed(2)}%`,
-            avgTime: `${avgTime.toFixed(1)}s`,
-            platformBreakdown: platformStats,
-            browserBreakdown: browserStats,
-        });
-    } catch (err) {
-        res.status(500).json({ msg: "Server error" });
-    }
+    let earlyVoters = 0;
+    let lateVoters = 0;
+
+    poll.votersMeta.forEach(({ votedAt }) => {
+      const voteTime = new Date(votedAt).getTime();
+      const voteOffset = voteTime - pollStartDate.getTime();
+
+      if (voteOffset <= halfDurationMs) {
+        earlyVoters += 1;
+      } else {
+        lateVoters += 1;
+      }
+    });
+
+    const uniqueViews = poll.viewedBy.length;
+
+    const responseRate =
+      uniqueViews > 0
+        ? ((poll.totalVotes / uniqueViews) * 100).toFixed(2) + "%"
+        : "0%";
+
+    // Aggregate breakdowns
+    const platformBreakdown = {};
+    const browserBreakdown = {};
+    const deviceBreakdown = {};
+    poll.votersMeta.forEach(({ platform, browser, device }) => {
+      if (platform) platformBreakdown[platform] = (platformBreakdown[platform] || 0) + 1;
+      if (browser) browserBreakdown[browser] = (browserBreakdown[browser] || 0) + 1;
+      if (device) deviceBreakdown[device] = (deviceBreakdown[device] || 0) + 1;
+    });
+
+    res.json({
+      ...poll.toObject(),
+      views: uniqueViews,
+      clicks: poll.totalVotes || 0,
+      responseRate,
+      platformBreakdown,
+      browserBreakdown,
+      deviceBreakdown,
+      avgTime:
+        poll.totalVotes > 0
+          ? `${Math.round(poll.totalTimeSpent / poll.totalVotes)}s`
+          : "0s",
+      earlyVoters,
+      lateVoters,
+    });
+  } catch (err) {
+    console.error("Error fetching analytics:", err);
+    res.status(500).json({ error: "Server error" });
+  }
 };
 export const generateBrandedVariant = (masterImageSrc, logoSrc, options) => {
     return new Promise((resolve, reject) => {
@@ -917,8 +832,6 @@ export const uploadImage = async (req, res) => {
         res.status(500).json({ error: "Server error during image upload." });
     }
 };
-
-
 export const generatePollCard = async (req, res) => {
     try {
         const { pollId } = req.params;
@@ -1085,7 +998,6 @@ export const voteFromGmail = async (req, res) => {
             votes: o.votes,
             pct: Math.round((o.votes / total) * 100),
         }));
-        
         res.set("Access-Control-Allow-Origin", "https://mail.google.com");
         res.set("AMP-Access-Control-Allow-Source-Origin", SOURCE_ORIGIN);
         res.set("Access-Control-Expose-Headers", "AMP-Access-Control-Allow-Source-Origin");
@@ -1094,7 +1006,6 @@ export const voteFromGmail = async (req, res) => {
         res.status(500).json({ msg: "Server error" });
     }
 };
-
 export const initScheduledJobs = (io) => {
     // This cron job is scheduled to run once every hour, at the top of the hour.
     cron.schedule('0 * * * *', async () => {
@@ -1140,5 +1051,20 @@ export const initScheduledJobs = (io) => {
         }
     });
 
-   console.log('✅ Notification scheduler has been initialized.');
+   console.log('Notification scheduler has been initialized.');
+};
+export const testWhatsappMessage = async (req, res) => {
+    const { recipientPhoneNumber } = req.body; // e.g., "919876543210"
+
+    if (!recipientPhoneNumber) {
+        return res.status(400).json({ message: 'recipientPhoneNumber is required.' });
+    }
+    
+    try {
+        const message = "Hello from Pyngl! Your API connection is working.";
+        const result = await sendWhatsappMessage(recipientPhoneNumber, message);
+        res.status(200).json({ success: true, message: "Test message sent!", data: result });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
 };

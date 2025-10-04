@@ -112,8 +112,10 @@ const userSchema = new mongoose.Schema({
         type: String, 
         required: true, 
         unique: true,
+        index:true,
         trim: true,      // From teammate's schema
         lowercase: true  // From teammate's schema
+
     },
     password: { 
         type: String, 

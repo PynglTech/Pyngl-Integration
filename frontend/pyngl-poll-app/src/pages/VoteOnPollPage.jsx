@@ -283,7 +283,22 @@ const PollResults = ({ poll }) => {
 // };
 
 // export default VoteOnPollPage;
-
+const getBrowser = () => {
+    const ua = navigator.userAgent;
+    if (ua.includes("Chrome") && !ua.includes("Edg")) return "Chrome";
+    if (ua.includes("Safari") && !ua.includes("Chrome")) return "Safari";
+    if (ua.includes("Firefox")) return "Firefox";
+    if (ua.includes("Edg")) return "Edge";
+    return "Other";
+};
+const getDeviceOS = () => {
+    const ua = navigator.userAgent;
+    if (/android/i.test(ua)) return "Android";
+    if (/iPhone|iPad|iPod/i.test(ua)) return "iOS";
+    if (/Win/i.test(ua)) return "Windows";
+    if (/Mac/i.test(ua)) return "Mac";
+    return "Other";
+};
 const VoteOnPollPage = () => {
     const { pollId } = useParams();
     const [poll, setPoll] = useState(null);
@@ -291,10 +306,11 @@ const VoteOnPollPage = () => {
     const [error, setError] = useState('');
     const [selectedOption, setSelectedOption] = useState(null);
     const [hasVoted, setHasVoted] = useState(false);
-
+     const [startTime] = useState(Date.now());
+    const searchParams = new URLSearchParams(location.search);
+    const platform = searchParams.get("platform") || "Direct";
     // This useEffect now handles both the initial data fetch and the real-time updates
-    useEffect(() => {
-        // --- Initial Data Fetch ---
+ useEffect(() => {
         const fetchPoll = async () => {
             try {
                 setIsLoading(true);
@@ -309,32 +325,39 @@ const VoteOnPollPage = () => {
         };
         fetchPoll();
 
-        // --- 2. NEW REAL-TIME LOGIC ---
-        // Connect to your backend's WebSocket server
-        // Make sure the URL points to your deployed backend, not localhost, in production
-        const socket = io('https://localhost:5000'); 
-
-        // Listen for the 'poll-update' event specific to this poll's ID
-        socket.on(`poll-update-${pollId}`, (updatedPoll) => {
-            console.log("Received live poll update:", updatedPoll);
-            setPoll(updatedPoll); // Update the component's state with the new data
+        // Your real-time logic is preserved
+        const socket = io(import.meta.env.VITE_API_BASE_URL); // Use environment variable for URL
+        socket.on(`poll_update`, (updatedPoll) => {
+            if (updatedPoll._id === pollId) {
+                console.log("Received live poll update:", updatedPoll);
+                setPoll(updatedPoll);
+            }
         });
 
-        // Clean up the connection when the component is unmounted
         return () => {
             socket.disconnect();
         };
+    }, [pollId]);
 
-    }, [pollId]); // This effect only needs to run when the pollId changes
-
+    // MERGED: handleVote now includes analytics data
     const handleVote = async () => {
         if (!selectedOption) return;
+
+        const endTime = Date.now();
+        const timeSpentSec = Math.round((endTime - startTime) / 1000);
+
+        const payload = {
+            optionId: selectedOption,
+            platform,
+            browser: getBrowser(),
+            device: getDeviceOS(),
+            timeSpent: timeSpentSec,
+        };
+
         try {
-            // The vote API call now triggers the backend to send a socket event to all viewers
-            await apiClient.post(`/api/polls/${pollId}/vote`, { optionId: selectedOption });
+            await apiClient.post(`/api/polls/${pollId}/vote`, payload);
             setHasVoted(true);
-            // We no longer need to manually set the poll state here;
-            // the socket event will provide the authoritative update for everyone.
+            // We don't need to manually refetch; the socket event will handle the update.
         } catch (err) {
             alert(err.response?.data?.error || "Failed to cast vote.");
         }

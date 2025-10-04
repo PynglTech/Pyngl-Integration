@@ -409,9 +409,9 @@ const generatePollCardUrl = (poll) => {
             .replace(/\//g, '_'); // Replace slashes with underscores
         return encodeURIComponent(escapedText);
     };
-    
+
     const baseTransformations = `w_1080,h_1080,c_fill,q_auto,r_20,bg_rgb:1a202c`;
-    
+
     const questionText = sanitizeText(poll.question);
     const questionOverlay = `l_text:Arial_60_bold:${questionText},co_white,g_north,y_100`;
     const transformations = [baseTransformations, questionOverlay];
@@ -421,28 +421,23 @@ const generatePollCardUrl = (poll) => {
         const imageOverlay = `l_${imagePublicId.replace(/\//g,':')},w_800,h_450,c_fill,g_center,y_-50,r_10`;
         transformations.push(imageOverlay);
     }
-    
+
     poll.options.forEach((option, index) => {
         const optionText = sanitizeText(`- ${option.text}`);
         const yOffset = poll.type === 'image' ? 250 + (index * 60) : 50 + (index * 70);
         const optionOverlay = `l_text:Arial_48:${optionText},co_white,g_center,y_${yOffset}`;
         transformations.push(optionOverlay);
     });
-    
+
     const baseImage = 'v1614882593/transparent_z9x5rs.png';
     return `${CLOUDINARY_BASE_URL}/${transformations.join('/')}/${baseImage}`;
 };
 
-
-
 export default function ShareHub({ poll, onClose }) {
     const [isGenerating, setIsGenerating] = useState(false);
-
     if (!poll) return null;
-
- const pollUrl = `${window.location.origin}/poll/${poll._id}`;
+    const pollUrl = `${window.location.origin}/poll/${poll._id}`;
     const shareText = `${poll.question}\n\nVote here: ${pollUrl}`;
-
 
     const handleShare = async () => {
         setIsGenerating(true);
@@ -518,4 +513,4 @@ export default function ShareHub({ poll, onClose }) {
             </div>
         </div>
     );
-}   
+}

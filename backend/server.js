@@ -256,7 +256,7 @@ import { Server } from 'socket.io';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import passport from 'passport';
-
+import compression from 'compression';
 // Route Imports
 import userRoutes from './routes/userRoutes.js';
 import pollRoutes from './routes/pollRoutes.js';
@@ -274,7 +274,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, './.env') });
 
 const app = express();
-
+app.use(compression()); 
 // --- HTTPS and Socket.IO Server Setup ---
 // CORRECTED: Using your file path for the certificates
 const privateKey = fs.readFileSync(path.resolve(__dirname, '../key.pem'), 'utf8');

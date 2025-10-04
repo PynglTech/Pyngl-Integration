@@ -69,13 +69,10 @@
 
 import axios from 'axios';
 import asyncHandler from '../middleware/asyncHandler.js';
-
 // These values will be read from your .env file
 const WHATSAPP_API_TOKEN = process.env.WHATSAPP_API_TOKEN;
 const WHATSAPP_PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
-
 const WHATSAPP_API_URL = `https://graph.facebook.com/v19.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`;
-
 /**
  * @desc    Sends a native, interactive poll to a specified WhatsApp number.
  * @route   POST /api/whatsapp/send-poll
@@ -84,17 +81,14 @@ const WHATSAPP_API_URL = `https://graph.facebook.com/v19.0/${WHATSAPP_PHONE_NUMB
 export const sendWhatsAppPoll = asyncHandler(async (req, res) => {
     // The frontend will send the recipient's phone number
     const { recipientPhoneNumber } = req.body;
-    
     // For this test, we'll use mock data for the poll.
     const poll = {
         question: "What's the best time for the meeting?",
         options: ["10 AM", "2 PM", "4 PM"]
     };
-
     if (!recipientPhoneNumber || !poll) {
         return res.status(400).json({ error: "Recipient phone number and poll data are required." });
     }
-
     // This is the specific JSON format for an interactive poll message
     const messagePayload = {
         messaging_product: "whatsapp",
@@ -117,7 +111,6 @@ export const sendWhatsAppPoll = asyncHandler(async (req, res) => {
             }
         }
     };
-
     try {
         await axios.post(WHATSAPP_API_URL, messagePayload, {
             headers: {
@@ -125,9 +118,7 @@ export const sendWhatsAppPoll = asyncHandler(async (req, res) => {
                 'Content-Type': 'application/json'
             }
         });
-
         res.status(200).json({ success: true, message: "Test poll sent successfully to WhatsApp." });
-
     } catch (error) {
         console.error("WhatsApp API Error:", error.response?.data || error.message);
         res.status(500).json({ error: "Failed to send WhatsApp poll." });

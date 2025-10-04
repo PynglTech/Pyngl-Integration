@@ -91,6 +91,7 @@ const getContacts = async (req, res) => {
     }
 
     const people = google.people({ version: "v1", auth: oAuth2Client });
+    console.log("🚀 ~ getContacts ~ people:", people)
     const response = await people.people.connections.list({
       resourceName: "people/me",
       personFields: "names,emailAddresses",
@@ -102,6 +103,7 @@ const getContacts = async (req, res) => {
         name: c.names?.[0]?.displayName || "",
         email: c.emailAddresses?.[0]?.value || "",
       })) || [];
+    console.log("🚀 ~ getContacts ~ contacts:", contacts)
 
     res.json({ contacts });
   } catch (err) {

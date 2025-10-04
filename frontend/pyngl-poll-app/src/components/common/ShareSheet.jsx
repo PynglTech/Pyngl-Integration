@@ -510,9 +510,9 @@
 //         </div>
 //     );
 // }
-
 import React, { useState, useEffect, useRef } from "react";
-import { X, Check } from "lucide-react";
+import { X, Check, Link2 } from "lucide-react"; // 1. Import the Link2 icon
+import { toast } from 'react-hot-toast'; // 2. Import toast for feedback
 import { AiFillInstagram, AiFillYoutube } from "react-icons/ai";
 import {
   FaWhatsapp,
@@ -531,8 +531,8 @@ import PlatformPreview from "../preview/PlatformPreview.jsx";
 // you need to use the actual poll URL that the backend (server) will serve,
 // e.g., 'https://yourdomain.com' or a local dev proxy.
 // I'll use a placeholder for the base domain of your backend-served poll page.
-const POLL_PAGE_DOMAIN = 'https://fluffy-parts-take.loca.lt'; // Change to your actual domain
-const POLL_PREVIEW_BASE = `${POLL_PAGE_DOMAIN}/api/polls/`; // Points to your router's /:id/preview
+const POLL_PAGE_DOMAIN = import.meta.env.VITE_POLL_PAGE_DOMAIN || window.location.origin;
+const POLL_PREVIEW_BASE = `${POLL_PAGE_DOMAIN}/api/polls/`;
 
 // ===== Share Links - Now using the Preview URL to trigger OG tags =====
 const shareLinks = {
@@ -569,16 +569,15 @@ const shareLinks = {
 
 // ===== Platform Icons =====
 const platformIcons = {
-  instagram: <AiFillInstagram size={28} />,
-  youtube: <AiFillYoutube size={28} />,
-  whatsapp: <FaWhatsapp size={28} />,
-  gmail: <SiGmail size={28} />,
-  linkedin: <FaLinkedinIn size={28} />,
-  twitter: <FaTwitter size={28} />,
-  facebook: <FaFacebookF size={28} />,
-  imessages: <MdMessage size={28} />, // 📌 Updated key from 'messages' to 'imessages'
-  sms: <MdSms size={28} />,
-  telegram: <FaTelegramPlane size={28} />,
+    'copy': <Link2 size={28} />, // 3. Add 'copy' icon to the list
+    instagram: <AiFillInstagram size={28} />,
+    whatsapp: <FaWhatsapp size={28} />,
+    twitter: <FaTwitter size={28} />,
+    facebook: <FaFacebookF size={28} />,
+    linkedin: <FaLinkedinIn size={28} />,
+    gmail: <SiGmail size={28} />,
+    sms: <MdSms size={28} />,
+    telegram: <FaTelegramPlane size={28} />,
 };
 
 // ===== Share Button Component =====
@@ -597,11 +596,10 @@ const ShareButton = ({ platform, onSelect, isSelected, completed }) => (
     >
       {platformIcons[platform]}
     </button>
-    <span className="mt-2 text-xs text-gray-700 font-medium capitalize">
-      {/* 📌 Updated display logic to handle 'imessages' platform */}
-      {platform === "sms" ? "SMS" : platform === "imessages" ? "i Messages" : platform}
-    </span>
-  </div>
+   <span className="mt-2 text-xs text-gray-700 font-medium capitalize">
+            {platform === "sms" ? "SMS" : platform === "copy" ? "Copy Link" : platform}
+        </span>
+    </div>
 );
 // ===== Main Component =====
 export default function ShareSheet({
@@ -622,7 +620,15 @@ export default function ShareSheet({
 
   const pollText = poll.question;
   const platforms = Object.keys(platformIcons);
-
+   const handleCopyLink = () => {
+        const pollUrl = `${window.location.origin}/poll/${poll._id}`;
+        navigator.clipboard.writeText(pollUrl).then(() => {
+            toast.success('Link copied to clipboard!');
+        }).catch(err => {
+            toast.error('Failed to copy link.');
+            console.error('Could not copy text: ', err);
+        });
+    };
   // Handle coming back from share tab (No change)
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -652,18 +658,23 @@ export default function ShareSheet({
   }, [shareQueue, onClose]);
 
   const handleSelectPlatform = (platform) => {
-    // Special handling for Gmail - show popup instead of selecting
-    if (platform === "gmail") {
-      setShowGmailPopup(true);
-      return;
-    }
+        // --- 5. UPDATED LOGIC: Trigger copy function immediately ---
+        if (platform === 'copy') {
+            handleCopyLink();
+            return;
+        }
 
-    setSelected((prev) =>
-      prev.includes(platform)
-        ? prev.filter((p) => p !== platform)
-        : [...prev, platform]
-    );
-  };
+        if (platform === "gmail") {
+            setShowGmailPopup(true);
+            return;
+        }
+
+        setSelected((prev) =>
+            prev.includes(platform)
+                ? prev.filter((p) => p !== platform)
+                : [...prev, platform]
+        );
+    };
 
   const handleStartMultiShare = () => {
     if (selected.length === 0) return;
@@ -723,19 +734,19 @@ export default function ShareSheet({
       </div>
 
       {/* Grid */}
-      <div className="flex-1 flex flex-col justify-center px-6">
-        <div className="grid grid-cols-3 sm:grid-cols-4 gap-x-8 gap-y-8 max-w-md mx-auto">
-          {platforms.map((platform) => (
-            <ShareButton
-              key={platform}
-              platform={platform}
-              onSelect={handleSelectPlatform}
-              isSelected={selected.includes(platform)}
-              completed={completed}
-            />
-          ))}
-        </div>
-      </div>
+       <div className="flex-1 flex flex-col justify-center px-6">
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-x-8 gap-y-8 max-w-md mx-auto">
+                    {platforms.map((platform) => (
+                        <ShareButton
+                            key={platform}
+                            platform={platform}
+                            onSelect={handleSelectPlatform}
+                            isSelected={selected.includes(platform)}
+                            completed={completed}
+                        />
+                    ))}
+                </div>
+            </div>
 
       {/* Footer buttons */}
       <div className="px-6 pb-8 pt-4 border-t border-gray-200">
