@@ -6,15 +6,17 @@
     width: 100%;
     max-width: 400px; /* Match the max-width of your app layout */
     margin: 0 auto;
-    
+
     display: flex;
     justify-content: space-around;
     align-items: center;
-    
+
     height: 65px;
     background-color: #ffffff;
     border-top: 1px solid #e0e0e0;
     box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .nav-link {
@@ -29,16 +31,36 @@
     transition: color 0.2s ease-in-out;
 }
 
-/* This is the magic for the active state! */
+/* Active state */
 .nav-link.active {
-    color: #F72AA0; /* Your Pyngl pink color */
+    color: #F72AA0; /* Pyngl pink */
 }
 
-/* Lucide icons use 'stroke' for color, so we target the svg inside */
 .nav-link.active svg {
     stroke: #F72AA0;
 }
 
 .nav-link span {
     margin-top: 4px;
+}
+
+/* ---------------------- */
+/* 🌙 Dark Mode Styles */
+/* ---------------------- */
+.dark .bottom-nav {
+    background-color: #111827 ;
+    border-top: 1px solid #333;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.5);
+}
+
+.dark .nav-link {
+    color: #aaaaaa; /* Inactive grey for dark mode */
+}
+
+.dark .nav-link.active {
+    color: #F72AA0; /* Keep pink highlight */
+}
+
+.dark .nav-link.active svg {
+    stroke: #F72AA0;
 }

@@ -5,12 +5,18 @@ export const loginSchema = z.object({
     password: z.string().min(1, { message: "Password is required" }),
 });
 
+
 export const registerSchema = z.object({
-    username: z.string().min(3, { message: "Username must be at least 3 characters" }),
-    email: z.string().email({ message: "Invalid email address" }),
-    phoneNumber: z.string().min(10, { message: "Please enter a valid phone number" }),
-    password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  username: z.string().min(3, { message: "Username must be at least 3 characters" }),
+  email: z.string().email({ message: "Invalid email address" }),
+  phoneNumber: z.string().min(10, { message: "Please enter a valid phone number" }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  birthDate: z.coerce.date({
+    required_error: "Date of Birth is required",
+    invalid_type_error: "Invalid date format",
+  })
 });
+
 
 export const forgotPasswordSchema = z.object({
     email: z.string().email({ message: "Invalid email address" }),

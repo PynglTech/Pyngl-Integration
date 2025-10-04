@@ -7,6 +7,7 @@ export default {
   theme: {
     extend: {
       colors: {
+        'pyngl-dark': '#131526',
         'pyngl-pink': '#FF4DA6',
         'pyngl-purple': '#7B4CFF',
         'pyngl-teal': '#008080',
@@ -17,5 +18,7 @@ export default {
   plugins: [
     require('tailwind-scrollbar-hide'),
   ],
+    darkMode: 'class'
+
 }
 

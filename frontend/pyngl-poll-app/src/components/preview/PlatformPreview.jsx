@@ -230,7 +230,7 @@
 
 
 import React, { useEffect, useState, useRef } from "react";
-import { X, RotateCw, Edit2, Loader } from "lucide-react"; // Import Loader icon
+import { X, RotateCw, Edit2, Loader } from "lucide-react";
 import ImageEditPreview from "./ImageEditPreview";
 import PollPreview from "./PollPreview";
 import apiClient from "../../api/axiosConfig";
@@ -238,52 +238,21 @@ import * as htmlToImage from "html-to-image";
 
 export default function PlatformPreview({ platform, poll, onClose, onConfirm }) {
   const platformDimensions = {
-    // ... platform dimensions (no change)
-    instagram: {
-      width: 1080,
-      height: 1920,
-      label: "Reels / Stories",
-      aspect: 9 / 16,
-    },
-    twitter: {
-      width: 1200,
-      height: 628,
-      label: "X / Twitter",
-      aspect: 1200 / 628,
-    },
-    linkedin: {
-      width: 1200,
-      height: 627,
-      label: "LinkedIn",
-      aspect: 1200 / 627,
-    },
-    facebook: {
-      width: 1200,
-      height: 630,
-      label: "Facebook",
-      aspect: 1200 / 630,
-    },
-    whatsapp: {
-      width: 1200,
-      height: 630,
-      label: "WhatsApp",
-      aspect: 1200 / 630,
-    },
+    instagram: { width: 1080, height: 1920, label: "Reels / Stories", aspect: 9 / 16 },
+    twitter: { width: 1200, height: 628, label: "X / Twitter", aspect: 1200 / 628 },
+    linkedin: { width: 1200, height: 627, label: "LinkedIn", aspect: 1200 / 627 },
+    facebook: { width: 1200, height: 630, label: "Facebook", aspect: 1200 / 630 },
+    whatsapp: { width: 1200, height: 630, label: "WhatsApp", aspect: 1200 / 630 },
     youtube: { width: 1280, height: 720, label: "YouTube", aspect: 16 / 9 },
     gmail: { width: 1200, height: 600, label: "Email Banner", aspect: 2 },
   };
 
-  const [imageDimensions, setImageDimensions] = useState(
-    platformDimensions[platform] || { width: 400, height: 300 }
-  );
+  const [imageDimensions, setImageDimensions] = useState(platformDimensions[platform] || { width: 400, height: 300 });
   const [isEditing, setIsEditing] = useState(false);
   const [dbImage, setDbImage] = useState(poll.imageUrl || null);
-  const [previewImage, setPreviewImage] = useState(
-    poll.previewImages?.[platform] || poll.imageUrl || null
-  );
+  const [previewImage, setPreviewImage] = useState(poll.previewImages?.[platform] || poll.imageUrl || null);
   const [editedOnce, setEditedOnce] = useState(false);
-  // 📌 NEW STATE: Loading indicator for the share process
-  const [isLoading, setIsLoading] = useState(false); 
+  const [isLoading, setIsLoading] = useState(false);
 
   const sheetRef = useRef(null);
   const pollRef = useRef(null);
@@ -297,7 +266,6 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
     if (sheetRef.current && !sheetRef.current.contains(e.target)) onClose();
   };
 
-  // Upload preview image to backend and save in DB (No change)
   const uploadPreviewImage = async (blob) => {
     try {
       const formData = new FormData();
@@ -319,23 +287,15 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
   };
 
   const handleShare = async () => {
-    if (isLoading) return; // Prevent double-clicking
-
-    setIsLoading(true); // 1. Start loading
-    
+    if (isLoading) return;
+    setIsLoading(true);
     try {
-      // 2. Capture and Upload Image
       if (!pollRef.current) throw new Error("Poll reference missing.");
       const dataUrl = await htmlToImage.toPng(pollRef.current);
       const blob = await (await fetch(dataUrl)).blob();
       const hostedPreviewImage = await uploadPreviewImage(blob);
-      
-      if (!hostedPreviewImage) {
-          // If upload failed, the function uploadPreviewImage already alerts the user.
-          throw new Error("Image upload failed.");
-      }
+      if (!hostedPreviewImage) throw new Error("Image upload failed.");
 
-      // 3. Handle Instagram directly (native share)
       if (platform === "instagram") {
         await navigator.share({
           files: [new File([blob], "poll.png", { type: blob.type })],
@@ -344,21 +304,14 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
         });
       }
 
-      // 4. Delegate to ShareSheet (for OG link sharing)
-      if (typeof onConfirm === 'function') {
-        onConfirm(hostedPreviewImage);
-      }
-
+      if (typeof onConfirm === "function") onConfirm(hostedPreviewImage);
     } catch (error) {
-      if (error.name !== 'AbortError') {
+      if (error.name !== "AbortError") {
         console.error(`${platform} sharing failed:`, error);
-        // Alert user if the sharing failed BEFORE the delegation (like upload failure)
-        if (!error.message.includes("Image upload failed.")) {
-             alert("Sharing failed. Please try again.");
-        }
+        if (!error.message.includes("Image upload failed.")) alert("Sharing failed. Please try again.");
       }
     } finally {
-      setIsLoading(false); // 5. Stop loading regardless of success/failure
+      setIsLoading(false);
     }
   };
 
@@ -371,23 +324,22 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
       >
         <div
           ref={sheetRef}
-          className="bg-white w-full rounded-t-3xl shadow-xl animate-slideUp relative"
+          className="bg-white dark:bg-gray-900 w-full rounded-t-3xl shadow-xl animate-slideUp relative"
           style={{ height: "75vh", maxHeight: "75vh", overflowY: "auto" }}
         >
-          {/* ... Close button ... */}
+          {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 w-8 h-8 bg-white rounded-full flex items-center justify-center z-10"
+            className="absolute top-4 right-4 w-8 h-8 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center z-10 shadow"
           >
-            <X size={20} className="text-gray-700" />
+            <X size={20} className="text-gray-700 dark:text-gray-300" />
           </button>
 
           <div className="px-6 py-4 relative">
-            <h4 className="text-lg font-medium text-gray-900 capitalize mb-4">
+            <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 capitalize mb-4">
               Preview - {platform}
             </h4>
 
-            {/* ... Poll Preview & Edit Buttons (no change) ... */}
             <div ref={pollRef} className="flex justify-center relative">
               <PollPreview
                 poll={poll}
@@ -398,31 +350,31 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
               {editedOnce && poll.type !== "text" && (
                 <button
                   onClick={handleRestore}
-                  className="absolute top-0 left-6 w-8 h-8 bg-pink-100 rounded-full flex items-center justify-center shadow border border-pink-200"
-                  disabled={isLoading} // Disable while sharing
+                  className="absolute top-0 left-6 w-8 h-8 bg-pink-100 dark:bg-pink-200 rounded-full flex items-center justify-center shadow border border-pink-200 dark:border-pink-300"
+                  disabled={isLoading}
                 >
-                  <RotateCw size={18} className="text-pink-600" />
+                  <RotateCw size={18} className="text-pink-600 dark:text-pink-700" />
                 </button>
               )}
 
               {poll.type !== "text" && (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="absolute top-0 right-6 w-8 h-8 bg-pink-100 rounded-full flex items-center justify-center shadow border border-pink-200"
-                  disabled={isLoading} // Disable while sharing
+                  className="absolute top-0 right-6 w-8 h-8 bg-pink-100 dark:bg-pink-200 rounded-full flex items-center justify-center shadow border border-pink-200 dark:border-pink-300"
+                  disabled={isLoading}
                 >
-                  <Edit2 size={16} className="text-pink-600" />
+                  <Edit2 size={16} className="text-pink-600 dark:text-pink-700" />
                 </button>
               )}
             </div>
-            {/* ... Dimensions ... */}
+
+            {/* Dimensions */}
             <div className="flex justify-center mt-3 gap-14">
-              <div className="text-xs font-semibold text-gray-900">
+              <div className="text-xs font-semibold text-gray-900 dark:text-gray-100">
                 {platformDimensions[platform]?.label || platform}
               </div>
-              <div className="text-xs text-gray-500">
-                {platformDimensions[platform]?.width}×
-                {platformDimensions[platform]?.height}
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                {platformDimensions[platform]?.width}×{platformDimensions[platform]?.height}
               </div>
             </div>
           </div>
@@ -431,7 +383,7 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
             <button
               onClick={handleShare}
               className="w-full py-3 bg-pink-500 text-white rounded-full font-medium text-base flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed transition-opacity"
-              disabled={isLoading} // 📌 Disable button while loading
+              disabled={isLoading}
             >
               {isLoading ? (
                 <>
@@ -446,7 +398,7 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
         </div>
       </div>
 
-      {/* ... ImageEditPreview modal (no change) ... */}
+      {/* ImageEditPreview modal */}
       {isEditing && (
         <ImageEditPreview
           imageSrc={dbImage}

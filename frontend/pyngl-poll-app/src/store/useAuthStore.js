@@ -43,17 +43,25 @@ const useAuthStore = create((set) => ({
         }
     },
 
-    register: async (username, email, password, phoneNumber) => {
-        set({ loading: true, error: null });
-        try {
-            // 2. Use apiClient instead of axios
-            const { data } = await apiClient.post(`${API_URL}/register`, { username, email, password, phoneNumber });
-            localStorage.setItem('userInfo', JSON.stringify(data));
-            set({ userInfo: data });
-        } catch (error) {
-            // ... (error handling)
-        }
-    },
+    register: async (username, email, password, phoneNumber, birthDate) => {
+    set({ loading: true, error: null });
+    try {
+        const { data } = await apiClient.post(`${API_URL}/register`, {
+            username,
+            email,
+            password,
+            phoneNumber,
+            birthDate,
+        });
+        localStorage.setItem('userInfo', JSON.stringify(data));
+        set({ userInfo: data, loading: false });
+    } catch (error) {
+        const message = error.response?.data?.message || 'An unexpected error occurred.';
+        set({ error: message, loading: false });
+        throw new Error(message);
+    }
+},
+
 
     logout: async () => {
         try {

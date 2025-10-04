@@ -160,7 +160,6 @@
 // };
 
 // export default VoteOnPollPage;
-
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation, Link } from "react-router-dom";
 import useAuthStore from "../store/useAuthStore";
@@ -194,12 +193,12 @@ const PollResults = ({ poll }) => {
       {poll.options.map((option) => {
         const percentage =
           totalVotes > 0 ? Math.round((option.votes / totalVotes) * 100) : 0;
-        const textColor = percentage > 20 ? "text-white" : "text-gray-700";
+        const textColor = percentage > 20 ? "text-white" : "text-gray-700 dark:text-gray-200";
 
         return (
           <div
             key={option._id}
-            className="w-full bg-gray-100 rounded-full overflow-hidden relative h-12 flex items-center"
+            className="w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden relative h-12 flex items-center"
           >
             <div
               className="h-full rounded-full transition-all duration-700 ease-out"
@@ -248,14 +247,11 @@ const VoteOnPollPage = () => {
   const [hasVoted, setHasVoted] = useState(false);
   const { userInfo } = useAuthStore();
 
-  // Track page load time for timeSpent
   const [startTime] = useState(Date.now());
 
-  // Determine platform from URL query param (fallback to "Direct")
   const searchParams = new URLSearchParams(location.search);
   const platform = searchParams.get("platform") || "Direct";
 
-  // Fetch poll
   const fetchPoll = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -278,7 +274,6 @@ const VoteOnPollPage = () => {
     fetchPoll();
   }, [fetchPoll]);
 
-  // Handle vote
   const handleVote = async () => {
     if (!selectedOption) return;
 
@@ -289,28 +284,28 @@ const VoteOnPollPage = () => {
       optionId: selectedOption,
       platform,
       browser: getBrowser(),
-      device: getDeviceOS(), // ✅ new field
+      device: getDeviceOS(),
       timeSpent: timeSpentSec,
     };
 
     try {
       await apiClient.post(`/api/polls/${pollId}/vote`, payload);
       setHasVoted(true);
-      await fetchPoll(); // refresh results immediately
+      await fetchPoll();
     } catch (err) {
       alert(err.response?.data?.msg || "Failed to cast vote.");
     }
   };
 
-  if (isLoading) return <div className="p-6 text-center">Loading poll...</div>;
+  if (isLoading) return <div className="p-6 text-center dark:text-gray-200">Loading poll...</div>;
 
   if (error)
     return (
-      <div className="p-6 text-center text-red-500">
+      <div className="p-6 text-center text-red-500 dark:text-red-400">
         <p>{error}</p>
         <Link
           to="/dashboard"
-          className="text-blue-500 hover:underline mt-4 inline-block"
+          className="text-blue-500 dark:text-blue-400 hover:underline mt-4 inline-block"
         >
           Back to Dashboard
         </Link>
@@ -318,11 +313,11 @@ const VoteOnPollPage = () => {
     );
 
   if (!poll)
-    return <div className="p-6 text-center">Poll could not be loaded.</div>;
+    return <div className="p-6 text-center dark:text-gray-200">Poll could not be loaded.</div>;
 
   return (
-    <div className="max-w-md mx-auto bg-white min-h-screen p-4 font-sans">
-      <div className="rounded-xl border border-gray-200 p-4">
+    <div className="max-w-md mx-auto bg-white dark:bg-gray-900 min-h-screen p-4 font-sans">
+      <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
         {poll.imageUrl && (
           <img
             src={poll.imageUrl}
@@ -331,7 +326,9 @@ const VoteOnPollPage = () => {
           />
         )}
 
-        <h2 className="font-bold text-lg mb-4">{poll.question}</h2>
+        <h2 className="font-bold text-lg mb-4 text-gray-900 dark:text-gray-100">
+          {poll.question}
+        </h2>
 
         {!hasVoted ? (
           <div className="space-y-2">
@@ -342,7 +339,7 @@ const VoteOnPollPage = () => {
                 className={`w-full border rounded-full px-4 py-4 text-center transition-colors ${
                   selectedOption === option._id
                     ? "bg-pink-600 text-white border-pink-600"
-                    : "bg-white text-gray-700 hover:bg-gray-100"
+                    : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
                 }`}
               >
                 {option.text}
@@ -365,7 +362,7 @@ const VoteOnPollPage = () => {
       ) : (
         <Link
           to="/dashboard"
-          className="mt-6 block w-full py-3 rounded-full text-center text-white font-medium bg-gray-700"
+          className="mt-6 block w-full py-3 rounded-full text-center text-white font-medium bg-gray-700 dark:bg-gray-600"
         >
           Back to Dashboard
         </Link>
@@ -375,3 +372,4 @@ const VoteOnPollPage = () => {
 };
 
 export default VoteOnPollPage;
+

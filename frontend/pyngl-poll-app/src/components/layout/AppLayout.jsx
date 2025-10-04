@@ -1,154 +1,128 @@
-// import React from 'react';
-// import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-// import BottomNav from "./BottomNav";
-// import useAuthStore from '../../store/useAuthStore';
-// import { LogOut, Bell } from 'lucide-react';
-
-// // --- The Main AppLayout Component ---
-// const AppLayout = () => {
-//     const location = useLocation();
-//     const navigate = useNavigate();
-//     const { userInfo, logout } = useAuthStore();
-
-//     // Define which pages should show a header from this layout
-//     const isHomePage = location.pathname === '/dashboard';
-//     const isCreatePage = location.pathname === '/create-text-poll' || location.pathname === '/create-image-poll';
-//     const isPreviewPage = location.pathname.startsWith('/preview');
-
-//     // This condition determines if ANY AppLayout header should be shown
-//     const showAppLayoutHeader = isHomePage || isCreatePage || isPreviewPage;
-
-//     const getHeaderTitle = () => {
-//         if (location.pathname === '/create-text-poll') return 'Text to poll';
-//         if (location.pathname === '/create-image-poll') return 'Image to poll';
-//         if (isPreviewPage) return 'Preview';
-//         return '';
-//     };
-
-//     return (
-//         <div className="font-sans bg-gray-50 sm:bg-gray-200 sm:flex sm:items-center sm:justify-center min-h-screen">
-//             <div className="w-full h-screen sm:max-w-sm sm:h-[750px] sm:rounded-2xl sm:shadow-lg flex flex-col mx-auto bg-gray-50 relative">
-                
-//                 {/* --- THIS IS THE FIX --- */}
-//                 {/* The entire header is now conditional. It will NOT render on /trending, /analytics, etc. */}
-//                 {showAppLayoutHeader && (
-//                     <header className="flex items-center justify-between p-4 border-b flex-shrink-0 bg-white">
-//                         {/* Homepage Header */}
-//                         {isHomePage && (
-//                             <>
-//                                 <h1 className="text-lg font-bold">
-//                                     <img src='/pynglLogoImage.png' alt="Pyngl Logo" style={{ height: '27px', width: '76px' }} />
-//                                 </h1>
-//                                 <div className="flex items-center">
-//                                     <button title="Notifications" className="text-gray-600 p-1">
-//                                         <Bell className="w-6 h-6 text-gray-700" />
-//                                     </button>
-//                                 </div>
-//                             </>
-//                         )}
-//                         {/* Other Pages Header (Create/Preview) */}
-//                         {(isCreatePage || isPreviewPage) && (
-//                              <>
-//                                  <button onClick={() => navigate(-1)} className="text-gray-600 text-lg p-2">←</button>
-//                                  <h1 className="flex-1 text-center font-semibold">{getHeaderTitle()}</h1>
-//                                  <div className="w-10"></div> {/* Placeholder for alignment */}
-//                              </>
-//                         )}
-//                     </header>
-//                 )}
-
-//                 <main className="flex-grow overflow-y-auto" style={{ paddingBottom: '75px' }}>
-//                     <Outlet />
-//                 </main>
-                
-//                 <BottomNav />
-//             </div>
-//         </div>
-//     );
-// };
-
-// export default AppLayout;
-import React from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import React, { useEffect, useRef } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import BottomNav from "./BottomNav";
-import useAuthStore from '../../store/useAuthStore';
-import { Bell } from 'lucide-react';
-import { Toaster } from 'react-hot-toast';
+import useAuthStore from "../../store/useAuthStore";
+import useNotificationStore from "../../store/useNotificationStore";
+import io from "socket.io-client";
+import { Bell } from "lucide-react";
+import { Toaster } from "react-hot-toast";
+import { Howl, Howler } from "howler";
+import useThemeStore from "../../store/useThemeStore";
 
 const AppLayout = () => {
-    const location = useLocation();
-    const navigate = useNavigate();
-    const { userInfo, logout } = useAuthStore();
+  const navigate = useNavigate();
+  const { userInfo } = useAuthStore();
+  const { addNotification, fetchNotifications, unreadCount } =
+    useNotificationStore();
+  const notificationSound = useRef(null);
 
-    const isHomePage = location.pathname === '/dashboard';
-    const isCreatePage = location.pathname === '/create-text-poll' || location.pathname === '/create-image-poll';
-    const isPreviewPage = location.pathname.startsWith('/preview');
-    const showAppLayoutHeader = isHomePage || isCreatePage || isPreviewPage;
+  // Load sound
+  useEffect(() => {
+    notificationSound.current = new Howl({
+      src: ["/notification.mp3"],
+      volume: 0.6,
+    });
+  }, []);
 
-    const getHeaderTitle = () => {
-        if (location.pathname === '/create-text-poll') return 'Text to poll';
-        if (location.pathname === '/create-image-poll') return 'Image to poll';
-        if (isPreviewPage) return 'Preview';
-        return '';
+  // WebSocket notifications
+  useEffect(() => {
+    if (!userInfo) return;
+
+    fetchNotifications();
+
+    const socket = io("https://192.168.1.8:5000", {
+      transports: ["websocket"],
+      rejectUnauthorized: false,
+    });
+
+    socket.on("connect", () => {
+      console.log("WebSocket connected:", socket.id);
+      socket.emit("join", userInfo._id);
+    });
+
+    socket.on("new_notification", (notification) => {
+      addNotification(notification);
+      if (notificationSound.current) {
+        notificationSound.current.play();
+      }
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("WebSocket Connection Error:", err.message);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [userInfo, addNotification, fetchNotifications]);
+
+  // Unlock audio on first interaction
+  useEffect(() => {
+    const unlockAudio = () => {
+      if (Howler.ctx && Howler.ctx.state === "suspended") {
+        Howler.ctx.resume();
+      }
+      document.body.removeEventListener("click", unlockAudio);
+      document.body.removeEventListener("touchstart", unlockAudio);
     };
 
-    return (
-        <div className="font-sans bg-gray-50 sm:bg-gray-200 sm:flex sm:items-center sm:justify-center min-h-screen">
-            <div className="w-full h-screen sm:max-w-sm sm:h-[750px] sm:rounded-2xl sm:shadow-lg flex flex-col mx-auto bg-gray-50 relative">
-                
-                <Toaster
-                    position="top-center"
-                    reverseOrder={false}
-                    toastOptions={{
-                        duration: 4000,
-                        style: {
-                            background: '#333',
-                            color: '#fff',
-                            borderRadius: '9999px',
-                            fontSize: '15px'
-                        },
-                        error: {
-                            style: {
-                                background: '#FFF1F2',
-                                color: '#DC2626',
-                                border: `1px solid #FCA5A5`,
-                            },
-                        },
-                    }}
-                />
-                
-                {showAppLayoutHeader && (
-                    <header className="flex items-center justify-between p-4 border-b flex-shrink-0 bg-white">
-                        {isHomePage && (
-                            <>
-                                <h1 className="text-lg font-bold">
-                                    <img src='/pynglLogoImage.png' alt="Pyngl Logo" style={{ height: '27px', width: '76px' }} />
-                                </h1>
-                                <div className="flex items-center">
-                                    <button title="Notifications" className="text-gray-600 p-1">
-                                        <Bell className="w-6 h-6 text-gray-700" />
-                                    </button>
-                                </div>
-                            </>
-                        )}
-                        {(isCreatePage || isPreviewPage) && (
-                             <>
-                                 <button onClick={() => navigate(-1)} className="text-gray-600 text-lg p-2">←</button>
-                                 <h1 className="flex-1 text-center font-semibold">{getHeaderTitle()}</h1>
-                                 <div className="w-10"></div>
-                             </>
-                        )}
-                    </header>
-                )}
+    document.body.addEventListener("click", unlockAudio);
+    document.body.addEventListener("touchstart", unlockAudio);
 
-                <main className="flex-grow overflow-y-auto" style={{ paddingBottom: '75px' }}>
-                    <Outlet />
-                </main>
-                
-                <BottomNav />
-            </div>
-        </div>
-    );
+    return () => {
+      document.body.removeEventListener("click", unlockAudio);
+      document.body.removeEventListener("touchstart", unlockAudio);
+    };
+  }, []);
+
+  const location = useLocation();
+  const isHomePage = location.pathname === "/dashboard";
+
+  return (
+    <div className="font-sans bg-gray-50 dark:bg-gray-900 sm:bg-gray-200 sm:dark:bg-gray-950 sm:flex sm:items-center sm:justify-center min-h-screen transition-colors">
+      <div className="w-full h-screen sm:max-w-sm sm:h-[750px] sm:rounded-2xl sm:shadow-lg flex flex-col mx-auto bg-gray-50 dark:bg-gray-900 relative transition-colors">
+        <Toaster position="top-center" />
+
+        {isHomePage && (
+          <header className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-800 transition-colors">
+            <img
+              src="/pynglLogoImage.png"
+              alt="Logo"
+              className="h-[27px] w-[76px] block dark:hidden"
+            />
+            <img
+              src="/logo_dark.svg"
+              alt="Logo Dark"
+              className="h-[27px] w-[76px] hidden dark:block"
+            />
+
+            <button
+              onClick={() => navigate("/notifications")}
+              title="Notifications"
+              className="relative p-1"
+            >
+              <Bell className="w-6 h-6 text-gray-700 dark:text-gray-200" />
+              {unreadCount > 0 && (
+                <span className="absolute top-0 right-0 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-pink-500"></span>
+                </span>
+              )}
+            </button>
+          </header>
+        )}
+
+        <main
+          className="flex-grow overflow-y-auto"
+          style={{ paddingBottom: "75px" }}
+        >
+          <Outlet />
+        </main>
+
+        <BottomNav />
+      </div>
+    </div>
+  );
 };
 
 export default AppLayout;

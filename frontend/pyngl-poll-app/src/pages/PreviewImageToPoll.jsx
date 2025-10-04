@@ -1,6 +1,5 @@
 import React, { useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
-// import apiClient from "../api/axiosConfig";
 import ShareSheet from "../components/common/ShareSheet";
 import StyledQRCode from "../components/common/qrImageStyle";
 import html2canvas from "html2canvas";
@@ -15,11 +14,12 @@ export default function PreviewImagePoll() {
 
   if (!createdPoll) {
     return (
-      <div className="p-6 text-center">No poll found. Please go back.</div>
+      <div className="p-6 text-center text-gray-900 dark:text-gray-100">
+        No poll found. Please go back.
+      </div>
     );
   }
 
-  // ✅ Capture poll as image
   const capturePollImage = async () => {
     if (!pollRef.current) return;
 
@@ -40,6 +40,7 @@ export default function PreviewImagePoll() {
     const canvas = await html2canvas(pollRef.current, {
       scale: 2,
       useCORS: true,
+      backgroundColor: null,
     });
     const image = canvas.toDataURL("image/png");
     setCapturedImage(image);
@@ -53,11 +54,16 @@ export default function PreviewImagePoll() {
   };
 
   return (
-    <div className="p-4 font-sans">
+    <div className="p-4 font-sans bg-gray-100 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100">
       {/* Poll Card */}
-      <div ref={pollRef} className="p-4 bg-white rounded-xl shadow-md">
-        <div className="rounded-xl border border-gray-200 p-4">
-          <h2 className="font-medium mb-4">{createdPoll.question}</h2>
+      <div
+        ref={pollRef}
+        className="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-md transition-colors"
+      >
+        <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4 transition-colors">
+          <h2 className="font-medium mb-4 text-gray-900 dark:text-gray-100">
+            {createdPoll.question}
+          </h2>
 
           {createdPoll.imageUrl && (
             <img
@@ -71,20 +77,30 @@ export default function PreviewImagePoll() {
             {createdPoll.options.map((opt, i) => (
               <div
                 key={opt._id || i}
-                className="w-full border rounded-full px-4 py-2 text-center text-gray-700"
+                className="w-full border rounded-full px-4 py-2 text-center text-gray-700 dark:text-gray-100 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 transition-colors"
               >
-                {opt.text} {/* ✅ render only text */}
+                {opt.text}
               </div>
             ))}
           </div>
 
-          <div className="flex justify-end mt-3 text-xs text-gray-400">
+          <div className="flex justify-end mt-3 text-xs text-gray-400 dark:text-gray-500">
             <span className="font-medium text-pink-500">
+              {/* Light mode logo */}
               <img
                 src="./pynglLogoImage.png"
-                alt="Pyngl Logo"
+                alt="Pyngl Logo Light"
                 height={15}
                 width={41}
+                className="block dark:hidden"
+              />
+              {/* Dark mode logo */}
+              <img
+                src="./logo_dark.svg"
+                alt="Pyngl Logo Dark"
+                height={15}
+                width={41}
+                className="hidden dark:block"
               />
             </span>
           </div>
@@ -103,7 +119,7 @@ export default function PreviewImagePoll() {
       <div className="mt-6 space-y-3">
         <button
           onClick={handleSharePoll}
-          className="w-full py-3 rounded-full text-white font-medium bg-gradient-to-r from-cyan-400 to-pink-500 flex items-center justify-center"
+          className="w-full py-3 rounded-full text-white font-medium bg-gradient-to-r from-cyan-400 to-pink-500 flex items-center justify-center hover:opacity-90 transition-colors"
         >
           Share Poll
         </button>

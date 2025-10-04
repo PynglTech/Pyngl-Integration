@@ -13,11 +13,11 @@ export default function PollDetailPopup({ poll, onClose, onSeeAnalytics }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-xl relative">
+      <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-2xl shadow-xl relative border border-gray-200 dark:border-gray-700">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
         >
           <X className="w-6 h-6" />
         </button>
@@ -27,15 +27,17 @@ export default function PollDetailPopup({ poll, onClose, onSeeAnalytics }) {
           {/* Status Badge */}
           <div className="flex items-center justify-between mb-3">
             <span
-              className={`px-3 py-1 rounded-full text-xs font-medium ${
+              className={`px-3 py-1 rounded-full text-xs font-medium border ${
                 isLive
-                  ? "bg-red-100 text-red-700 border border-red-200"
-                  : "bg-gray-100 text-gray-600 border border-gray-200"
+                  ? "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-700"
+                  : "bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700"
               }`}
             >
               {poll.status}
             </span>
-            <span className="text-xs text-gray-500">{poll.createdAt}</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 mr-6">
+              {new Date(poll.createdAt).toLocaleDateString("en-GB")}
+            </span>
           </div>
 
           {/* Poll Image */}
@@ -48,7 +50,7 @@ export default function PollDetailPopup({ poll, onClose, onSeeAnalytics }) {
           )}
 
           {/* Poll Question */}
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
             {poll.question}
           </h2>
 
@@ -63,10 +65,10 @@ export default function PollDetailPopup({ poll, onClose, onSeeAnalytics }) {
               return (
                 <div key={index} className="relative">
                   {/* Progress Bar Background */}
-                  <div className="w-full bg-gray-100 rounded-full h-12 relative overflow-hidden">
-                    {/* Progress Fill with Gradient */}
+                  <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-12 relative overflow-hidden">
+                    {/* Progress Fill */}
                     <div
-                      className="h-full rounded-left-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-all duration-700 ease-out flex items-center"
+                      className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-all duration-700 ease-out flex items-center"
                       style={{ width: `${percentage}%` }}
                     >
                       {/* Option Text inside the bar */}
@@ -75,9 +77,9 @@ export default function PollDetailPopup({ poll, onClose, onSeeAnalytics }) {
                       </span>
                     </div>
 
-                    {/* Percentage positioned at the right */}
+                    {/* Percentage */}
                     <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                      <span className="text-gray-700 font-bold text-sm">
+                      <span className="text-gray-700 dark:text-gray-200 font-bold text-sm">
                         {percentage}%
                       </span>
                     </div>
@@ -96,8 +98,8 @@ export default function PollDetailPopup({ poll, onClose, onSeeAnalytics }) {
           </button>
 
           {/* Stats */}
-          <div className="mt-6 pt-4 border-t border-gray-100">
-            <div className="flex items-center justify-between text-sm text-gray-600">
+          <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
+            <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
                 <span>Total votes: {totalVotes}</span>
@@ -111,12 +113,14 @@ export default function PollDetailPopup({ poll, onClose, onSeeAnalytics }) {
               )}
 
               {!isLive && (
-                <span className="text-gray-500 font-medium">Closed</span>
+                <span className="text-gray-500 dark:text-gray-400 font-medium">
+                  Closed
+                </span>
               )}
             </div>
 
             {poll.platform && (
-              <div className="mt-2 text-xs text-gray-500">
+              <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                 Platform: {poll.platform}
               </div>
             )}
