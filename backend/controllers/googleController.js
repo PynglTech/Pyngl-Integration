@@ -91,9 +91,8 @@ const getContacts = async (req, res) => {
     }
 
     const people = google.people({ version: "v1", auth: oAuth2Client });
-    console.log("🚀 ~ getContacts ~ people:", people)
     const response = await people.people.connections.list({
-      resourceName: "people/me",
+      resourceName: "people/me", 
       personFields: "names,emailAddresses",
       pageSize: 200,
     });
@@ -112,4 +111,23 @@ const getContacts = async (req, res) => {
   }
 };
 
-export { login, oauth2callback, getContacts };
+const checkAuth = async (req, res) => {
+  const { email } = req.query;
+  if (!email) return res.status(400).json({ authenticated: false });
+
+  try {
+    const user = await GoogleUser.findOne({ email });
+    if (!user) return res.json({ authenticated: false });
+
+    // Check if token is valid and not expired
+    const isValid = user.access_token && Date.now() < user.expiry_date;
+    res.json({ authenticated: isValid });
+  } catch (err) {
+    console.error("Error checking auth:", err);
+    res.status(500).json({ authenticated: false });
+  }
+};
+
+export { login, oauth2callback, getContacts, checkAuth };
+
+

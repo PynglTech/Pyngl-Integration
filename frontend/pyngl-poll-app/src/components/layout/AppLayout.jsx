@@ -7,7 +7,6 @@ import io from "socket.io-client";
 import { Bell } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 import { Howl, Howler } from "howler";
-import useThemeStore from "../../store/useThemeStore";
 
 const AppLayout = () => {
   const navigate = useNavigate();
@@ -42,9 +41,7 @@ const AppLayout = () => {
 
     socket.on("new_notification", (notification) => {
       addNotification(notification);
-      if (notificationSound.current) {
-        notificationSound.current.play();
-      }
+      if (notificationSound.current) notificationSound.current.play();
     });
 
     socket.on("connect_error", (err) => {
@@ -59,9 +56,7 @@ const AppLayout = () => {
   // Unlock audio on first interaction
   useEffect(() => {
     const unlockAudio = () => {
-      if (Howler.ctx && Howler.ctx.state === "suspended") {
-        Howler.ctx.resume();
-      }
+      if (Howler.ctx && Howler.ctx.state === "suspended") Howler.ctx.resume();
       document.body.removeEventListener("click", unlockAudio);
       document.body.removeEventListener("touchstart", unlockAudio);
     };
@@ -79,10 +74,11 @@ const AppLayout = () => {
   const isHomePage = location.pathname === "/dashboard";
 
   return (
-    <div className="font-sans bg-gray-50 dark:bg-gray-900 sm:bg-gray-200 sm:dark:bg-gray-950 sm:flex sm:items-center sm:justify-center min-h-screen transition-colors">
-      <div className="w-full h-screen sm:max-w-sm sm:h-[750px] sm:rounded-2xl sm:shadow-lg flex flex-col mx-auto bg-gray-50 dark:bg-gray-900 relative transition-colors">
+    <div className="font-sans bg-gray-50 dark:bg-gray-900 w-full min-h-screen flex justify-center transition-colors">
+      <div className="flex flex-col w-full h-full md:w-7/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 bg-gray-50 dark:bg-gray-900 transition-colors">
         <Toaster position="top-center" />
 
+        {/* Header */}
         {isHomePage && (
           <header className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-800 transition-colors">
             <img
@@ -112,13 +108,12 @@ const AppLayout = () => {
           </header>
         )}
 
-        <main
-          className="flex-grow overflow-y-auto"
-          style={{ paddingBottom: "75px" }}
-        >
+        {/* Main content */}
+        <main className="flex-grow overflow-y-auto">
           <Outlet />
         </main>
 
+        {/* Bottom Navigation */}
         <BottomNav />
       </div>
     </div>

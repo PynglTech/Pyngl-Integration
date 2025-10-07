@@ -393,7 +393,7 @@
 //   );
 // }
 
-import React, { useState } from 'react';
+ React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { X, Share2 } from 'lucide-react'; // Using a more generic share icon
 import apiClient from '../api/axiosConfig'; 
@@ -401,7 +401,7 @@ const CLOUDINARY_CLOUD_NAME = "dsza5zui8";
 const CLOUDINARY_BASE_URL = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 
 // This function builds the URL for our dynamic poll card image
-const generatePollCardUrl = (poll) => {
+constimport generatePollCardUrl = (poll) => {
     // This function now properly escapes special characters for Cloudinary text overlays.
     const sanitizeText = (text) => {
         const escapedText = text

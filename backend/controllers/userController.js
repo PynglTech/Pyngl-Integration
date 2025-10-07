@@ -391,7 +391,7 @@ const formatUserResponse = (user) => {
 // @desc    Register a new user
 // @route   POST /api/users/register
 // @access  Public
-    export const registerUser = asyncHandler(async (req, res) => {
+export const registerUser = asyncHandler(async (req, res) => {
         // NEW: Destructure birthDate from the request body
         const { username, email, password, phoneNumber, birthDate } = req.body;
 
@@ -432,7 +432,7 @@ const formatUserResponse = (user) => {
             res.status(400);
             throw new Error('Invalid user data');
         }
-    });
+});
 
 // @desc    Auth user & get token (Login)
 // @route   POST /api/users/login

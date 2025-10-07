@@ -23,7 +23,7 @@ const LandingPage = ({ openSheet }) => {
   const goToPrev = () => setCurrentSlide(p => (p > 0 ? p - 1 : p));
 
   return (
-    <div className="p-8 flex flex-col items-center text-center justify-between flex-grow bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+    <div className="p-8 flex flex-col items-center text-center justify-between flex-grow bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen md:w-7/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 transition-all duration-300">
       <div />
       <PynglBrand
         title={landingSlides[currentSlide].title}

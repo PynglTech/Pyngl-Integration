@@ -56,7 +56,7 @@ export default function HelpCenter() {
     ];
 
     return (
-        <div className="mx-auto min-h-screen max-w-md bg-white dark:bg-pyngl-dark text-gray-900 dark:text-gray-200">
+        <div className="mx-auto min-h-screen bg-white dark:bg-pyngl-dark text-gray-900 dark:text-gray-200 md:w-7/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 transition-all duration-300">
             {/* Header */}
             <div className="sticky top-0 z-40 border-b border-gray-100 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md">
                 <div className="flex items-center justify-between p-4">
@@ -70,7 +70,7 @@ export default function HelpCenter() {
                 </div>
             </div>
 
-            <div className="p-4">
+            <div className="p-4 mx-auto md:w-4/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 transition-all duration-300">
                 {/* Tabs */}
                 <div className="flex border border-gray-200 dark:border-gray-700 rounded-full p-1 mb-6 bg-gray-50 dark:bg-gray-800">
                     <button 

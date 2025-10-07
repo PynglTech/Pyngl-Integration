@@ -65,10 +65,11 @@ const ShareButton = ({ platform, onSelect, isSelected, completed }) => (
 
 export default function ShareSheet({
   poll = { _id: "123", question: "Sample poll question?", options: [{ text: "Option 1" }, { text: "Option 2" }] },
-  capturedImage,
+  capturedImage, connectedEmail,
   onClose = () => {},
 }) {
-  const [selected, setSelected] = useState([]);
+  console.log("🚀 ~ ShareSheet ~ connectedEmail:", connectedEmail)
+  const [selected, setSelected] = useState([]); 
   const [shareQueue, setShareQueue] = useState([]);
   const [completed, setCompleted] = useState([]);
   const [currentPlatform, setCurrentPlatform] = useState(null);
@@ -104,15 +105,36 @@ export default function ShareSheet({
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [shareQueue, onClose]);
 
-  const handleSelectPlatform = (platform) => {
-    if (platform === "gmail") {
+  const handleSelectPlatform = async (platform) => {
+  if (platform === "gmail") {
+    try {
+      // Check if the user is authenticated
+      const res = await apiClient.get(`/auth/check?email=${connectedEmail}`);
+      
+      if (res.data.authenticated) {
+        // Already authenticated → directly redirect to share page
+        window.location.href = `/share?connectedEmail=${encodeURIComponent(
+          connectedEmail
+        )}&pollId=${poll._id}`;
+      } else {
+        // Not authenticated → show Gmail connect popup 
+        setShowGmailPopup(true);
+      }
+    } catch (err) {
+      console.error("Error checking Gmail authentication:", err);
+      // Show popup if any error occurs
       setShowGmailPopup(true);
-      return;
     }
+  } else {
+    // Handle other platforms normally
     setSelected((prev) =>
-      prev.includes(platform) ? prev.filter((p) => p !== platform) : [...prev, platform]
+      prev.includes(platform)
+        ? prev.filter((p) => p !== platform)
+        : [...prev, platform]
     );
-  };
+  }
+};
+
 
   const handleStartMultiShare = () => {
     if (selected.length === 0) return;
@@ -169,7 +191,7 @@ export default function ShareSheet({
       </div>
 
       {/* Footer buttons */}
-      <div className="px-6 pb-8 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="px-6 pb-8 pt-4 border-t border-gray-200 dark:border-gray-700 md:m-auto md:w-4/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 transition-all duration-300">
         <div className="flex gap-3">
           <button
   onClick={() => {

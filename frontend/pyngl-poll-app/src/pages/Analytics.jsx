@@ -77,7 +77,7 @@ const AnalyticsPollCard = ({ poll, onSelect }) => {
 
 // Loader
 const InlineLoader = ({ text }) => (
-  <div className="flex flex-col items-center justify-center gap-6 py-20">
+  <div className="flex flex-col items-center justify-center gap-6 py-20 col-span-2">
     <div className="relative w-20 h-20">
       <div
         className="absolute inset-0 rounded-full"
@@ -187,87 +187,88 @@ export default function Analytics() {
   });
 
   return (
-    <div className="mx-auto bg-white dark:bg-gray-900 min-h-screen max-w-md text-gray-900 dark:text-gray-200">
-      <div className="sticky top-0 z-40 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
-        <div className="flex items-center justify-between p-4">
-          <ArrowLeft className="w-6 h-6" />
-          <h1 className="text-lg font-semibold">Analytics</h1>
-          <Bell className="w-6 h-6" />
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between px-4 mt-2">
-        <div className="flex bg-gray-100 dark:bg-gray-800 rounded-full p-1 space-x-1 flex-1 mr-3">
-          {["My Pings", "Participated Pings"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex-1 px-4 py-2 text-sm font-medium rounded-full transition-all ${
-                activeTab === tab
-                  ? "bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow"
-                  : "text-gray-600 dark:text-gray-300"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-        <button
-          onClick={() => setShowFilter(true)}
-          className="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-700"
-        >
-          <Filter className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-        </button>
-      </div>
-
-      <div className="px-4 mt-3">
-        <input
-          type="text"
-          placeholder="Search by keyword..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-4 pr-10 py-3 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 text-sm placeholder-gray-400 focus:outline-none"
-        />
-      </div>
-
-      <div className="mt-3 px-4 space-y-4 pb-24 pt-4">
-        {loading ? (
-          <InlineLoader text="Fetching polls..." />
-        ) : finalPolls.length > 0 ? (
-          finalPolls.map((poll) => (
-            <AnalyticsPollCard
-              key={poll.id}
-              poll={poll}
-              onSelect={setSelectedPoll}
-            />
-          ))
-        ) : (
-          <p className="text-center text-gray-500 dark:text-gray-400 mt-10">
-            No polls found for this category.
-          </p>
-        )}
-      </div>
-
-      {showFilter && (
-        <FilterDrawer
-          show={showFilter}
-          setShow={setShowFilter}
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-          platformFilter={platformFilter}
-          setPlatformFilter={setPlatformFilter}
-        />
-      )}
-
-      {selectedPoll && (
-        <PollDetailPopup
-          poll={selectedPoll}
-          onClose={() => setSelectedPoll(null)}
-          onSeeAnalytics={() => {
-            navigate(`/analytics/${selectedPoll.id}`);
-          }}
-        />
-      )}
+    <div className="mx-auto bg-white dark:bg-gray-900 min-h-screen w-full md:w-7/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 text-gray-900 dark:text-gray-200">
+  {/* Header */}
+  <div className="sticky top-0 z-40 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+    <div className="flex items-center justify-between p-4">
+      <ArrowLeft className="w-6 h-6" />
+      <h1 className="text-lg font-semibold">Analytics</h1>
+      <Bell className="w-6 h-6" />
     </div>
+  </div>
+
+  {/* Tabs + Filter */}
+  <div className="flex flex-wrap items-center justify-between px-4 mt-2 gap-2">
+    <div className="flex bg-gray-100 dark:bg-gray-800 rounded-full p-1 space-x-1 flex-1 min-w-[240px]">
+      {["My Pings", "Participated Pings"].map((tab) => (
+        <button
+          key={tab}
+          onClick={() => setActiveTab(tab)}
+          className={`flex-1 px-4 py-2 text-sm font-medium rounded-full transition-all ${
+            activeTab === tab
+              ? "bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow"
+              : "text-gray-600 dark:text-gray-300"
+          }`}
+        >
+          {tab}
+        </button>
+      ))}
+    </div>
+    <button
+      onClick={() => setShowFilter(true)}
+      className="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-700"
+    >
+      <Filter className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+    </button>
+  </div>
+
+  {/* Search */}
+  <div className="px-4 mt-3">
+    <input
+      type="text"
+      placeholder="Search by keyword..."
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      className="w-full pl-4 pr-10 py-3 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 text-sm placeholder-gray-400 focus:outline-none"
+    />
+  </div>
+
+  {/* Polls Section */}
+  <div className="mt-3 px-4 grid grid-cols-1 sm:grid-cols-2 gap-4 pb-24 pt-4">
+    {loading ? (
+      <InlineLoader text="Fetching polls..." />
+    ) : finalPolls.length > 0 ? (
+      finalPolls.map((poll) => (
+        <AnalyticsPollCard key={poll.id} poll={poll} onSelect={setSelectedPoll} />
+      ))
+    ) : (
+      <p className="text-center text-gray-500 dark:text-gray-400 mt-10 col-span-2">
+        No polls found for this category.
+      </p>
+    )}
+  </div>
+
+  {/* Filter Drawer */}
+  {showFilter && (
+    <FilterDrawer
+      show={showFilter}
+      setShow={setShowFilter}
+      statusFilter={statusFilter}
+      setStatusFilter={setStatusFilter}
+      platformFilter={platformFilter}
+      setPlatformFilter={setPlatformFilter}
+    />
+  )}
+
+  {/* Poll Details */}
+  {selectedPoll && (
+    <PollDetailPopup
+      poll={selectedPoll}
+      onClose={() => setSelectedPoll(null)}
+      onSeeAnalytics={() => navigate(`/analytics/${selectedPoll.id}`)}
+    />
+  )}
+</div>
+
   );
 }

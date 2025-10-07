@@ -65,8 +65,22 @@ export default function TextToPoll() {
   };
 
   return (
-    <div className="p-4 font-sans bg-gray-100 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100">
-      
+    <div className="font-sans bg-white dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100 m-auto w-full md:w-7/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 transition-all duration-300">
+
+    {/* ✅ Sticky Header */}
+  <div className="flex items-center border-b-2 border-gray-100 dark:border-gray-700 dark:bg-gray-800 shadow-sm bg-white p-4 sticky top-0 z-50">
+    <button
+      className="text-gray-600 text-lg"
+      onClick={() => navigate("/dashboard")}
+    >
+      ←
+    </button>
+    <h1 className="flex-1 text-center font-semibold">Text to poll</h1>
+    <button className="text-gray-600">
+      <img src="/Bell.svg" alt="Bell" className="w-6 h-6" />
+    </button>
+  </div>
+      <div className="bg-gray-100 dark:bg-gray-800 m-auto p-4 min-h-screen w-full md:w-4/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 transition-all duration-300 pb-32">
       {/* Question Input */}
       <div className="mb-6">
         <label className="block font-medium mb-2">Question</label>
@@ -203,6 +217,7 @@ export default function TextToPoll() {
       {errorMessage && (
         <p className="text-sm text-red-500 mt-2 text-center">{errorMessage}</p>
       )}
+    </div>
     </div>
   );
 }

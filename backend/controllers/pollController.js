@@ -4,7 +4,10 @@ import { handleUpload } from "../config/cloudinary.js";
 import FormData from "form-data";
 import { cloudinary } from "../config/cloudinary.js";
 import GoogleUser from "../models/GoogleUser.js";
-import sendEmail from "../utils/sendEmail.js";
+import nodemailer from "nodemailer";
+import fetch from "node-fetch";
+
+// import sendEmail from "../utils/sendEmail.js";
 // ✅ Generate image with Stability AI
 export const generateImage = async (req, res) => {
   const { prompt } = req.body;
@@ -15,11 +18,9 @@ export const generateImage = async (req, res) => {
       .json({ error: "A prompt is required to generate an image." });
   }
   if (!process.env.STABILITY_API_KEY) {
-    return res
-      .status(500)
-      .json({
-        error: "API key for image generation is not configured on the server.",
-      });
+    return res.status(500).json({
+      error: "API key for image generation is not configured on the server.",
+    });
   }
 
   try {
@@ -103,7 +104,14 @@ export const createPoll = async (req, res) => {
 export const voteOnPoll = async (req, res) => {
   const { pollId } = req.params;
   const { optionId, platform, browser, timeSpent, device } = req.body;
-  console.log("🚀 ~ voteOnPoll ~ optionId, platform, browser, timeSpent, device:", optionId, platform, browser, timeSpent, device)
+  console.log(
+    "🚀 ~ voteOnPoll ~ optionId, platform, browser, timeSpent, device:",
+    optionId,
+    platform,
+    browser,
+    timeSpent,
+    device
+  );
   const userId = req.user?.id; // make sure req.user is populated (auth middleware)
 
   try {
@@ -140,7 +148,6 @@ export const voteOnPoll = async (req, res) => {
     res.status(500).json({ msg: "Server error" });
   }
 };
-
 
 // ✅ Get all polls for the Trending page
 export const getAllPolls = async (req, res) => {
@@ -192,7 +199,7 @@ export const getPollById = async (req, res) => {
     }
 
     const userId = req.user?._id; // from auth middleware
-    const ipAddress = req.ip;     // fallback if no user logged in
+    const ipAddress = req.ip; // fallback if no user logged in
 
     let shouldIncrement = false;
 
@@ -221,7 +228,6 @@ export const getPollById = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch poll" });
   }
 };
-
 
 // ✅ Get all polls created by the logged-in user
 export const getMyPolls = async (req, res) => {
@@ -568,36 +574,163 @@ export const getTrendingPolls = async (req, res) => {
 
 /* -------------------- GMAIL AMP POLLS -------------------- */
 // ✅ sendPoll controller
+// 🔹 Helper: Get fresh access token from MS
+async function getAccessToken() {
+  const res = await fetch(
+    `https://login.microsoftonline.com/${process.env.MS_TENANT_ID}/oauth2/v2.0/token`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: process.env.MS_CLIENT_ID,
+        client_secret: process.env.MS_CLIENT_SECRET,
+        refresh_token: process.env.MS_REFRESH_TOKEN,
+        grant_type: "refresh_token",
+        scope: "https://outlook.office365.com/SMTP.Send offline_access", // 👈 IMPORTANT
+      }),
+    }
+  );
+
+  const data = await res.json();
+  if (!data.access_token) {
+    console.error("❌ Failed to fetch Microsoft access token:", data);
+    throw new Error("Could not fetch Microsoft access token");
+  }
+  return data.access_token;
+}
+
+// 🔹 Controller
 export const sendPoll = async (req, res) => {
   try {
-    const { userEmail, recipients, pollId } = req.body;
+    const { recipients, pollId } = req.body;
 
-    // Find user
-    const user = await GoogleUser.findOne({ email: userEmail });
-    console.log("🚀 ~ sendPoll ~ user:", user)
-    if (!user) return res.status(404).send("User not found");
-
-    // Fetch existing poll
+    // Fetch poll
     const poll = await Poll.findById(pollId);
-    console.log("🚀 ~ sendPoll ~ poll:", poll)
+    console.log("🚀 ~ sendPoll ~ poll:", poll);
     if (!poll) return res.status(404).send("Poll not found");
 
     // Extract valid emails
     const emails = recipients
       .map((r) => (typeof r === "string" ? r : r.email))
       .filter(Boolean);
-    console.log("🚀 ~ sendPoll ~ emails:", emails)
 
     if (emails.length === 0)
       return res.status(400).send("No valid recipient emails provided");
 
-    // Send poll to each recipient
-    await Promise.all(emails.map((email) => sendEmail(user, email, poll)));
+    // ✅ Get fresh Microsoft access token
+    const accessToken = await getAccessToken();
 
-    res.send("✅ Poll sent via Gmail!");
+    // Configure Nodemailer transporter with OAuth2
+    const transporter = nodemailer.createTransport({
+      service: "hotmail", // works for Office365 too
+      auth: {
+        type: "OAuth2",
+        user: "notifications@pyngl.com",
+        clientId: process.env.MS_CLIENT_ID,
+        clientSecret: process.env.MS_CLIENT_SECRET,
+        refreshToken: process.env.MS_REFRESH_TOKEN,
+        accessToken, // freshly fetched
+      },
+    });
+
+    const voteUrl = process.env.VOTE_URL;
+
+    // Email content
+    const plain = `Vote now: ${poll.question}
+YES → ${voteUrl}/vote?pollId=${poll._id}&opt=yes
+NO → ${voteUrl}/vote?pollId=${poll._id}&opt=no`;
+
+    const html = `<div style="padding:20px;text-align:center;">
+      <h3>${poll.question}</h3>
+      <a href="${voteUrl}/vote?pollId=${poll._id}&opt=yes">YES</a> |
+      <a href="${voteUrl}/vote?pollId=${poll._id}&opt=no">NO</a>
+    </div>`;
+
+    const ampHtml = `<!doctype html>
+    <html ⚡4email data-css-strict>
+    <head>
+    <meta charset="utf-8">
+    <script async src="https://cdn.ampproject.org/v0.js"></script>
+    <script async custom-element="amp-form" src="https://cdn.ampproject.org/v0/amp-form-0.1.js"></script>
+    <script async custom-template="amp-mustache" src="https://cdn.ampproject.org/v0/amp-mustache-0.2.js"></script>
+    <script async custom-element="amp-selector" src="https://cdn.ampproject.org/v0/amp-selector-0.1.js"></script>
+
+    <style amp4email-boilerplate>body{visibility:hidden}</style>
+    <style amp-custom>
+        body { font-family: Arial,sans-serif; background:#f9fafb; padding:20px; color:#333; }
+        .poll-container { background:#fff; border-radius:25px; padding:20px; max-width:480px; margin:auto; border:1px solid #e5e7eb; box-shadow:0 4px 10px rgba(0,0,0,0.05); }
+        h2.vote { font-size:20px; margin:16px 0; text-align:center; color:#111827; }
+        .poll-question { font-size:18px; font-weight:600; margin-bottom:12px; text-align:start; }
+        amp-selector[role="listbox"] div[option] { display:block; padding:12px 16px; margin:8px 0; border-radius:20px; border:1px solid #d1d5db; background:#f3f4f6; cursor:pointer; font-size:14px; }
+        amp-selector[role="listbox"] div[option][selected] { background:linear-gradient(90deg,#ec4899,#8b5cf6); color:#fff; font-weight:600; }
+        input[type=submit] { width:100%; padding:14px; border:none; border-radius:25px; font-size:15px; font-weight:600; background:#ff4da6; color:#fff; cursor:pointer; margin-top:16px; transition:opacity .2s ease; }
+        input[type=submit]:hover { opacity:.9; }
+        .footer { margin-top:20px; text-align:center; font-size:12px; color:#6b7280; }
+    </style>
+    </head>
+    <body>
+    <h2 class="vote">Vote Now 🎉</h2>
+    <div class="poll-container">
+  <form method="post" action-xhr="https://api.pyngl.com/api/polls/vote">
+    <!-- Poll Question -->
+    <div class="poll-question">What's your favorite social media platform?</div>
+
+    <!-- Poll Image -->
+    <amp-img 
+      src="https://res.cloudinary.com/docmndwdf/image/upload/v1759733579/Pyngl/e6uxmohuwhgikqsbjkr9.jpg"
+      alt="Poll Image"
+      width="400" 
+      height="250" 
+      layout="responsive"
+      style="border-radius:15px; margin-bottom:16px;">
+    </amp-img>
+
+    <!-- Options -->
+    <amp-selector name="optionId" layout="container" role="listbox">
+      <div option="opt1">Instagram</div>
+      <div option="opt2">Twitter (X)</div>
+      <div option="opt3">LinkedIn</div>
+      <div option="opt4">YouTube</div>
+    </amp-selector>
+
+    <input type="submit" value="Submit Vote">
+
+    <div submit-success>
+      <template type="amp-mustache">
+        ✅ Your vote has been submitted!
+      </template>
+    </div>
+    <div submit-error>
+      <template type="amp-mustache">
+        ❌ Something went wrong. Please try again.
+      </template>
+    </div>
+  </form>
+</div>
+
+
+    <div class="footer">
+        <p>You’re receiving this interactive poll from</p>
+        <amp-img src="https://pyngl.com/assets/logo-okWbCxdr.png" alt="Pyngl Logo" width="100" height="35" layout="fixed"></amp-img>
+    </div>
+    </body>
+    </html>
+`;
+
+    // Send mail
+    await transporter.sendMail({
+      from: '"Pyngl Notifications" <notifications@pyngl.com>',
+      to: emails.join(", "),
+      subject: poll.question,
+      text: plain,
+      html,
+      amp: ampHtml,
+    });
+
+    res.send("✅ Poll sent via Office365 SMTP with OAuth2!");
   } catch (err) {
-    console.error("Error in sendPoll:", err);
-    res.status(500).send("❌ Error sending email");
+    console.error("❌ Error in sendPoll:", err);
+    res.status(500).send("Error sending poll email");
   }
 };
 
@@ -663,7 +796,6 @@ export const resultsPoll = async (req, res) => {
   }
 };
 
-
 // analytics data
 // export const trackClick = async (req, res) => {
 //   const { pollId } = req.params;
@@ -686,7 +818,7 @@ export const resultsPoll = async (req, res) => {
 //     const poll = await Poll.findById(pollId);
 //     if (!poll) return res.status(404).json({ error: "Poll not found" });
 
-//     const responseRate = poll.views > 0 
+//     const responseRate = poll.views > 0
 //       ? ((poll.totalVotes / poll.views) * 100).toFixed(2) + "%"
 //       : "0%";
 
@@ -705,7 +837,7 @@ export const resultsPoll = async (req, res) => {
 //   browserBreakdown,
 //   views: poll.views || 0,          // users who visited poll link
 //   clicks: poll.totalVotes || 0,    // users who actually voted
-//   avgTime: poll.totalVotes > 0 
+//   avgTime: poll.totalVotes > 0
 //     ? `${Math.round(poll.totalTimeSpent / poll.totalVotes)}s`
 //     : "0s",
 // });
@@ -753,8 +885,10 @@ export const getPollAnalytics = async (req, res) => {
     const browserBreakdown = {};
     const deviceBreakdown = {};
     poll.votersMeta.forEach(({ platform, browser, device }) => {
-      if (platform) platformBreakdown[platform] = (platformBreakdown[platform] || 0) + 1;
-      if (browser) browserBreakdown[browser] = (browserBreakdown[browser] || 0) + 1;
+      if (platform)
+        platformBreakdown[platform] = (platformBreakdown[platform] || 0) + 1;
+      if (browser)
+        browserBreakdown[browser] = (browserBreakdown[browser] || 0) + 1;
       if (device) deviceBreakdown[device] = (deviceBreakdown[device] || 0) + 1;
     });
 
@@ -778,6 +912,3 @@ export const getPollAnalytics = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
-
-
-

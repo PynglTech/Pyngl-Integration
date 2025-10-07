@@ -123,117 +123,121 @@ const BasicAnalytics = () => {
   );
 
   return (
-    <div className="max-w-md mx-auto bg-white dark:bg-gray-900 min-h-screen">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
-        <div className="flex items-center justify-between p-4">
-          <button onClick={() => navigate(-1)} className="p-1">
-            <ArrowLeft className="w-6 h-6 text-gray-700 dark:text-gray-200" />
-          </button>
-          <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Basic analytics
-          </h1>
-          <Bell className="w-6 h-6 text-gray-700 dark:text-gray-200" />
-        </div>
-      </div>
+    <div className="mx-auto bg-white dark:bg-gray-900 min-h-screen w-full md:w-7/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 transition-all duration-300 pb-28">
+  {/* Header */}
+  <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
+    <div className="flex items-center justify-between p-4">
+      <button onClick={() => navigate(-1)} className="p-1">
+        <ArrowLeft className="w-6 h-6 text-gray-700 dark:text-gray-200" />
+      </button>
+      <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+        Basic analytics
+      </h1>
+      <Bell className="w-6 h-6 text-gray-700 dark:text-gray-200" />
+    </div>
+  </div>
 
-      {/* Poll Question */}
-      <div className="px-6 pt-6 pb-4 border-b border-gray-100 dark:border-gray-700">
-        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-          {poll.question}
-        </h2>
-        <div className="flex items-center space-x-2">
-          <div
-            className={`w-2 h-2 rounded-full ${
-              poll.msLeft === 0
-                ? "bg-gray-400"
-                : poll.msLeft < 1000 * 60 * 60
-                ? "bg-red-500"
-                : poll.msLeft < 1000 * 60 * 60 * 24
-                ? "bg-orange-500"
-                : "bg-green-500"
-            }`}
-          ></div>
-          <span className="text-sm text-gray-600 dark:text-gray-400">{poll.daysLeft}</span>
-        </div>
-      </div>
+  {/* Poll Question */}
+  <div className="px-4 py-6 border-b border-gray-100 dark:border-gray-700">
+    <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+      {poll.question}
+    </h2>
+    <div className="flex items-center space-x-2">
+      <div
+        className={`w-2 h-2 rounded-full ${
+          poll.msLeft === 0
+            ? "bg-gray-400"
+            : poll.msLeft < 1000 * 60 * 60
+            ? "bg-red-500"
+            : poll.msLeft < 1000 * 60 * 60 * 24
+            ? "bg-orange-500"
+            : "bg-green-500"
+        }`}
+      ></div>
+      <span className="text-sm text-gray-600 dark:text-gray-400">{poll.daysLeft}</span>
+    </div>
+  </div>
 
-      {/* Stats Cards */}
-      <div className="px-6 pb-6 mt-3">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-start">
-            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
-              {poll.views?.toLocaleString()}
-            </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">Views</div>
+  {/* Two-column layout */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-4 py-6">
+    {/* Left Column */}
+    <div className="space-y-6">
+      {/* Stats Cards: Views & Clicks */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-start">
+          <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+            {poll.views?.toLocaleString()}
           </div>
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-start">
-            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
-              {poll.clicks?.toLocaleString()}
-            </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">Clicks</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">Views</div>
+        </div>
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-start">
+          <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+            {poll.clicks?.toLocaleString()}
           </div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">Clicks</div>
         </div>
       </div>
 
+      {/* Platform Breakdown */}
+<div className="bg-white dark:bg-gray-800 px-6 py-6 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm">
+  {/* Total Votes at the top */}
+  <div className="text-center mb-6">
+    <div className="text-5xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+      {poll.totalVotes?.toLocaleString()}
+    </div>
+    <div className="text-gray-500 dark:text-gray-400">Total Votes</div>
+  </div>
+
+  {/* Platform Breakdown */}
+  <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+    Platform Breakdown
+  </h4>
+  {poll.platformBreakdown &&
+    Object.entries(poll.platformBreakdown).map(([name, count]) => {
+      const total = poll.totalVotes || 1;
+      const percentage = Math.round((count / total) * 100);
+      return (
+        <PlatformRow
+          key={name}
+          name={name}
+          percentage={percentage}
+          color={platformColors[name] || "bg-gray-400"}
+        />
+      );
+    })}
+</div>
+
+    </div>
+
+    {/* Right Column */}
+    <div className="space-y-6">
       {/* Real-time Analytics */}
-      <div className="mx-6 mb-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-6 border border-purple-100 dark:border-gray-600">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Real-time Analytics
-          </h3>
-        </div>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="text-center">
+      <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-6 border border-purple-100 dark:border-gray-600">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          Real-time Analytics
+        </h3>
+        <div className="grid grid-cols-3 gap-4 text-center">
+          <div>
             <div className="text-2xl font-bold text-pink-500 mb-1">{poll.responseRate}</div>
             <div className="text-xs text-gray-600 dark:text-gray-400">Response Rate</div>
           </div>
-          <div className="text-center">
+          <div>
             <div className="text-2xl font-bold text-pink-500 mb-1">{poll.completed}</div>
             <div className="text-xs text-gray-600 dark:text-gray-400">Viewers completed</div>
           </div>
-          <div className="text-center">
+          <div>
             <div className="text-2xl font-bold text-pink-500 mb-1">{poll.avgTime}</div>
             <div className="text-xs text-gray-600 dark:text-gray-400">Avg. Time</div>
           </div>
         </div>
       </div>
 
-      {/* Total Votes */}
-      <div className="bg-white dark:bg-gray-800 px-6 py-8 border border-gray-100 dark:border-gray-700 rounded-2xl mx-6 shadow-sm">
-        <div className="text-center mb-8">
-          <div className="text-5xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            {poll.totalVotes?.toLocaleString()}
-          </div>
-          <div className="text-gray-500 dark:text-gray-400">Total Votes</div>
-        </div>
-
-        <div className="mt-2">
-          <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            Platform Breakdown
-          </h4>
-          {poll.platformBreakdown &&
-            Object.entries(poll.platformBreakdown).map(([name, count]) => {
-              const total = poll.totalVotes || 1;
-              const percentage = Math.round((count / total) * 100);
-              return (
-                <PlatformRow
-                  key={name}
-                  name={name}
-                  percentage={percentage}
-                  color={platformColors[name] || "bg-gray-400"}
-                />
-              );
-            })}
-        </div>
-      </div>
-
       {/* Early vs Late Voters */}
-      <div className="bg-white dark:bg-gray-800 px-6 py-6 mt-4 border border-gray-100 dark:border-gray-700 rounded-2xl mx-6 shadow-sm">
+      <div className="bg-white dark:bg-gray-800 px-6 py-6 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">
           Early vs Late Voters
         </h3>
-        <div className="grid grid-cols-2 gap-8">
+        <div className="grid grid-cols-2 gap-4">
           {["earlyVoters", "lateVoters"].map((type) => {
             const count = poll[type];
             const totalVotes = poll.earlyVoters + poll.lateVoters;
@@ -243,15 +247,11 @@ const BasicAnalytics = () => {
             return (
               <div
                 key={type}
-                className="text-center mx-1 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-700 dark:to-gray-600 rounded-2xl p-6 border border-purple-100 dark:border-gray-600"
+                className="text-center bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-700 dark:to-gray-600 rounded-2xl p-6 border border-purple-100 dark:border-gray-600"
               >
                 <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">{label}</div>
-                <div className="text-3xl font-bold text-pink-500 mb-1">
-                  {percentage.toFixed(1)}%
-                </div>
-                <div className="text-sm text-gray-700 dark:text-gray-300">
-                  {count?.toLocaleString()} Votes
-                </div>
+                <div className="text-3xl font-bold text-pink-500 mb-1">{percentage.toFixed(1)}%</div>
+                <div className="text-sm text-gray-700 dark:text-gray-300">{count?.toLocaleString()} Votes</div>
               </div>
             );
           })}
@@ -259,7 +259,7 @@ const BasicAnalytics = () => {
       </div>
 
       {/* Device & Browser Breakdown */}
-      <div className="bg-white dark:bg-gray-800 px-6 py-6 mt-4 border border-gray-100 dark:border-gray-700 rounded-2xl mx-6 shadow-sm">
+      <div className="bg-white dark:bg-gray-800 px-6 py-6 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm">
         <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
           Device Breakdown
         </h4>
@@ -298,19 +298,21 @@ const BasicAnalytics = () => {
             })}
         </div>
       </div>
+    </div>
+  </div>
 
-      {/* Upgrade CTA */}
-      <div className="bg-gradient-to-r from-purple-100 to-blue-100 dark:from-gray-800 dark:to-gray-700 mx-6 my-6 rounded-2xl p-6 text-center">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
-          Unlock advanced analytics in Plus
-        </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          Get real-time insights, demographics, and export features
-        </p>
-        <button className="bg-pink-500 text-white px-8 py-3 rounded-2xl font-semibold text-sm">
-          Upgrade Now
-        </button>
-      </div>
+  {/* Upgrade CTA at bottom */}
+  <div className="bg-gradient-to-r from-purple-100 to-blue-100 dark:from-gray-800 dark:to-gray-700 mx-4 my-6 rounded-2xl p-6 text-center">
+    <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
+      Unlock advanced analytics in Plus
+    </h3>
+    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+      Get real-time insights, demographics, and export features
+    </p>
+    <button className="bg-pink-500 text-white px-8 py-3 rounded-2xl font-semibold text-sm">
+      Upgrade Now
+    </button>
+  </div>
     </div>
   );
 };

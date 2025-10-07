@@ -16,9 +16,9 @@ export default function TermsPage() {
     const navigate = useNavigate();
 
     return (
-        <div className="mx-auto min-h-screen max-w-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans">
+        <div className="mx-auto min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans md:w-7/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 transition-all duration-300">
             {/* Header */}
-            <div className="sticky top-0 z-40 border-b border-gray-100 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md">
+            <div className="sticky top-0 z-40 border-b border-gray-100 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md">
                 <div className="flex items-center justify-between p-4">
                     <button onClick={() => navigate(-1)}>
                         <ArrowLeft className="w-6 h-6 text-gray-700 dark:text-gray-300" />
@@ -28,7 +28,7 @@ export default function TermsPage() {
                 </div>
             </div>
 
-            <main className="p-4">
+            <main className="p-4 mx-auto md:w-4/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 transition-all duration-300">
                 <div className="mb-6 text-sm text-gray-500 dark:text-gray-400">
                     <p><strong>Effective Date:</strong> 01/09/2025</p>
                     <p><strong>Last Updated:</strong> 23/09/2025</p>

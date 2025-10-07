@@ -12,17 +12,18 @@ import {
 } from "react-icons/fa";
 import { SiGmail } from "react-icons/si";
 
-// Helper function to calculate days left
+// Helper
 const calculateDaysLeft = (expiresAt) => {
   if (!expiresAt) return "";
   const now = new Date();
   const expiry = new Date(expiresAt);
-  const diff = expiry.getTime() - now.getTime();
+  const diff = expiry - now;
   if (diff <= 0) return "Poll ended";
   const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
   return `${days} Day${days > 1 ? "s" : ""} Left`;
 };
 
+// Poll Results Animation
 const PollResultsView = ({ results }) => {
   const [animatedPercentages, setAnimatedPercentages] = useState({});
 
@@ -35,11 +36,10 @@ const PollResultsView = ({ results }) => {
           (option.votes / totalVotes) * 100
         );
       });
-
-      const timer = setTimeout(() => {
-        setAnimatedPercentages(finalPercentages);
-      }, 100);
-
+      const timer = setTimeout(
+        () => setAnimatedPercentages(finalPercentages),
+        100
+      );
       return () => clearTimeout(timer);
     }
   }, [results]);
@@ -57,11 +57,8 @@ const PollResultsView = ({ results }) => {
             className="w-full bg-gray-100 dark:bg-gray-700 rounded-xl overflow-hidden relative h-12 flex items-center"
           >
             <div
-              className="h-full rounded-xl transition-width duration-1000 ease-out"
-              style={{
-                width: `${percentage}%`,
-                background: gradient,
-              }}
+              className="h-full rounded-xl transition-all duration-1000 ease-out"
+              style={{ width: `${percentage}%`, background: gradient }}
             />
             <div className="absolute inset-0 px-4 flex justify-between items-center">
               <span className="font-semibold text-white mix-blend-lighten">
@@ -78,8 +75,9 @@ const PollResultsView = ({ results }) => {
   );
 };
 
+// Loader
 const InlineLoader = ({ text }) => (
-  <div className="flex flex-col items-center justify-center gap-6 py-20">
+  <div className="flex flex-col items-center justify-center gap-6 py-20 col-span-2">
     <div className="relative w-20 h-20">
       <div
         className="absolute inset-0 rounded-full"
@@ -95,7 +93,9 @@ const InlineLoader = ({ text }) => (
         <div className="bar bar-3"></div>
       </div>
     </div>
-    <p className="text-gray-500 dark:text-gray-400 text-lg animate-pulse">{text}</p>
+    <p className="text-gray-500 dark:text-gray-400 text-lg animate-pulse">
+      {text}
+    </p>
   </div>
 );
 
@@ -130,7 +130,9 @@ export default function TrendingPolls() {
       try {
         const res = await fetch("/api/polls/trending");
         const dbPolls = await res.json();
-        const votedPolls = JSON.parse(localStorage.getItem("votedPolls") || "[]");
+        const votedPolls = JSON.parse(
+          localStorage.getItem("votedPolls") || "[]"
+        );
 
         const mappedPolls = dbPolls
           .map((poll) => ({
@@ -141,12 +143,13 @@ export default function TrendingPolls() {
             expiresAt: poll.expiresAt,
             imageUrl: poll.imageUrl || null,
             category: null,
-            sharedPlatforms: (poll.sharedPlatforms || []).map((p) => p.toLowerCase()),
+            sharedPlatforms: (poll.sharedPlatforms || []).map((p) =>
+              p.toLowerCase()
+            ),
           }))
           .filter((poll) => !votedPolls.includes(poll.id));
 
         const categorized = categorizePolls(mappedPolls);
-
         setAllPolls(mappedPolls);
         setVisiblePolls(mappedPolls);
 
@@ -163,12 +166,11 @@ export default function TrendingPolls() {
     fetchPolls();
   }, []);
 
-  // Filtering + Search
+  // Filter + search
   const filteredPolls =
     selectedTab === "All"
       ? visiblePolls
       : visiblePolls.filter((p) => p.category === selectedTab);
-
   const searchedPolls = filteredPolls.filter(
     (p) =>
       p.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -187,7 +189,6 @@ export default function TrendingPolls() {
 
   const handleVote = async () => {
     if (!selectedOptionId || !selectedPoll) return;
-
     const votedPolls = JSON.parse(localStorage.getItem("votedPolls") || "[]");
     if (votedPolls.includes(selectedPoll.id)) return;
 
@@ -217,7 +218,7 @@ export default function TrendingPolls() {
   };
 
   return (
-    <div className="mx-auto bg-white dark:bg-gray-900 min-h-screen max-w-md text-gray-900 dark:text-gray-200">
+    <div className="mx-auto bg-white dark:bg-gray-900 min-h-screen w-full md:w-7/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 text-gray-900 dark:text-gray-200">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
         <div className="flex items-center justify-between p-4">
@@ -230,15 +231,13 @@ export default function TrendingPolls() {
 
         {/* Search */}
         <div className="px-4 pb-2">
-          <div className="relative flex items-center">
-            <input
-              type="text"
-              placeholder="Search trending polls"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-4 pr-10 py-2.5 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 dark:text-gray-200"
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="Search trending polls"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-4 pr-10 py-2.5 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 dark:text-gray-200"
+          />
         </div>
 
         {/* Tabs */}
@@ -248,7 +247,7 @@ export default function TrendingPolls() {
               <button
                 key={tab}
                 onClick={() => setSelectedTab(tab)}
-                className={`px-8 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                className={`px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
                   selectedTab === tab
                     ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
                     : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
@@ -262,25 +261,27 @@ export default function TrendingPolls() {
       </div>
 
       {/* Polls */}
-      <div className="px-4 space-y-4 pb-24 pt-4">
+      <div className="px-4 pt-4 pb-24 grid grid-cols-1 sm:grid-cols-2 gap-4">
         {isLoading ? (
           <InlineLoader text="Fetching polls..." />
         ) : searchedPolls.length > 0 ? (
           searchedPolls.map((poll) => (
             <div
               key={poll.id}
-              className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 cursor-pointer hover:shadow-lg transition-shadow"
+              className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 cursor-pointer hover:shadow-lg transition-shadow ${
+                !poll.imageUrl ? "h-auto" : ""
+              }`}
               onClick={() => handlePollClick(poll)}
             >
-              {poll.imageUrl && (
+              {poll.imageUrl ? (
                 <img
                   src={poll.imageUrl}
                   alt="Poll"
-                  className="rounded-lg w-full h-[117px] object-cover mb-3"
+                  className="rounded-lg w-full h-[150px] md:h-[180px] lg:h-[200px] object-cover mb-3"
                 />
-              )}
+              ) : null}
 
-              <h3 className="font-semibold text-gray-900 dark:text-gray-200">
+              <h3 className="font-semibold text-gray-900 dark:text-gray-200 mb-2">
                 {poll.question}
               </h3>
 
@@ -307,12 +308,11 @@ export default function TrendingPolls() {
             </div>
           ))
         ) : (
-          <div className="text-center text-gray-500 dark:text-gray-400 py-10">
+          <div className="text-center text-gray-500 dark:text-gray-400 py-10 col-span-2">
             <p className="text-sm">No results found for your search.</p>
           </div>
         )}
       </div>
-
       {/* Modal */}
       {selectedPoll && (
         <div
@@ -320,7 +320,7 @@ export default function TrendingPolls() {
           onClick={closeModal}
         >
           <div
-            className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm p-6 space-y-5"
+            className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-lg md:max-w-xl p-6 space-y-5"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-xl font-bold text-gray-900 dark:text-gray-200 leading-tight">

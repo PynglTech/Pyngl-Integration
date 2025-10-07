@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import apiClient from "../api/axiosConfig";
 import ShareSheet from "../components/common/ShareSheet";
 import StyledQRCode from "../components/common/qrImageStyle";
+import { useNavigate } from "react-router-dom";
 
 export default function PreviewTextPoll() {
   const { state } = useLocation();
@@ -13,6 +14,7 @@ export default function PreviewTextPoll() {
   const [qrDataUrl, setQrDataUrl] = useState(null);
 
   const pollRef = useRef(null);
+  const navigate =  useNavigate();
 
   if (!state) {
     return (
@@ -52,11 +54,26 @@ export default function PreviewTextPoll() {
   };
 
   return (
-    <div className="p-4 font-sans bg-gray-100 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100">
+   <div className="font-sans bg-white dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100 m-auto w-full md:w-7/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 transition-all duration-300">
+
+    {/* ✅ Sticky Header */}
+  <div className="flex items-center border-b-2 border-gray-100 dark:border-gray-700 dark:bg-gray-800 shadow-sm bg-white p-4 sticky top-0 z-50">
+    <button
+      className="text-gray-600 text-lg"
+      onClick={() => navigate("/create-text-poll")}
+    >
+      ←
+    </button>
+    <h1 className="flex-1 text-center font-semibold">Preview Text to poll</h1>
+    <button className="text-gray-600">
+      <img src="/Bell.svg" alt="Bell" className="w-6 h-6" />
+    </button>
+  </div>
+      <div className="bg-gray-100 dark:bg-gray-800 m-auto p-4 min-h-screen w-full md:w-4/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 transition-all duration-300">
       {/* Poll Preview */}
       <div
         ref={pollRef}
-        className="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-md transition-colors"
+        className="p-4 bg-white dark:bg-gray-900 rounded-xl shadow-md transition-colors"
       >
         <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4 transition-colors">
           <h2 className="font-medium mb-4">{state.question}</h2>
@@ -127,6 +144,7 @@ export default function PreviewTextPoll() {
           onClose={() => setIsShareSheetOpen(false)}
         />
       )}
+    </div>
     </div>
   );
 }

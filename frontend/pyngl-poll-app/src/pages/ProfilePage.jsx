@@ -436,28 +436,28 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="mx-auto min-h-screen max-w-md bg-gray-50 dark:bg-pyngl-dark text-gray-900 dark:text-gray-200">
-      {/* Header */}
-      <div className="sticky top-0 z-40 border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between p-4">
-          <button onClick={() => navigate(-1)}>
-            <ArrowLeft className="w-6 h-6" />
-          </button>
-          <h1 className="text-lg font-semibold">Profile</h1>
-          <button
-            onClick={() => navigate("/notifications")}
-            className="relative p-1"
-          >
-            <Bell className="w-6 h-6" />
-            {unreadCount > 0 && (
-              <span className="absolute top-0 right-0 flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-pink-500"></span>
-              </span>
-            )}
-          </button>
-        </div>
-      </div>
+<div className="mx-auto min-h-screen bg-gray-50 dark:bg-pyngl-dark text-gray-900 dark:text-gray-200 
+  max-w-full md:w-7/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 transition-all duration-300">
+{/* Header */}
+      <div className="sticky top-0 z-40 border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-md 
+  border-gray-200 dark:border-gray-700 px-4 md:px-6 py-3 md:py-4">
+  <div className="flex items-center justify-between">
+    <button onClick={() => navigate(-1)}>
+      <ArrowLeft className="w-6 h-6 md:w-7 md:h-7" />
+    </button>
+    <h1 className="text-lg md:text-xl font-semibold">Profile</h1>
+    <button onClick={() => navigate("/notifications")} className="relative p-1">
+      <Bell className="w-6 h-6 md:w-7 md:h-7" />
+      {unreadCount > 0 && (
+        <span className="absolute top-0 right-0 flex h-3 w-3 md:h-4 md:w-4">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-full w-full bg-pink-500"></span>
+        </span>
+      )}
+    </button>
+  </div>
+</div>
+
 
       <div className="p-4 pb-24">
         {/* Overview Section */}

@@ -193,7 +193,8 @@ const PollResults = ({ poll }) => {
       {poll.options.map((option) => {
         const percentage =
           totalVotes > 0 ? Math.round((option.votes / totalVotes) * 100) : 0;
-        const textColor = percentage > 20 ? "text-white" : "text-gray-700 dark:text-gray-200";
+        const textColor =
+          percentage > 20 ? "text-white" : "text-gray-700 dark:text-gray-200";
 
         return (
           <div
@@ -297,7 +298,10 @@ const VoteOnPollPage = () => {
     }
   };
 
-  if (isLoading) return <div className="p-6 text-center dark:text-gray-200">Loading poll...</div>;
+  if (isLoading)
+    return (
+      <div className="p-6 text-center dark:text-gray-200">Loading poll...</div>
+    );
 
   if (error)
     return (
@@ -313,11 +317,15 @@ const VoteOnPollPage = () => {
     );
 
   if (!poll)
-    return <div className="p-6 text-center dark:text-gray-200">Poll could not be loaded.</div>;
+    return (
+      <div className="p-6 text-center dark:text-gray-200">
+        Poll could not be loaded.
+      </div>
+    );
 
   return (
-    <div className="max-w-md mx-auto bg-white dark:bg-gray-900 min-h-screen p-4 font-sans">
-      <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+    <div className="mx-auto bg-white dark:bg-gray-900 min-h-screen p-4 font-sans md:w-7/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 transition-all duration-300">
+      <div className="rounded-xl border mx-auto border-gray-200 dark:border-gray-700 p-4 md:w-4/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 transition-all duration-300">
         {poll.imageUrl && (
           <img
             src={poll.imageUrl}
@@ -351,25 +359,26 @@ const VoteOnPollPage = () => {
         )}
       </div>
 
-      {!hasVoted ? (
-        <button
-          onClick={handleVote}
-          disabled={!selectedOption}
-          className="mt-6 w-full py-3 rounded-full text-white font-medium bg-pink-600 disabled:opacity-50"
-        >
-          Cast Your Vote
-        </button>
-      ) : (
-        <Link
-          to="/dashboard"
-          className="mt-6 block w-full py-3 rounded-full text-center text-white font-medium bg-gray-700 dark:bg-gray-600"
-        >
-          Back to Dashboard
-        </Link>
-      )}
+      <div className="mx-auto md:w-4/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 transition-all duration-300">
+        {!hasVoted ? (
+          <button
+            onClick={handleVote}
+            disabled={!selectedOption}
+            className="mt-6 w-full py-3 rounded-full text-white font-medium bg-pink-600 disabled:opacity-50"
+          >
+            Cast Your Vote
+          </button>
+        ) : (
+          <Link
+            to="/dashboard"
+            className="mt-6 block w-full py-3 rounded-full text-center text-white font-medium bg-gray-700 dark:bg-gray-600"
+          >
+            Back to Dashboard
+          </Link>
+        )}
+      </div>
     </div>
   );
 };
 
 export default VoteOnPollPage;
-

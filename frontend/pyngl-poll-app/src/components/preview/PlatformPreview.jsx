@@ -379,7 +379,7 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
             </div>
           </div>
 
-          <div className="px-6 pb-6 mt-2">
+          <div className="px-6 pb-6 mt-2 md:m-auto md:w-4/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 transition-all duration-300">
             <button
               onClick={handleShare}
               className="w-full py-3 bg-pink-500 text-white rounded-full font-medium text-base flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed transition-opacity"
