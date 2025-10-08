@@ -85,6 +85,9 @@ import NotificationsPage from '../pages/NotificationPage';
 // NEW: Components from your partner's file
 import BasicAnalytics from '../components/analytics/BasicAnalytics';
 import GmailShare from '../pages/GmailShare'; // Replaces your old 'Share' component
+import PlusAnalytics from '../components/analytics/PlusAnalytics';
+import ProAnalytics from '../components/analytics/ProAnalytics';
+import CompareLastPolls from '../components/analytics/comparePolls';
 
 const AppRoutes = () => {
     return (
@@ -108,6 +111,10 @@ const AppRoutes = () => {
                         <Route path="/analytics" element={<Analytics />} />
                         {/* NEW: Route for specific poll analytics */}
                         <Route path="/analytics/:pollId" element={<BasicAnalytics />} /> 
+                        <Route path="/plus-analytics/:pollId" element={<PlusAnalytics />} /> 
+                        <Route path="/pro-analytics/:pollId" element={<ProAnalytics />} /> 
+                        <Route path="/compare" element={<CompareLastPolls />} /> 
+
                         <Route path="/profile" element={<ProfilePage />} />
                         <Route path="/notifications" element={<NotificationsPage />} />
                         <Route path="/share-linkedin" element={<LinkedInPublisher />} />

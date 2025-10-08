@@ -17,9 +17,10 @@
       sendPoll,
       votePoll as ampVotePoll,
       resultsPoll,
-      getPollAnalytics
+      getPollAnalytics,
+      getLast5Polls
   } from '../controllers/pollController.js';
-  import { protect } from '../middleware/authMiddleware.js';
+  import { checkAuth, protect } from '../middleware/authMiddleware.js';
   import Poll from '../models/Poll.js';
 
   const router = express.Router();
@@ -223,6 +224,7 @@
   // These routes are accessed by Gmail AMP iframe, so no auth middleware
   router.post('/vote', ampVotePoll);
   router.get('/results', resultsPoll);
+  router.get('/last5', checkAuth, getLast5Polls);
 
   // router.get('/:id/preview', async (req, res) => {
   //   try {

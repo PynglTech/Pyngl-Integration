@@ -906,9 +906,27 @@ export const getPollAnalytics = async (req, res) => {
           : "0s",
       earlyVoters,
       lateVoters,
+      voteTimestamps: poll.votersMeta.map(v => v.votedAt),
     });
   } catch (err) {
     console.error("Error fetching analytics:", err);
     res.status(500).json({ error: "Server error" });
+  }
+};
+
+
+export const getLast5Polls = async (req, res) => {
+  try {
+    const userId = req.user.id; // added by auth middleware
+
+    const polls = await Poll.find({ author: userId })
+      .sort({ createdAt: -1 }) // newest first
+      .limit(5)
+      .select("-votedBy -votersMeta"); // optional: exclude large arrays
+
+    res.status(200).json(polls);
+  } catch (error) {
+    console.error("Error fetching last 5 polls:", error);
+    res.status(500).json({ message: "Failed to fetch last polls" });
   }
 };
