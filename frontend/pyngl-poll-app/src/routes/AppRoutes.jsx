@@ -87,7 +87,9 @@ import BasicAnalytics from '../components/analytics/BasicAnalytics';
 import GmailShare from '../pages/GmailShare'; // Replaces your old 'Share' component
 import PlusAnalytics from '../components/analytics/PlusAnalytics';
 import ProAnalytics from '../components/analytics/ProAnalytics';
-import CompareLastPolls from '../components/analytics/comparePolls';
+import CompareLastPolls from '../components/analytics/ComparePolls';
+import CreateSegment from '../components/analytics/CreateSegment';
+import EnterpriseAnalytics from '../components/analytics/EnterpriseAnalytics';
 
 const AppRoutes = () => {
     return (
@@ -113,8 +115,9 @@ const AppRoutes = () => {
                         <Route path="/analytics/:pollId" element={<BasicAnalytics />} /> 
                         <Route path="/plus-analytics/:pollId" element={<PlusAnalytics />} /> 
                         <Route path="/pro-analytics/:pollId" element={<ProAnalytics />} /> 
+                        <Route path="/enterprise-analytics/:pollId" element={<EnterpriseAnalytics />} />
                         <Route path="/compare" element={<CompareLastPolls />} /> 
-
+                        <Route path="/create-segment/:pollId" element={<CreateSegment />} /> 
                         <Route path="/profile" element={<ProfilePage />} />
                         <Route path="/notifications" element={<NotificationsPage />} />
                         <Route path="/share-linkedin" element={<LinkedInPublisher />} />

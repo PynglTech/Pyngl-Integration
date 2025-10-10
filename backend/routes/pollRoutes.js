@@ -18,7 +18,8 @@
       votePoll as ampVotePoll,
       resultsPoll,
       getPollAnalytics,
-      getLast5Polls
+      getLast5Polls,
+      applyPollFilter
   } from '../controllers/pollController.js';
   import { checkAuth, protect } from '../middleware/authMiddleware.js';
   import Poll from '../models/Poll.js';
@@ -390,5 +391,8 @@
   // --- Dynamic route LAST (to avoid catching /trending, /my-polls, etc.) ---
   router.get('/:pollId', protect, getPollById);
   router.get('/:pollId/analytics', protect, getPollAnalytics); // Reuse getPollById for now
+
+
+router.post("/:pollId/apply-filter", applyPollFilter);
 
   export default router;

@@ -2,14 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Bell } from "lucide-react";
 import apiClient from "../../api/axiosConfig";
-
+import useNotificationStore from "../../store/useNotificationStore";
 // -----------------------------------------------------------
 
 const enhancePollDataDynamic = (rawData) => {
   const now = new Date();
   const expiresDate = rawData.expiresAt ? new Date(rawData.expiresAt) : now;
   const timeDiffMs = expiresDate.getTime() - now.getTime();
-
   let timeLeftDisplay = "0s";
 
   if (timeDiffMs <= 0) {
@@ -133,7 +132,10 @@ const BasicAnalytics = () => {
       <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
         Basic analytics
       </h1>
-      <Bell className="w-6 h-6 text-gray-700 dark:text-gray-200" />
+     <button onClick={() => navigate("/notifications")} className="relative p-1">
+                             <Bell className="w-6 h-6" />
+      
+       </button>
     </div>
   </div>
 

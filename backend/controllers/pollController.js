@@ -930,3 +930,52 @@ export const getLast5Polls = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch last polls" });
   }
 };
+
+export const applyPollFilter = async (req, res) => {
+  try {
+    const { pollId } = req.params;
+    const { devices = [], browsers = [] } = req.body;
+
+    // Fetch poll
+    const poll = await Poll.findById(pollId);
+    if (!poll) return res.status(404).json({ message: "Poll not found" });
+
+    // --- Base data ---
+    const totalViews = poll.viewedBy?.length || 0;
+    let filteredVoters = poll.votersMeta || [];
+
+    // --- Apply filters ---
+    if (devices.length > 0) {
+      filteredVoters = filteredVoters.filter(v => devices.includes(v.device));
+    }
+
+    if (browsers.length > 0) {
+      filteredVoters = filteredVoters.filter(v => browsers.includes(v.browser));
+    }
+
+    // --- Compute analytics ---
+    const totalVotes = filteredVoters.length;
+
+    // Engagement = (Views / Votes) * 100
+    const avgEngagement =
+      totalVotes > 0 ? ((totalVotes / totalViews) * 100).toFixed(1) : 0;
+
+    // --- Response ---
+    res.json({
+      totalViews,
+      totalVotes,
+      avgEngagement,
+      filteredVoters: filteredVoters.map(v => ({
+        userId: v.user || "Anonymous",
+        device: v.device || "Unknown",
+        browser: v.browser || "Unknown",
+        votedAt: v.votedAt,
+        timeSpent: v.timeSpent || 0,
+      })),
+    });
+  } catch (error) {
+    console.error("Error applying filter:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+ 
