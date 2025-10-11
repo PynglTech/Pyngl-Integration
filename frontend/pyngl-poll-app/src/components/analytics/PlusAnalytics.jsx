@@ -241,7 +241,7 @@ const PlusAnalytics = () => {
     }, [poll]);
 
     return (
-      <div className="bg-purple-50 dark:bg-purple-900/10 rounded-2xl p-6 mt-6">
+      <div className="bg-purple-50 dark:bg-purple-900/10 rounded-3xl p-6">
         <div className="flex items-center justify-between mb-6">
           <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Vote Velocity
@@ -558,7 +558,7 @@ const PlusAnalytics = () => {
       </div>
 
       {/* Poll Question & Status */}
-      <div className="px-4 py-6">
+      <div className="px-4 py-4 border-b border-gray-100 dark:border-gray-700 mx-2 mb-4">
         <div className="flex items-start justify-between mb-3">
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 flex-1">
             {poll.question}
@@ -596,7 +596,7 @@ const PlusAnalytics = () => {
             {optionsWithPercentage.map((option) => (
               <div
                 key={option._id}
-                className={`rounded-2xl p-4 border ${
+                className={`rounded-3xl p-4 border ${
                   option._id === winningOption._id
                     ? "bg-pink-50 dark:bg-pink-900/20 border-pink-200 dark:border-pink-800"
                     : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
@@ -639,7 +639,7 @@ const PlusAnalytics = () => {
                     {option.percentage}%
                   </span>
                 </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
+                <div className="text-sm ml-8 text-gray-500 dark:text-gray-400">
                   {option.votes?.toLocaleString()} Votes
                 </div>
               </div>
@@ -647,7 +647,7 @@ const PlusAnalytics = () => {
           </div>
 
           {/* Votes Over Time */}
-          <div className="px-4 mb-8">
+          <div className="px-4 py-6 mx-4 border border-gray-200 dark:border-gray-700 rounded-3xl">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
                 Votes over time
@@ -693,9 +693,9 @@ const PlusAnalytics = () => {
               });
 
               return (
-                <div className="relative h-32">
+                <div className="relative">
                   <svg
-                    className="w-full h-full"
+                    className="w-[80%] h-[40%] mx-auto"
                     viewBox="0 0 300 100"
                     preserveAspectRatio="none"
                   >
@@ -737,7 +737,7 @@ const PlusAnalytics = () => {
                   </svg>
 
                   {/* Labels */}
-                  <div className="flex justify-between mt-2 text-xs text-gray-400 dark:text-gray-500">
+                  {/* <div className="flex justify-between mt-2 text-xs text-gray-400 dark:text-gray-500">
                     {timeline.map((slot, i) => {
                       const showLabel =
                         timeline.length <= 6 ||
@@ -748,7 +748,7 @@ const PlusAnalytics = () => {
                         </span>
                       );
                     })}
-                  </div>
+                  </div> */}
                 </div>
               );
             })()}
@@ -756,7 +756,7 @@ const PlusAnalytics = () => {
 
           {/* Platform, Browser, Device Breakdown */}
           <div className="px-4 mb-8">
-            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-3xl p-6">
               <h4 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">
                 Platform Breakdown
               </h4>
@@ -813,7 +813,7 @@ const PlusAnalytics = () => {
 
           {/* Behavioral Insights */}
           <div className="px-4 mb-8">
-            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-3xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   Behavioral Insights
@@ -848,7 +848,7 @@ const PlusAnalytics = () => {
 
           {/* Early vs Late Voters */}
           <div className="px-4 mb-8">
-            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-3xl p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">
                 Early vs Late Voters
               </h3>
@@ -884,7 +884,6 @@ const PlusAnalytics = () => {
         </div>
 
         {/* -------- Column 2 -------- */}
-
         <div className="space-y-6">
           {/* Vote Velocity */}
           <div className="px-4 mb-8">
@@ -894,7 +893,7 @@ const PlusAnalytics = () => {
           {/* Views & Clicks */}
           <div className="px-4 mb-8">
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-6">
+              <div className="border border-gray-200 dark:border-gray-700 rounded-3xl p-6">
                 <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
                   {poll.views?.toLocaleString()}
                 </div>
@@ -902,7 +901,7 @@ const PlusAnalytics = () => {
                   Views
                 </div>
               </div>
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-6">
+              <div className="border border-gray-200 dark:border-gray-700 rounded-3xl p-6">
                 <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
                   {poll.clicks?.toLocaleString()}
                 </div>
@@ -915,7 +914,7 @@ const PlusAnalytics = () => {
 
           {/* Platform Breakdown */}
           <div className="px-4 mb-8">
-            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-3xl p-6">
               <div className="text-center mb-6">
                 <div className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   {poll.totalVotes?.toLocaleString()}
@@ -947,12 +946,12 @@ const PlusAnalytics = () => {
 
           {/* Real-time Analytics */}
           <div className="px-4 mb-8">
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-6 border border-purple-100 dark:border-purple-800">
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-3xl p-6 border border-purple-100 dark:border-purple-800">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   Real-time Analytics
                 </h3>
-                <TrendingUp className="w-5 h-5 text-pink-500" />
+                 <img src="/graph.svg" alt="logo" className="w-6 h-6" />
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
@@ -987,7 +986,7 @@ const PlusAnalytics = () => {
 
       {/* Upgrade CTA */}
       <div className="px-4 mb-8 mt-6">
-        <div className="bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 rounded-2xl p-6 text-center">
+        <div className="bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 rounded-3xl p-6 text-center">
           <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
             Unlock advanced analytics in pro
           </h3>
