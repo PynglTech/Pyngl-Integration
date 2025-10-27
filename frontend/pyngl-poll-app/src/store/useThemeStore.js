@@ -1,18 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-const useThemeStore = create(
+export const useThemeStore = create(
     persist(
         (set) => ({
-            theme: 'light', // Default theme
-            
-            // This action toggles the theme between light and dark
-            toggleTheme: () => set((state) => ({
-                theme: state.theme === 'light' ? 'dark' : 'light',
-            })),
+            theme: 'system', // Can be 'light', 'dark', or 'system'
+            setTheme: (newTheme) => set({ theme: newTheme }),
         }),
         {
-            name: 'pyngl-theme-storage', // The key for storing the theme in localStorage
+            name: 'pyngl-theme-storage',
         }
     )
 );

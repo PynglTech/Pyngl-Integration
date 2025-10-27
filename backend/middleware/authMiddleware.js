@@ -42,4 +42,4 @@ const checkAuth = async (req, res, next) => {
     
     next();
 };
-export { protect, checkAuth }; 
+export { protect, checkAuth };

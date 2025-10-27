@@ -61,12 +61,12 @@
 
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-
+import useAuthStore from '../store/useAuthStore';
 // Component Imports from both files
 import PublicAuthPage from '../pages/PublicAuthPage';
 import ProtectedRoute from './ProtectedRoute';
 import AppLayout from '../components/layout/AppLayout';
-import HomePage from '../components/HomePage';
+import HomePage from '../pages/HomePage';
 import CreatePollPage from '../pages/CreatePollPage';
 import CreateImageToPoll from "../pages/CreateImageToPoll";
 import CreateTextToPoll from "../pages/CreateTextToPoll";
@@ -81,15 +81,37 @@ import HelpCenter from '../pages/HelpCenter';
 import Terms from '../pages/TermsPage';
 import PrivacyPolicy from '../pages/PrivacyPolicyPage';
 import NotificationsPage from '../pages/NotificationPage';
-
+import { 
+    LockedTrendingPage, 
+    LockedAnalyticsPage, 
+    LockedPollsActivityPage 
+} from '../pages/LockedContentPage';
+import PollActivityPage from '../pages/PollActivityPage';
 // NEW: Components from your partner's file
 import BasicAnalytics from '../components/analytics/BasicAnalytics';
 import GmailShare from '../pages/GmailShare'; // Replaces your old 'Share' component
-
+import PlusAnalytics from '../components/analytics/PlusAnalytics';
+import ProAnalytics from '../components/analytics/ProAnalytics';
+import CompareLastPolls from '../components/analytics/comparePolls';
+import CreateSegment from '../components/analytics/CreateSegment';
+import EnterpriseAnalytics from '../components/analytics/EnterpriseAnalytics';
 const AppRoutes = () => {
+      const { userInfo } = useAuthStore();
     return (
         <BrowserRouter>
             <Routes>
+                 <Route path="/" element={<PublicAuthPage />} />
+                <Route path="/login" element={<PublicAuthPage />} />
+                <Route path="/signup" element={<PublicAuthPage />} />
+                <Route path='/forgot-password' element={<PublicAuthPage/>} />
+                 {!userInfo && (
+                    <>
+                        <Route path="/trending" element={<LockedTrendingPage />} />
+                        <Route path="/analytics" element={<LockedAnalyticsPage />} />
+                        <Route path="/polls" element={<LockedPollsActivityPage />} />
+                    </>
+                )}
+
                 {/* --- Public Routes (No Login Required) --- */}
                 <Route path="/" element={<PublicAuthPage />} />
                 {/* Kept public so anyone can vote on a shared poll link */}
@@ -108,14 +130,19 @@ const AppRoutes = () => {
                         <Route path="/analytics" element={<Analytics />} />
                         {/* NEW: Route for specific poll analytics */}
                         <Route path="/analytics/:pollId" element={<BasicAnalytics />} /> 
+                         <Route path="/plus-analytics/:pollId" element={<PlusAnalytics />} /> 
+                        <Route path="/pro-analytics/:pollId" element={<ProAnalytics />} /> 
+                        <Route path="/enterprise-analytics/:pollId" element={<EnterpriseAnalytics />} />
+                        <Route path="/compare" element={<CompareLastPolls />} /> 
+                        <Route path="/create-segment/:pollId" element={<CreateSegment />} /> 
                         <Route path="/profile" element={<ProfilePage />} />
                         <Route path="/notifications" element={<NotificationsPage />} />
                         <Route path="/share-linkedin" element={<LinkedInPublisher />} />
-                        {/* UPDATED: '/share' now uses the GmailShare component */}
                         <Route path='/share' element={<GmailShare />} /> 
                         <Route path='/help-center' element={<HelpCenter />} />
                         <Route path='/terms-of-service' element={<Terms />} />
                         <Route path='/privacy-policy' element={<PrivacyPolicy />} />
+                        <Route path='/polls' element={<PollActivityPage/>} />
                     </Route>
                 </Route>
             </Routes>

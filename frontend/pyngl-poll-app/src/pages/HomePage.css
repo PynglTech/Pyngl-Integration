@@ -1,6 +1,6 @@
 /* General Styling for the Home Page Container */
 .home-container {
-     font-weight: 500;
+  font-weight: 500;
   padding: 1rem;
   background-color: #f7f7f7; /* A light background for the page */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -14,7 +14,7 @@
 /* ====== Upgrade Card Section ====== */
 .upgrade-card-wrapper {
   width: 100%; /* Ensure it fits the container */
-  max-width: 360.68px; /* Your specified width */
+  max-width: 400px; /* Your specified width */
   margin: 0 auto;
 }
 
@@ -29,7 +29,7 @@
 
 .upgrade-image-container {
   position: relative;
-  width: 314px; /* Your specified width */
+  width: 350px; /* Your specified width */
   height: 100%;
 }
 
@@ -37,18 +37,19 @@
   width: 100%;
   height: 100%;
   object-fit: cover; /* Ensures the image covers the area without distortion */
+  border-radius: 16px; /* Matches the card's border-radius */
 }
 
 .gradient-overlay {
   position: absolute;
   top: 0;
-  left: 0;
+  left: -10px;
   width: 100%;
   height: 100%;
   /* This interprets your gradient specs into a dark overlay fading from left to right */
   background: linear-gradient(to right, 
     rgba(0, 0, 0,0.91) 8.9%, 
-    rgba(155, 153, 179, 0.19) 84%,
+    rgba(155, 153, 179, 0.19) 100%,
     rgba(0, 0, 0, 0.8) 100%
   );
 }
@@ -190,4 +191,7 @@
     height: 34px;
     width: 65px;
     font-size: 12px;
+}
+.roundedcircle{
+    margin-right:280px;
 }

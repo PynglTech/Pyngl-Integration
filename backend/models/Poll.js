@@ -43,8 +43,7 @@ const pollSchema = new mongoose.Schema({
     },
     shareToTrending: { type: Boolean, default: false    , index:true },
     sharedPlatforms: { type: [String], default: [] },
-    // --- Analytics Fields (MERGED) ---
-    // UPDATED: 'views' is replaced with a more detailed 'viewedBy' array
+
     viewedBy: { type: [mongoose.Schema.Types.Mixed], default: [] },
     clicks: { type: Number, default: 0 },
     completed: { type: Number, default: 0 },

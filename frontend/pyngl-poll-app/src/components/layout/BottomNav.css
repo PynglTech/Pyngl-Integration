@@ -4,17 +4,19 @@
     left: 0;
     right: 0;
     width: 100%;
-    max-width: 400px; /* Match the max-width of your app layout */
+    max-width: 500px; /* Mobile max-width */
     margin: 0 auto;
-    
+
     display: flex;
     justify-content: space-around;
     align-items: center;
-    
+
     height: 65px;
     background-color: #ffffff;
     border-top: 1px solid #e0e0e0;
     box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .nav-link {
@@ -29,16 +31,74 @@
     transition: color 0.2s ease-in-out;
 }
 
-/* This is the magic for the active state! */
 .nav-link.active {
-    color: #F72AA0; /* Your Pyngl pink color */
+    color: #F72AA0; /* Active pink */
 }
 
-/* Lucide icons use 'stroke' for color, so we target the svg inside */
 .nav-link.active svg {
     stroke: #F72AA0;
 }
 
 .nav-link span {
     margin-top: 4px;
+}
+
+/* Dark Mode */
+.dark .bottom-nav {
+    background-color: #111827;
+    border-top: 1px solid #333;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.5);
+}
+
+.dark .nav-link {
+    color: #aaaaaa;
+}
+
+.dark .nav-link.active {
+    color: #F72AA0;
+}
+
+.dark .nav-link.active svg {
+    stroke: #F72AA0;
+}
+
+/* ---------------------- */
+/* Responsive for Tablets & Small Laptops */
+/* ---------------------- */
+@media (min-width: 768px) {
+    .bottom-nav {
+        max-width: 800px; /* Wider layout for tablets */
+        height: 70px;
+    }
+
+    .nav-link span {
+        font-size: 0.875rem; /* Slightly bigger text */
+        margin-top: 6px;
+    }
+
+    .nav-link svg {
+        width: 28px;
+        height: 28px;
+    }
+}
+
+/* ---------------------- */
+/* Responsive for Large Screens / Desktop */
+/* ---------------------- */
+@media (min-width: 1024px) {
+    .bottom-nav {
+        max-width: 900px; /* Full-width container */
+        height: 75px;
+        justify-content: space-evenly;
+    }
+
+    .nav-link span {
+        font-size: 1rem;
+        margin-top: 8px;
+    }
+
+    .nav-link svg {
+        width: 32px;
+        height: 32px;
+    }
 }

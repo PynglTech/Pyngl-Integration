@@ -30,18 +30,25 @@ export const loginSchema = z.object({
 });
 
 export const registerSchema = z.object({
-    username: z.string().min(3, { message: "Username must be at least 3 characters" }),
-    email: z.string().email({ message: "Invalid email address" }),
-    phoneNumber: z.string().min(10, { message: "Please enter a valid phone number" }),
-    password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+    username: z.string().min(3, 'Username must be at least 3 characters'),
+    email: z.string().email('Invalid email address'),
+    phoneNumber: z.string().min(10, 'Please enter a valid phone number'),
     
-    // --- THIS FIELD HAS BEEN ADDED ---
-    birthDate: z.string().min(1, { message: "Your date of birth is required." })
-      .refine((date) => !isNaN(Date.parse(date)), {
-          message: "Please enter a valid date."
-      }),
-});
+    // Use z.string() for date, as the input type="date" provides a string
+    birthDate: z.string().refine((date) => new Date(date) < new Date(), {
+        message: "Please enter a valid date of birth"
+    }),
 
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+    
+    // Add the confirmPassword field
+    confirmPassword: z.string().min(8, 'Password must be at least 8 characters')
+})
+// Use .refine to validate that the passwords match
+.refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"], // Show error on the confirmPassword field
+});
 export const forgotPasswordSchema = z.object({
     email: z.string().email({ message: "Invalid email address" }),
 });

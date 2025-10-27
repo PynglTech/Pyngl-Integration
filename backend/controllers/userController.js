@@ -372,7 +372,7 @@ import Poll from '../models/Poll.js';
 import Notification from '../models/Notification.js';
 import asyncHandler from '../middleware/asyncHandler.js';
 import generateToken from '../utils/generateToken.js';
-import sendEmail from '../utils/sendEmail.js';
+import { Resend } from 'resend';
 import { sendOtp, verifyOtp } from '../utils/otpServices.js';
 
 // --- Reusable function to format user data for responses ---
@@ -387,7 +387,7 @@ const formatUserResponse = (user) => {
         age: user.age,             // NEW: Include virtual age property
     };
 };
-
+const resend = new Resend(process.env.RESEND_API_KEY);
 // @desc    Register a new user
 // @route   POST /api/users/register
 // @access  Public
@@ -555,24 +555,54 @@ export const updateUserProfilePicture = asyncHandler(async (req, res) => {
 // @route   POST /api/users/forgotpassword
 // @access  Public
 export const forgotPassword = asyncHandler(async (req, res) => {
-    const user = await User.findOne({ email: req.body.email });
-    if (!user) {
-        res.status(404);
-        throw new Error('There is no user with that email address.');
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    res.status(404);
+    throw new Error('There is no user with that email address.');
+  }
+
+  const resetOtp = user.generatePasswordResetOtp();
+  await user.save({ validateBeforeSave: false });
+
+  // This is the HTML body for the email
+  const htmlBody = `
+    <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+      <h2>Password Reset Request</h2>
+      <p>Hi ${user.username},</p>
+      <p>You requested a password reset for your Pyngl account. Your One-Time Password (OTP) is:</p>
+      <h1 style="font-size: 32px; letter-spacing: 2px; margin: 20px 0; text-align: center;">
+        ${resetOtp}
+      </h1>
+      <p>This OTP is valid for 10 minutes. If you did not request this, please ignore this email.</p>
+      <p>Thanks,<br>The Pyngl Team</p>
+    </div>
+  `;
+
+  try {
+    // Replaced sendEmail with resend.emails.send
+    const { data, error } = await resend.emails.send({
+      from: 'Pyngl <onboarding@resend.dev>', // Or your verified domain
+      to: user.email,
+      subject: 'Your Password Reset OTP',
+      html: htmlBody,
+    });
+
+    // NEW: Check for a specific error from Resend
+    if (error) {
+      console.error("Resend error:", error);
+      throw new Error('Email could not be sent'); // Triggers the catch block
     }
-    const resetOtp = user.generatePasswordResetOtp();
+
+    res.status(200).json({ success: true, message: 'OTP sent to email' });
+
+  } catch (err) {
+    // This catch block will now also catch the error we throw above
+    user.passwordResetOtp = undefined;
+    user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
-    const message = `Your password reset OTP is: ${resetOtp}\n\nThis OTP is valid for 10 minutes.`;
-    try {
-        await sendEmail({ email: user.email, subject: 'Your Password Reset OTP', message });
-        res.status(200).json({ success: true, message: 'OTP sent to email' });
-    } catch (err) {
-        user.passwordResetOtp = undefined;
-        user.passwordResetExpires = undefined;
-        await user.save({ validateBeforeSave: false });
-        res.status(500);
-        throw new Error('Email could not be sent');
-    }
+    res.status(500);
+    throw new Error('Email could not be sent');
+  }
 });
 
 // @desc    Reset password with Email OTP
@@ -639,3 +669,29 @@ export const resetPasswordOtp = asyncHandler(async (req, res) => {
     await user.save();
     res.status(200).json({ success: true, message: 'Password has been reset successfully' });
 });
+export const saveUserLocation = async (req, res) => {
+  try {
+    const userId = req.user?._id || req.body.userId; // ✅ fallback for testing
+    const { latitude, longitude, accuracy } = req.body;
+
+    if (!latitude || !longitude) {
+      return res.status(400).json({ message: "Latitude and longitude are required." });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    user.location = { latitude, longitude, accuracy, updatedAt: new Date() };
+    await user.save();
+
+    res.status(200).json({
+      message: "Location saved successfully!",
+      location: user.location,
+    });
+  } catch (error) {
+    console.error("❌ Error saving user location:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};

@@ -16,6 +16,7 @@ import {
     updateUserProfile,
     updateUserPassword,
     updateUserProfilePicture,
+    saveUserLocation 
 } from '../controllers/userController.js';
 import { upload } from '../config/cloudinary.js';
 const router = express.Router();
@@ -24,7 +25,7 @@ router.get('/auth/google', passport.authenticate('google', {
 }));
 router.post('/register', registerUser);
 router.post('/login', loginUser);
-router.post('/forgotpassword', forgotPassword);
+router.post('/forgot-password', forgotPassword);
 router.post('/forgotpassword-otp', forgotPasswordOtp); // New route for OTP-based forgot password
 router.post('/resetpassword-otp', resetPasswordOtp); // New route for OTP-based reset password
 router.put('/resetpassword', resetPassword); // PUT is often used for updates
@@ -38,6 +39,7 @@ router.put(
     upload.single('profilePicture'), 
     updateUserProfilePicture
 );
+router.post('/save-location', protect,  saveUserLocation);
 // @desc    Google auth callback
 router.get('/auth/google/callback', 
     // If authentication fails, redirect back to the frontend's root page

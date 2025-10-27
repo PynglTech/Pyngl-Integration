@@ -12,7 +12,7 @@ export default function TrendingPolls() {
   const [categorizedPolls, setCategorizedPolls] = useState([]);
   const [tabs, setTabs] = useState(["All"]);
   const [searchQuery, setSearchQuery] = useState("");
-
+  const isDesktop = useBreakpoint();
   useEffect(() => {
     async function fetchPolls() {
       try {

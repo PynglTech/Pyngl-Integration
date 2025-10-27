@@ -34,13 +34,14 @@ import useAuthStore from './store/useAuthStore';
 import useThemeStore from './store/useThemeStore';
 import AppRoutes from './routes/AppRoutes';
 import LoadingScreen from './components/common/LoadingScreen';
+import { useThemeEffect } from './hooks/useThemeEffect';
 import './App.css';
 
 export default function App() {
     const { isInitialized, userInfo, loading, checkUserStatus } = useAuthStore();
     const { theme } = useThemeStore();
     const [showDelayedLoader, setShowDelayedLoader] = useState(false);
-
+     useThemeEffect(); 
     // This effect runs once when the app starts to check the user's login status.
     useEffect(() => {
         if (!isInitialized) {
@@ -83,7 +84,7 @@ export default function App() {
     // Render the main application.
     return (
         <>
-            <Toaster position="top-center" />
+            <Toaster position="top-center" reverseOrder={false}/>
             <AppRoutes />
         </>
     );

@@ -1,364 +1,3 @@
-// import axios from 'axios';
-// import Poll from '../models/Poll.js';
-// import { handleUpload } from '../config/cloudinary.js'; 
-// import FormData from 'form-data';
-// import { cloudinary } from '../config/cloudinary.js'; 
-// import mongoose from 'mongoose';  
-// import Notification from '../models/Notification.js';
-// import asyncHandler from '../middleware/asyncHandler.js';
-// import GoogleUser from '../models/GoogleUser.js';
-// import sendEmail from '../utils/sendEmail.js';
-
-// export const generateImage = async (req, res) => {
-//     const { prompt } = req.body;
-
-//     if (!prompt) {
-//         return res.status(400).json({ error: "A prompt is required to generate an image." });
-//     }
-//     if (!process.env.STABILITY_API_KEY) {
-//         return res.status(500).json({ error: "API key for image generation is not configured on the server." });
-//     }
-
-//     try {
-//         const response = await axios.post(
-//             "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image",
-//             {
-//                 text_prompts: [{ text: prompt }],
-//                 cfg_scale: 7, height: 1024, width: 1024,
-//                 samples: 1, steps: 30,
-//             },
-//             {
-//                 headers: {
-//                     Authorization: `Bearer ${process.env.STABILITY_API_KEY}`,
-//                     Accept: "application/json",
-//                     "Content-Type": "application/json",
-//                 },
-//             }
-//         );
-
-//             const imageBase64 = response.data.artifacts[0].base64;
-//             const imageUrl = `data:image/png;base64,${imageBase64}`;
-
-//         res.status(200).json({ imageUrl });
-//     } catch (error) {
-//         console.error("Error generating image:", error.response?.data || error.message);
-//         res.status(500).json({ error: "Failed to generate image. Check server logs." });
-//     }
-// };
-
-// // // ✅ Create a new poll (associates with logged-in user)
-// // export const createPoll = async (req, res) => {
-// //     const { question, options, type, imageUrl, duration } = req.body;
-
-// //     if (!question || !options?.length || !type) {
-// //         return res.status(400).json({ error: "Missing required poll data." });
-// //     }
-
-// //     const finalDuration = duration || "24h";
-// //     const now = new Date();
-// //     const durationHours = parseInt(finalDuration.replace("h", ""));
-// //     const expiresAt = new Date(now.getTime() + durationHours * 60 * 60 * 1000);
-
-// //     try {
-// //         const poll = new Poll({
-// //             question,
-// //             options: options.map((opt) => ({ text: opt })),
-// //             type,
-// //             imageUrl: imageUrl || null,
-// //             expiresAt,
-// //             author: req.user.id, // Assumes auth middleware provides req.user
-// //         });
-
-// //         await poll.save();
-// //         res.status(201).json(poll);
-// //     } catch (error) {
-// //         console.error("Error creating poll:", error);
-// //         res.status(500).json({ error: "Failed to save poll." });
-// //     }
-// // };
-// // export const createPoll = async (req, res) => {
-// //     const { question, options, type, imageUrl, duration } = req.body;
-// //     const authorId = req.user.id;
-// //     if (!question || !options?.length || !type) {
-// //         return res.status(400).json({ error: "Missing required poll data." });
-// //     }
-
-// //     try {
-// //         // --- DUPLICATE CHECK ---
-// //         // Look for a poll with the same question from the same author in the last minute
-// //         const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
-// //         const existingPoll = await Poll.findOne({
-// //             question: question,
-// //             author: authorId,
-// //             createdAt: { $gte: oneMinuteAgo }
-// //         });
-
-// //         // If a recent, identical poll is found, return that one instead of creating a new one.
-// //         if (existingPoll) {
-// //             console.log("Duplicate poll found, returning existing one.");
-// //             return res.status(200).json(existingPoll);
-// //         }
-
-// //         // --- If no duplicate is found, create the new poll as before ---
-// //         const finalDuration = duration || "24h";
-// //         const now = new Date();
-// //         const durationHours = parseInt(finalDuration.replace("h", ""));
-// //         const expiresAt = new Date(now.getTime() + durationHours * 60 * 60 * 1000);
-
-// //         const poll = new Poll({
-// //             question,
-// //             options: options.map((opt) => ({ text: opt })),
-// //             type,
-// //             imageUrl: imageUrl || null,
-// //             expiresAt,
-// //             author: authorId,
-// //         });
-
-// //          const createdPoll = await poll.save();
-
-// //     // --- NEW NOTIFICATION LOGIC ---
-// //     // 2. After saving the poll, create a notification for the author
-// //     const notification = new Notification({
-// //         user: authorId,
-// //         message: `Your poll "${createdPoll.question}" is now live!`,
-// //         link: `/poll/${createdPoll._id}`
-// //     });
-// //     await notification.save();
-
-// //     // 3. Emit a real-time event to the specific user who created the poll
-// //     const io = req.app.get('io');
-// //     io.to(authorId.toString()).emit('new_notification', notification);
-    
-// //     res.status(201).json(createdPoll);
-// //     } catch (error) {
-// //         console.error("Error creating poll:", error);
-// //         res.status(500).json({ error: "Failed to save poll." });
-// //     }
-// // };
-// export const createPoll = async (req, res) => {
-//     // MERGED: Destructuring new fields from your partner's code
-//     const { question, options, type, imageUrl, duration, ageRange, shareToTrending } = req.body;
-//     const authorId = req.user.id;
-
-//     if (!question || !options?.length || !type) {
-//         return res.status(400).json({ error: "Missing required poll data." });
-//     }
-
-//     try {
-//         // YOUR DUPLICATE CHECK LOGIC (PRESERVED)
-//         const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
-//         const existingPoll = await Poll.findOne({
-//             question: question,
-//             author: authorId,
-//             createdAt: { $gte: oneMinuteAgo }
-//         });
-
-//         if (existingPoll) {
-//             console.log("Duplicate poll found, returning existing one.");
-//             return res.status(200).json(existingPoll);
-//         }
-
-//         // YOUR DURATION LOGIC (PRESERVED)
-//         const finalDuration = duration || "24h";
-//         const now = new Date();
-//         const durationHours = parseInt(finalDuration.replace("h", ""));
-//         const expiresAt = new Date(now.getTime() + durationHours * 60 * 60 * 1000);
-
-//         const poll = new Poll({
-//             question,
-//             options: options.map((opt) => ({ text: opt })),
-//             type,
-//             imageUrl: imageUrl || null,
-//             expiresAt,
-//             author: authorId,
-//             // MERGED: Adding new fields from your partner's code
-//             ageRange: ageRange || "13-17",
-//             shareToTrending: !!shareToTrending,
-//         });
-
-//         const createdPoll = await poll.save();
-
-//         // YOUR NOTIFICATION LOGIC (PRESERVED)
-//         const notification = new Notification({
-//             user: authorId,
-//             message: `Your poll "${createdPoll.question}" is now live!`,
-//             link: `/poll/${createdPoll._id}`
-//         });
-//         await notification.save();
-
-//         const io = req.app.get('io');
-//         io.to(authorId.toString()).emit('new_notification', notification);
-
-//         res.status(201).json(createdPoll);
-//     } catch (error) {
-//         console.error("Error creating poll:", error);
-//         res.status(500).json({ error: "Failed to save poll." });
-//     }
-// };
-// // ✅ Vote on a poll (requires user to be logged in)
-// // export const voteOnPoll = async (req, res) => {
-// //     try {
-// //         const { pollId } = req.params;
-// //         const { optionId } = req.body;
-        
-// //         // Determine the voter's identity (user ID if logged in, IP address if not)
-// //         const isRegisteredUser = !!req.user;
-// //         const voterIdentifier = isRegisteredUser ? req.user.id : req.ip;
-
-// //         const poll = await Poll.findById(pollId);
-// //         if (!poll) {
-// //             return res.status(404).json({ error: "Poll not found." });
-// //         }
-
-// //         // --- Check if this user (by ID or IP) has already voted ---
-// //         const alreadyVoted = poll.votedBy.some(vote => 
-// //             (isRegisteredUser && vote.user?.toString() === voterIdentifier) ||
-// //             (!isRegisteredUser && vote.ipAddress === voterIdentifier)
-// //         );
-
-// //         if (alreadyVoted) {
-// //             return res.status(400).json({ error: "You have already voted on this poll." });
-// //         }
-
-// //         // Find the option and increment its vote count
-// //         const option = poll.options.id(optionId);
-// //         if (option) {
-// //             option.votes += 1;
-// //         } else {
-// //             return res.status(404).json({ error: "Option not found." });
-// //         }
-
-// //         // Add the new vote record as a correctly formatted object
-// //         const newVote = isRegisteredUser 
-// //             ? { user: voterIdentifier } 
-// //             : { ipAddress: voterIdentifier };
-        
-// //         poll.votedBy.push(newVote);
-
-// //         await poll.save();
-// //         res.status(200).json(poll);
-
-// //     } catch (error) {
-// //         console.error("Error voting on poll:", error);
-// //         res.status(500).json({ error: "Server error while voting." });
-// //     }
-// // };
-
-// // export const voteOnPoll = async (req, res) => {
-// //     try {
-// //         const { pollId } = req.params;
-// //         const { optionId } = req.body;
-        
-// //         const isRegisteredUser = !!req.user;
-// //         const voterIdentifier = isRegisteredUser ? req.user.id : req.ip;
-
-// //         const poll = await Poll.findById(pollId);
-// //         if (!poll) {
-// //             return res.status(404).json({ error: "Poll not found." });
-// //         }
-
-// //         const alreadyVoted = poll.votedBy.some(vote => 
-// //             (isRegisteredUser && vote.user?.toString() === voterIdentifier) ||
-// //             (!isRegisteredUser && vote.ipAddress === voterIdentifier)
-// //         );
-
-// //         if (alreadyVoted) {
-// //             return res.status(400).json({ error: "You have already voted on this poll." });
-// //         }
-
-// //         const option = poll.options.id(optionId);
-// //         if (option) {
-// //             option.votes += 1;
-// //         } else {
-// //             return res.status(404).json({ error: "Option not found." });
-// //         }
-        
-// //         const newVote = isRegisteredUser 
-// //             ? { user: voterIdentifier } 
-// //             : { ipAddress: voterIdentifier };
-        
-// //         poll.votedBy.push(newVote);
-
-// //         const updatedPoll = await poll.save();
-
-// //         // --- THIS IS THE NEW REAL-TIME LOGIC ---
-// //         // 1. Get the Socket.IO instance that we attached to the app in server.js
-// //         const io = req.app.get('io');
-        
-// //         // 2. Emit a 'poll-update' event specifically for this poll's "room"
-// //         //    This sends the new poll data to every client currently on this poll's page.
-// //         io.emit(`poll-update-${pollId}`, updatedPoll);
-        
-// //         // 3. Send the response back to the person who voted, as before.
-// //         res.status(200).json(updatedPoll);
-
-// //     } catch (error) {
-// //         console.error("Error voting on poll:", error);
-// //         res.status(500).json({ error: "Server error while voting." });
-// //     }
-// // };
-// export const voteOnPoll = async (req, res) => {
-//     try {
-//         const { pollId } = req.params;
-//         const { optionId } = req.body;
-        
-//         // YOUR SUPERIOR LOGIC for registered vs. anonymous users (PRESERVED)
-//         const isRegisteredUser = !!req.user;
-//         const voterIdentifier = isRegisteredUser ? req.user.id : req.ip;
-
-//         const poll = await Poll.findById(pollId);
-//         if (!poll) {
-//             return res.status(404).json({ error: "Poll not found." });
-//         }
-
-//         const alreadyVoted = poll.votedBy.some(vote =>
-//             (isRegisteredUser && vote.user?.toString() === voterIdentifier) ||
-//             (!isRegisteredUser && vote.ipAddress === voterIdentifier)
-//         );
-
-//         if (alreadyVoted) {
-//             return res.status(400).json({ error: "You have already voted on this poll." });
-//         }
-
-//         const option = poll.options.id(optionId);
-//         if (option) {
-//             option.votes += 1;
-//         } else {
-//             return res.status(404).json({ error: "Option not found." });
-//         }
-        
-//         const newVote = isRegisteredUser ? { user: voterIdentifier } : { ipAddress: voterIdentifier };
-//         poll.votedBy.push(newVote);
-
-//         // --- MERGED: Adding analytics tracking from your partner's code ---
-//         const { platform, browser, timeSpent } = req.body;
-//         poll.totalVotes += 1;
-//         poll.totalTimeSpent += timeSpent || 0;
-
-//         // Only add user-specific metadata if they are a registered user
-//         if (isRegisteredUser) {
-//              poll.votersMeta.push({
-//                 user: req.user.id,
-//                 platform,
-//                 browser,
-//                 timeSpent,
-//              });
-//         }
-//         // --- End of analytics tracking ---
-
-//         const updatedPoll = await poll.save();
-
-//         // YOUR REAL-TIME UPDATE LOGIC (PRESERVED)
-//         const io = req.app.get('io');
-//         io.to(pollId).emit('poll_update', updatedPoll); // Changed event name for clarity
-        
-//         res.status(200).json(updatedPoll);
-
-//     } catch (error) {
-//         console.error("Error voting on poll:", error);
-//         res.status(500).json({ error: "Server error while voting." });
-//     }
-// };
 import axios from 'axios';
 import Poll from '../models/Poll.js';
 import Notification from '../models/Notification.js';
@@ -439,6 +78,57 @@ export const createPoll = async (req, res) => {
     }
 };
 
+// export const voteOnPoll = async (req, res) => {
+//     try {
+//         const { pollId } = req.params;
+//         const { optionId, platform, browser, device, timeSpent } = req.body;
+        
+//         const isRegisteredUser = !!req.user;
+//         const voterIdentifier = isRegisteredUser ? req.user.id : req.ip;
+
+//         const poll = await Poll.findById(pollId);
+//         if (!poll) return res.status(404).json({ error: "Poll not found." });
+
+//         // Your robust check for existing voters is preserved
+//         const alreadyVoted = poll.votedBy.some(vote =>
+//             (isRegisteredUser && vote.user?.toString() === voterIdentifier) ||
+//             (!isRegisteredUser && vote.ipAddress === voterIdentifier)
+//         );
+//         if (alreadyVoted) return res.status(400).json({ error: "You have already voted on this poll." });
+
+//         const option = poll.options.id(optionId);
+//         if (option) {
+//             option.votes += 1;
+//         } else {
+//             return res.status(404).json({ error: "Option not found." });
+//         }
+        
+//         const newVote = isRegisteredUser ? { user: voterIdentifier } : { ipAddress: voterIdentifier };
+//         poll.votedBy.push(newVote);
+
+//         // --- THIS IS THE UPDATE ---
+//         poll.totalVotes += 1;
+//         poll.totalTimeSpent += timeSpent || 0;
+        
+//         // Save analytics metadata regardless of whether user is logged in
+//         if (isRegisteredUser) {
+//             poll.votersMeta.push({ user: req.user.id, platform, browser, device, timeSpent });
+//         } else {
+//             // NEW: Also save analytics for anonymous users (without the user ID)
+//             poll.votersMeta.push({ platform, browser, device, timeSpent });
+//         }
+//         // --- End of Update ---
+
+//         const updatedPoll = await poll.save();
+//         const io = req.app.get('io');
+//         io.to(pollId).emit('poll_update', updatedPoll);
+        
+//         res.status(200).json(updatedPoll);
+//     } catch (error) {
+//         console.error("Error voting on poll:", error);
+//         res.status(500).json({ error: "Server error while voting." });
+//     }
+// };
 export const voteOnPoll = async (req, res) => {
     try {
         const { pollId } = req.params;
@@ -450,7 +140,6 @@ export const voteOnPoll = async (req, res) => {
         const poll = await Poll.findById(pollId);
         if (!poll) return res.status(404).json({ error: "Poll not found." });
 
-        // Your robust check for existing voters is preserved
         const alreadyVoted = poll.votedBy.some(vote =>
             (isRegisteredUser && vote.user?.toString() === voterIdentifier) ||
             (!isRegisteredUser && vote.ipAddress === voterIdentifier)
@@ -458,27 +147,23 @@ export const voteOnPoll = async (req, res) => {
         if (alreadyVoted) return res.status(400).json({ error: "You have already voted on this poll." });
 
         const option = poll.options.id(optionId);
-        if (option) {
-            option.votes += 1;
-        } else {
-            return res.status(404).json({ error: "Option not found." });
-        }
+        if (!option) return res.status(404).json({ error: "Option not found." });
+        
+        option.votes += 1;
         
         const newVote = isRegisteredUser ? { user: voterIdentifier } : { ipAddress: voterIdentifier };
         poll.votedBy.push(newVote);
-
-        // --- THIS IS THE UPDATE ---
         poll.totalVotes += 1;
         poll.totalTimeSpent += timeSpent || 0;
         
-        // Save analytics metadata regardless of whether user is logged in
-        if (isRegisteredUser) {
-            poll.votersMeta.push({ user: req.user.id, platform, browser, device, timeSpent });
-        } else {
-            // NEW: Also save analytics for anonymous users (without the user ID)
-            poll.votersMeta.push({ platform, browser, device, timeSpent });
-        }
-        // --- End of Update ---
+        poll.votersMeta.push({ 
+            user: isRegisteredUser ? req.user.id : undefined, 
+            platform, 
+            browser, 
+            device, 
+            timeSpent,
+            votedAt: new Date() // Preserved from your original logic
+        });
 
         const updatedPoll = await poll.save();
         const io = req.app.get('io');
@@ -489,6 +174,48 @@ export const voteOnPoll = async (req, res) => {
         console.error("Error voting on poll:", error);
         res.status(500).json({ error: "Server error while voting." });
     }
+};
+export const getLast5Polls = async (req, res) => {
+  try {
+    const userId = req.user.id; // added by auth middleware
+
+    const polls = await Poll.find({ author: userId })
+      .sort({ createdAt: -1 }) // newest first
+      .limit(5)
+      .select("-votedBy -votersMeta"); // optional: exclude large arrays
+
+    res.status(200).json(polls);
+  } catch (error) {
+    console.error("Error fetching last 5 polls:", error);
+    res.status(500).json({ message: "Failed to fetch last polls" });
+  }
+};
+export const resultsPoll = async (req, res) => {
+  const { pollId } = req.query;
+
+  try {
+    const poll = await Poll.findById(pollId);
+    if (!poll) return res.status(404).json({ msg: "Poll not found" });
+
+    const total = poll.options.reduce((sum, o) => sum + o.votes, 0) || 1;
+    const options = poll.options.map((o) => ({
+      text: o.text,
+      votes: o.votes,
+      pct: Math.round((o.votes / total) * 100),
+    }));
+
+    res.set("Access-Control-Allow-Origin", "https://mail.google.com");
+    res.set("AMP-Access-Control-Allow-Source-Origin", SOURCE_ORIGIN);
+    res.set(
+      "Access-Control-Expose-Headers",
+      "AMP-Access-Control-Allow-Source-Origin"
+    );
+
+    res.json({ options });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
+  }
 };
 // Get all polls for the Trending page
 export const getAllPolls = async (req, res) => {
@@ -980,7 +707,140 @@ export const sendGmailPoll = async (req, res) => {
         res.status(500).send("Error sending email");
     }
 };
-export const voteFromGmail = async (req, res) => {
+export const sendPoll = async (req, res) => {
+  try {
+    const { recipients, pollId } = req.body;
+
+    // Fetch poll
+    const poll = await Poll.findById(pollId);
+    console.log("🚀 ~ sendPoll ~ poll:", poll);
+    if (!poll) return res.status(404).send("Poll not found");
+
+    // Extract valid emails
+    const emails = recipients
+      .map((r) => (typeof r === "string" ? r : r.email))
+      .filter(Boolean);
+
+    if (emails.length === 0)
+      return res.status(400).send("No valid recipient emails provided");
+
+    // ✅ Get fresh Microsoft access token
+    const accessToken = await getAccessToken();
+
+    // Configure Nodemailer transporter with OAuth2
+    const transporter = nodemailer.createTransport({
+      service: "hotmail", // works for Office365 too
+      auth: {
+        type: "OAuth2",
+        user: "notifications@pyngl.com",
+        clientId: process.env.MS_CLIENT_ID,
+        clientSecret: process.env.MS_CLIENT_SECRET,
+        refreshToken: process.env.MS_REFRESH_TOKEN,
+        accessToken, // freshly fetched
+      },
+    });
+
+    const voteUrl = process.env.VOTE_URL;
+
+    // Email content
+    const plain = `Vote now: ${poll.question}
+YES → ${voteUrl}/vote?pollId=${poll._id}&opt=yes
+NO → ${voteUrl}/vote?pollId=${poll._id}&opt=no`;
+
+    const html = `<div style="padding:20px;text-align:center;">
+      <h3>${poll.question}</h3>
+      <a href="${voteUrl}/vote?pollId=${poll._id}&opt=yes">YES</a> |
+      <a href="${voteUrl}/vote?pollId=${poll._id}&opt=no">NO</a>
+    </div>`;
+
+    const ampHtml = `<!doctype html>
+    <html ⚡4email data-css-strict>
+    <head>
+    <meta charset="utf-8">
+    <script async src="https://cdn.ampproject.org/v0.js"></script>
+    <script async custom-element="amp-form" src="https://cdn.ampproject.org/v0/amp-form-0.1.js"></script>
+    <script async custom-template="amp-mustache" src="https://cdn.ampproject.org/v0/amp-mustache-0.2.js"></script>
+    <script async custom-element="amp-selector" src="https://cdn.ampproject.org/v0/amp-selector-0.1.js"></script>
+
+    <style amp4email-boilerplate>body{visibility:hidden}</style>
+    <style amp-custom>
+        body { font-family: Arial,sans-serif; background:#f9fafb; padding:20px; color:#333; }
+        .poll-container { background:#fff; border-radius:25px; padding:20px; max-width:480px; margin:auto; border:1px solid #e5e7eb; box-shadow:0 4px 10px rgba(0,0,0,0.05); }
+        h2.vote { font-size:20px; margin:16px 0; text-align:center; color:#111827; }
+        .poll-question { font-size:18px; font-weight:600; margin-bottom:12px; text-align:start; }
+        amp-selector[role="listbox"] div[option] { display:block; padding:12px 16px; margin:8px 0; border-radius:20px; border:1px solid #d1d5db; background:#f3f4f6; cursor:pointer; font-size:14px; }
+        amp-selector[role="listbox"] div[option][selected] { background:linear-gradient(90deg,#ec4899,#8b5cf6); color:#fff; font-weight:600; }
+        input[type=submit] { width:100%; padding:14px; border:none; border-radius:25px; font-size:15px; font-weight:600; background:#ff4da6; color:#fff; cursor:pointer; margin-top:16px; transition:opacity .2s ease; }
+        input[type=submit]:hover { opacity:.9; }
+        .footer { margin-top:20px; text-align:center; font-size:12px; color:#6b7280; }
+    </style>
+    </head>
+    <body>
+    <h2 class="vote">Vote Now 🎉</h2>
+    <div class="poll-container">
+  <form method="post" action-xhr="https://api.pyngl.com/api/polls/vote">
+    <!-- Poll Question -->
+    <div class="poll-question">What's your favorite social media platform?</div>
+
+    <!-- Poll Image -->
+    <amp-img 
+      src="https://res.cloudinary.com/docmndwdf/image/upload/v1759733579/Pyngl/e6uxmohuwhgikqsbjkr9.jpg"
+      alt="Poll Image"
+      width="400" 
+      height="250" 
+      layout="responsive"
+      style="border-radius:15px; margin-bottom:16px;">
+    </amp-img>
+
+    <!-- Options -->
+    <amp-selector name="optionId" layout="container" role="listbox">
+      <div option="opt1">Instagram</div>
+      <div option="opt2">Twitter (X)</div>
+      <div option="opt3">LinkedIn</div>
+      <div option="opt4">YouTube</div>
+    </amp-selector>
+
+    <input type="submit" value="Submit Vote">
+
+    <div submit-success>
+      <template type="amp-mustache">
+        ✅ Your vote has been submitted!
+      </template>
+    </div>
+    <div submit-error>
+      <template type="amp-mustache">
+        ❌ Something went wrong. Please try again.
+      </template>
+    </div>
+  </form>
+</div>
+
+
+    <div class="footer">
+        <p>You’re receiving this interactive poll from</p>
+        <amp-img src="https://pyngl.com/assets/logo-okWbCxdr.png" alt="Pyngl Logo" width="100" height="35" layout="fixed"></amp-img>
+    </div>
+    </body>
+    </html>
+`;
+
+    // Send mail
+    await transporter.sendMail({
+      from: '"Pyngl Notifications" <notifications@pyngl.com>',
+      to: emails.join(", "),
+      subject: poll.question,
+      text: plain,
+      html,
+      amp: ampHtml,
+    });
+
+    res.send("✅ Poll sent via Office365 SMTP with OAuth2!");
+  } catch (err) {
+    console.error("❌ Error in sendPoll:", err);
+    res.status(500).send("Error sending poll email");
+  }
+};
+export const votePoll = async (req, res) => {
     const { pollId, opt } = req.body;
     try {
         const poll = await Poll.findById(pollId);
@@ -1067,4 +927,51 @@ export const testWhatsappMessage = async (req, res) => {
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
+};
+export const applyPollFilter = async (req, res) => {
+  try {
+    const { pollId } = req.params;
+    const { devices = [], browsers = [] } = req.body;
+
+    // Fetch poll
+    const poll = await Poll.findById(pollId);
+    if (!poll) return res.status(404).json({ message: "Poll not found" });
+
+    // --- Base data ---
+    const totalViews = poll.viewedBy?.length || 0;
+    let filteredVoters = poll.votersMeta || [];
+
+    // --- Apply filters ---
+    if (devices.length > 0) {
+      filteredVoters = filteredVoters.filter(v => devices.includes(v.device));
+    }
+
+    if (browsers.length > 0) {
+      filteredVoters = filteredVoters.filter(v => browsers.includes(v.browser));
+    }
+
+    // --- Compute analytics ---
+    const totalVotes = filteredVoters.length;
+
+    // Engagement = (Views / Votes) * 100
+    const avgEngagement =
+      totalVotes > 0 ? ((totalVotes / totalViews) * 100).toFixed(1) : 0;
+
+    // --- Response ---
+    res.json({
+      totalViews,
+      totalVotes,
+      avgEngagement,
+      filteredVoters: filteredVoters.map(v => ({
+        userId: v.user || "Anonymous",
+        device: v.device || "Unknown",
+        browser: v.browser || "Unknown",
+        votedAt: v.votedAt,
+        timeSpent: v.timeSpent || 0,
+      })),
+    });
+  } catch (error) {
+    console.error("Error applying filter:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
 };

@@ -100,7 +100,13 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto'; // Added from your teammate's code for OTP generation
-
+const PushSubscriptionSchema = new mongoose.Schema({
+    endpoint: String,
+    keys: {
+        p256dh: String,
+        auth: String,
+    },
+});
 const userSchema = new mongoose.Schema({
     username: { 
         type: String, 
@@ -145,7 +151,13 @@ const userSchema = new mongoose.Schema({
     lastNudgeSentAt: {
         type: Date
     },
-
+      pushSubscriptions: [PushSubscriptionSchema],
+location: {
+  latitude: { type: Number },
+  longitude: { type: Number },
+  accuracy: { type: Number },
+  updatedAt: { type: Date }
+},
     // --- Fields for password reset ---
     passwordResetOtp: String,
     passwordResetExpires: Date,
