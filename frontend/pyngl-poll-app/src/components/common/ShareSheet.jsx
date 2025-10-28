@@ -1016,7 +1016,7 @@ export default function ShareSheet({
                         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-sm mx-4 shadow-lg">
                             <h2 className="text-lg font-semibold mb-4 text-center">Share via Gmail</h2>
                             <p className="text-gray-600 dark:text-gray-300 text-sm text-center mb-6">To share this poll via Gmail, please connect your Google account first.</p>
-                            <button onClick={() => { window.location.href = `http://localhost:5000/auth/login?pollId=${poll._id}`; }} className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-full font-medium transition">Connect with Google</button>
+                            <button onClick={() => { window.location.href = `https://localhost:5000/auth/login?pollId=${poll._id}`; }} className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-full font-medium transition">Connect with Google</button>
                             <button onClick={() => setShowGmailPopup(false)} className="mt-4 w-full py-2.5 rounded-full border border-gray-300 dark:border-gray-600 font-medium hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button>
                         </div>
                     </div>

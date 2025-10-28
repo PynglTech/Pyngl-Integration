@@ -25,7 +25,7 @@ router.get('/auth/google', passport.authenticate('google', {
 }));
 router.post('/register', registerUser);
 router.post('/login', loginUser);
-router.post('/forgot-password', forgotPassword);
+router.post('/forgotpassword', forgotPassword);
 router.post('/forgotpassword-otp', forgotPasswordOtp); // New route for OTP-based forgot password
 router.post('/resetpassword-otp', resetPasswordOtp); // New route for OTP-based reset password
 router.put('/resetpassword', resetPassword); // PUT is often used for updates
