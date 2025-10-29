@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import useAuthStore from "../../store/useAuthStore";
 import useNotificationStore from "../../store/useNotificationStore";
-import { Bell, User, CheckCheck } from "lucide-react";
+import { Bell, CheckCheck } from "lucide-react";
 
-// --- Reusable sub-components for the header ---
+// --- Click Outside Hook ---
 const useClickOutside = (ref, handler) => {
   useEffect(() => {
     const listener = (event) => {
@@ -20,16 +20,19 @@ const useClickOutside = (ref, handler) => {
   }, [ref, handler]);
 };
 
+// --- Profile Avatar ---
 const ProfileAvatar = () => {
   const { userInfo } = useAuthStore();
   const getInitials = (firstName = "", lastName = "") =>
     `${firstName?.[0] || ""}${lastName?.[0] || ""}`.toUpperCase();
+
   if (!userInfo) return null;
+
   return (
     <Link
       to="/profile"
       title="Profile"
-      className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+      className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition"
     >
       {userInfo.profilePhoto ? (
         <img
@@ -38,7 +41,7 @@ const ProfileAvatar = () => {
           className="w-8 h-8 rounded-full object-cover"
         />
       ) : (
-        <div className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center font-bold text-sm">
+        <div className="w-8 h-8 rounded-full bg-pink-500 text-white flex items-center justify-center font-bold text-sm">
           {getInitials(userInfo.firstName, userInfo.lastName)}
         </div>
       )}
@@ -46,8 +49,10 @@ const ProfileAvatar = () => {
   );
 };
 
+// --- Notifications Panel ---
 const NotificationsPanel = ({ onClose }) => {
   const { notifications, unreadCount, markAllAsRead } = useNotificationStore();
+
   return (
     <div className="absolute top-14 right-0 w-80 md:w-96 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-fade-in-down">
       <div className="p-4 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
@@ -94,62 +99,77 @@ const NotificationsPanel = ({ onClose }) => {
   );
 };
 
-// --- The Main Desktop Navigation Component ---
+// --- Main Desktop Navigation ---
 const DesktopNav = () => {
   const { userInfo } = useAuthStore();
   const { unreadCount } = useNotificationStore();
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const notificationsPanelRef = useRef(null);
+  const location = useLocation();
+
   useClickOutside(notificationsPanelRef, () => setIsNotificationsOpen(false));
 
+  // Helper for active nav highlighting
+  const isActive = (path) =>
+    location.pathname === path
+      ? "text-pink-500 font-semibold"
+      : "text-gray-600 dark:text-gray-300 hover:text-pink-500 transition-colors";
+
   return (
-    <header className="sticky top-0 z-50 flex justify-between items-center px-6 lg:px-24 py-3 border-b border-gray-200 bg-white/80 backdrop-blur-md">
-      <Link to="/">
-        <img src="/pynglLogoImage.png" alt="Pyngl Logo" className="h-8" />
+    <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 lg:px-24 py-3 border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md transition-colors duration-300">
+      {/* --- LOGO --- */}
+      <Link to="/" className="flex items-center gap-2">
+        {/* Light mode logo */}
+        <img
+          src="/pynglLogoImage.png"
+          alt="Pyngl Logo"
+          className="h-8 block dark:hidden"
+        />
+        {/* Dark mode logo */}
+        <img
+          src="/logo_dark.svg"
+          alt="Pyngl Dark Logo"
+          className="h-8 hidden dark:block"
+        />
       </Link>
+
+      {/* --- NAVIGATION LINKS --- */}
       <nav className="hidden lg:flex items-center gap-8">
-        <Link to="/" className="font-semibold text-pink-500">
+        <Link to="/" className={isActive("/dashboard")}>
           Home
         </Link>
-        <Link
-          to="/trending"
-          className="font-semibold text-gray-600 hover:text-pink-500 transition-colors"
-        >
+        <Link to="/trending" className={isActive("/trending")}>
           Trending
         </Link>
-        <Link
-          to="/analytics"
-          className="font-semibold text-gray-600 hover:text-pink-500 transition-colors"
-        >
+        <Link to="/analytics" className={isActive("/analytics")}>
           Analytics
         </Link>
-        <Link
-          to="/polls"
-          className="font-semibold text-gray-600 hover:text-pink-500 transition-colors"
-        >
+        <Link to="/polls" className={isActive("/polls")}>
           Polls activity
         </Link>
       </nav>
+
+      {/* --- RIGHT SIDE --- */}
       <div className="hidden lg:flex items-center gap-4">
-        {/* If user is NOT logged in */}
+        {/* If NOT logged in */}
         {!userInfo ? (
           <>
             <Link
               to="/login"
-              className="font-bold text-gray-800 hover:text-pink-500 transition-colors"
+              className="font-bold text-gray-800 dark:text-gray-200 hover:text-pink-500 transition-colors"
             >
               Log In
             </Link>
             <Link
               to="/signup"
-              className="bg-gray-800 text-white font-bold py-2 px-5 rounded-lg hover:bg-gray-700 transition-all duration-300 hover:scale-105"
+              className="bg-gray-800 dark:bg-pink-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-gray-700 dark:hover:bg-pink-700 transition-all duration-300 hover:scale-105"
             >
               Sign Up
             </Link>
           </>
         ) : (
-          /* If user IS logged in */
           <>
+            {/* Notifications */}
             <div ref={notificationsPanelRef} className="relative">
               <button
                 onClick={() => setIsNotificationsOpen((prev) => !prev)}
@@ -171,6 +191,7 @@ const DesktopNav = () => {
               )}
             </div>
 
+            {/* Profile */}
             <ProfileAvatar />
           </>
         )}

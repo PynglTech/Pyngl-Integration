@@ -7,6 +7,8 @@ import sendEmail from '../utils/sendEmail.js';
 import cron from 'node-cron'; // NEW: Imported for scheduler
 import User from '../models/User.js';
 import { sendWhatsappMessage } from '../utils/whatsappService.js';
+import nodemailer from 'nodemailer';
+
 // @desc    Generate an image using Stability AI
 // @route   POST /api/polls/generate-image
 export const generateImage = async (req, res) => {
@@ -689,24 +691,64 @@ export const generateShareableImage = async (req, res) => {
 };
 const SOURCE_ORIGIN = process.env.FRONTEND_URL || 'https://localhost:5173';
 
-export const sendGmailPoll = async (req, res) => {
-    try {
-        const { userEmail, recipients, pollId } = req.body;
-        const user = await GoogleUser.findOne({ email: userEmail });
-        if (!user) return res.status(404).send("User not found");
+// export const sendGmailPoll = async (req, res) => {
+//   try {
+//     const { userEmail, recipients, pollId } = req.body;
+//     console.log("📩 Incoming Gmail share:", { userEmail, recipients, pollId });
 
-        const poll = await Poll.findById(pollId);
-        if (!poll) return res.status(404).send("Poll not found");
+//     const user = await GoogleUser.findOne({ email: userEmail });
+//     if (!user) return res.status(404).send("User not found");
 
-        const emails = recipients.map(r => (typeof r === "string" ? r : r.email)).filter(Boolean);
-        if (emails.length === 0) return res.status(400).send("No valid recipient emails provided");
+//     const poll = await Poll.findById(pollId);
+//     if (!poll) return res.status(404).send("Poll not found");
 
-        await Promise.all(emails.map(email => sendEmail(user, email, poll)));
-        res.send("Poll sent via Gmail!");
-    } catch (err) {
-        res.status(500).send("Error sending email");
+//     const emails = recipients
+//       .map((r) => (typeof r === "string" ? r : r.email))
+//       .filter(Boolean);
+
+//     if (emails.length === 0)
+//       return res.status(400).send("No valid recipient emails provided");
+
+//     console.log("📤 Sending to:", emails);
+
+//     await Promise.all(emails.map((email) => sendEmail(user, email, poll)));
+
+//     res.send("Poll sent via Gmail!");
+//   } catch (err) {
+//     console.error("❌ sendGmailPoll ERROR:", err);
+//     if (err.response?.data) console.error("📦 Gmail API Error:", err.response.data);
+//     res.status(500).json({ message: "Error sending email", error: err.message });
+//   }
+// };
+
+
+/* -------------------- GMAIL AMP POLLS -------------------- */
+// ✅ sendPoll controller
+// 🔹 Helper: Get fresh access token from MS
+async function getAccessToken() {
+  const res = await fetch(
+    `https://login.microsoftonline.com/${process.env.MS_TENANT_ID}/oauth2/v2.0/token`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: process.env.MS_CLIENT_ID,
+        client_secret: process.env.MS_CLIENT_SECRET,
+        refresh_token: process.env.MS_REFRESH_TOKEN,
+        grant_type: "refresh_token",
+        scope: "https://outlook.office365.com/SMTP.Send offline_access", // 👈 IMPORTANT
+      }),
     }
-};
+  );
+
+  const data = await res.json();
+  if (!data.access_token) {
+    console.error("❌ Failed to fetch Microsoft access token:", data);
+    throw new Error("Could not fetch Microsoft access token");
+  }
+  return data.access_token;
+}
+
 export const sendPoll = async (req, res) => {
   try {
     const { recipients, pollId } = req.body;
