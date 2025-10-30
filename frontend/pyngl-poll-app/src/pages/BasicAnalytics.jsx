@@ -69,7 +69,7 @@ const BasicAnalytics = () => {
             setLoading(true);
             try {
                 const res = await apiClient.get(`/api/polls/${pollId}/analytics`);
-                setPoll(enhancePollData(res.data));
+                setPoll(enhancePollDataDynamic(res.data));
             } catch (err) {
                 console.error("Failed to fetch analytics:", err);
             } finally {

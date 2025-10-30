@@ -1003,7 +1003,7 @@ export default function ShareSheet({
                 <div className="px-6 pb-8 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex gap-4">
                         <button onClick={() => setSelected([])} className="flex-1 py-3 bg-transparent border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 rounded-full font-semibold text-base transition-colors hover:bg-gray-100 dark:hover:bg-gray-800">
-                            Cancel
+                            Clear
                         </button>
                         <button onClick={handleStartMultiShare} disabled={selected.length === 0} className="flex-1 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full font-semibold text-base shadow-lg transition-all hover:shadow-xl disabled:opacity-50 disabled:shadow-none">
                             Share {selected.length > 0 ? `(${selected.length})` : ""}

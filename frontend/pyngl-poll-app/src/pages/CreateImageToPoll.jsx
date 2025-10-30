@@ -912,7 +912,7 @@ return (
                         placeholder="Which meeting time works best?"
                         value={question}
                         onChange={(e) => setQuestion(e.target.value)}
-                        className="w-full rounded-full border border-gray-300 dark:border-gray-600 pl-12 pr-4 py-3 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-pyngl-pink"
+                        className="w-full rounded-full border border-gray-300 dark:border-gray-600 pl-12 pr-4 py-3 bg-gray-100 dark:text-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-pyngl-pink"
                     />
                 </div>
             </Card>
@@ -943,8 +943,8 @@ return (
                     {imagePreview && (
                         <div className="relative w-full flex items-center justify-center">
                             <img src={imagePreview} alt="Poll Preview" className="rounded-lg max-h-48 object-contain" />
-                            <button onClick={() => { setImageFile(null); setImagePreview(null); setStatus("idle"); }} className="absolute top-2 right-2 bg-white/70 dark:bg-gray-900/70 rounded-full p-1.5 shadow-md hover:scale-110 transition-transform">
-                                <X className="w-4 h-4" />
+                            <button onClick={() => { setImageFile(null); setImagePreview(null); setStatus("idle"); }} className="absolute top-0 right-14 bg-white/70 dark:bg-gray-900/70 rounded-full p-1.5 shadow-md hover:scale-110 transition-transform">
+                                <X className="w-4 h-4 dark:text-white" />
                             </button>
                         </div>
                     )}
@@ -961,7 +961,7 @@ return (
                                 placeholder={`Option ${i + 1}`}
                                 value={opt}
                                 onChange={(e) => handleChangeOption(i, e.target.value)}
-                                className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-3 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-pyngl-pink"
+                                className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-3 bg-gray-100 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-pyngl-pink"
                             />
                             {options.length > 2 && (
                                 <button onClick={() => handleRemoveOption(i)} className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 p-1"><Trash2 className="w-5 h-5" /></button>
@@ -982,7 +982,7 @@ return (
                     <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Age range</p>
                     <div className="flex flex-wrap gap-2">
                         {ageRanges.map(range => (
-                            <button key={range} onClick={() => setSelectedAgeRange(range)} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedAgeRange === range ? 'bg-pyngl-purple text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
+                            <button key={range} onClick={() => setSelectedAgeRange(range)} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedAgeRange === range ? 'bg-pyngl-pink text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
                                 {range}
                             </button>
                         ))}
@@ -992,7 +992,7 @@ return (
                     <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Poll duration</p>
                     <div className="flex flex-wrap gap-2">
                         {durations.map(duration => (
-                            <button key={duration} onClick={() => setSelectedDuration(duration)} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedDuration === duration ? 'bg-pyngl-purple text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
+                            <button key={duration} onClick={() => setSelectedDuration(duration)} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedDuration === duration ? 'bg-pyngl-pink text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
                                 {duration}
                             </button>
                         ))}
