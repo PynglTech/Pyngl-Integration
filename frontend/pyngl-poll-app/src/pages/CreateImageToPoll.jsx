@@ -893,7 +893,7 @@ return (
                 </>
             ) : (
                 // On Mobile/Tablet, show the simple header
-               <div className="sticky top-0 z-40 flex items-center justify-between p-4 border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-gray-200 dark:border-gray-700">
+               <div className="sticky top-0 z-40 flex items-center justify-between p-4 border-b bg-white/80 dark:text-white dark:bg-gray-800/80 backdrop-blur-md border-gray-200 dark:border-gray-700">
                 <button onClick={() => navigate(-1)} className="p-1"><ArrowLeft className="w-6 h-6" /></button>
                 <h1 className="text-lg font-semibold">Image to Poll</h1>
                 <button onClick={() => navigate('/notifications')} className="p-1"><Bell className="w-6 h-6" /></button>
@@ -998,23 +998,25 @@ return (
                         ))}
                     </div>
                 </div>
-                <label className="flex items-center cursor-pointer mt-6">
+                <label className="flex items-center cursor-pointer mt-6 pb-16">
                     <input type="checkbox" checked={shareToTrending} onChange={(e) => setShareToTrending(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-pyngl-pink focus:ring-pyngl-pink" />
                     <span className="text-sm text-gray-600 dark:text-gray-400 ml-3">Also share to Trending polls</span>
                 </label>
             </Card>
           {/* Desktop-only button, part of the normal flow */}
                 {isDesktop && (
-                    <div className="mt-6">
+                     <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-t border-gray-200 dark:border-gray-700">
+                    <div className="max-w-2xl mx-auto">
                         <button
                             onClick={handlePreview}
                             disabled={status === "compressing" || status === "uploading"}
-                            className="w-full py-4 rounded-full text-white font-semibold bg-gradient-to-r from-cyan-400 to-pink-500 hover:opacity-90 transition-opacity disabled:opacity-50"
+                            className="w-full py-3 rounded-full text-white font-semibold bg-gradient-to-r from-cyan-400 to-pink-500 hover:opacity-90 transition-opacity disabled:opacity-50"
                         >
                             Preview Poll
                         </button>
                         {errorMessage && <p className="text-sm text-red-500 mt-2 text-center">{errorMessage}</p>}
                     </div>
+                </div>
                 )}
             </div>
 

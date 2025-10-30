@@ -309,7 +309,7 @@ export default function SharePage() {
         </div>
 
         {/* CSV Upload */}
-        <div className="space-y-4">
+        <div className="space-y-4 pb-28">
           <h2 className="text-base font-medium">Upload CSV file</h2>
           <div className="relative">
             <input
@@ -334,7 +334,8 @@ export default function SharePage() {
         </div>
 
         {/* Submit */}
-        <div className="p-6 pb-20">
+        <div className="fixed bottom-0 left-0 right-0 p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-t border-gray-200 dark:border-gray-700">
+          <div className="max-w-2xl mx-auto">
           <button
             onClick={handleShare}
             disabled={isSending}
@@ -346,6 +347,7 @@ export default function SharePage() {
           >
             {isSending ? "Sending..." : "Share poll"}
           </button>
+          </div>
         </div>
       </main>
     </div>

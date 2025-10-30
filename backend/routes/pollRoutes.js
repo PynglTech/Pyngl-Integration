@@ -160,68 +160,73 @@ router.get('/live', getLivePolls);
 router.post('/generate-image', generateImage); // Kept as public assuming it might be a general tool
 
 // NEW: Advanced Social Media Preview Route from friend's code
-router.get('/:id/preview', async (req, res) => {
+ router.get('/:id/preview', async (req, res) => {
     try {
-        const poll = await Poll.findById(req.params.id);
-        if (!poll) {
-            return res.status(404).send("Poll not found");
-        }
-        const platform = req.query.platform || "twitter";
-        const imageUrl = poll.previewImages?.[platform] || poll.imageUrl || 'https://pyngl.com/default-share-image.png'; // Fallback image
-        
-        const platformData = {
-            instagram: { title: "📊 Vote on this Instagram Poll!", description: `Join the conversation: ${poll.question}`, width: 1080, height: 1920 },
-            twitter: { title: "🗳️ Vote on this Twitter Poll!", description: `What do you think? ${poll.question}`, width: 1200, height: 628 },
-            linkedin: { title: "📈 Professional Poll - Your Opinion Matters", description: `Share your professional insight: ${poll.question}`, width: 1200, height: 627 },
-            facebook: { title: "👥 Community Poll - Make Your Voice Heard", description: `Join our community discussion: ${poll.question}`, width: 1200, height: 630 },
-            whatsapp: { title: "💬 Poll Shared via WhatsApp", description: `Vote and share your opinion: ${poll.question}`, width: 1200, height: 630 },
-            telegram: { title: "📢 Telegram Poll", description: `Cast your vote: ${poll.question}`, width: 1200, height: 630 },
-            gmail: { title: "📧 Email Poll", description: `Vote on this poll: ${poll.question}`, width: 1200, height: 600 },
-            default: { title: "Have Your Say in this Poll!", description: `Join the conversation: ${poll.question}`, width: 1200, height: 630 }
-        };
+      // 1. Fetch Poll (This is the unavoidable latency)
+      const poll = await Poll.findById(req.params.id);
+      if (!poll) {
+        return res.status(404).send("Poll not found");
+      }
 
-        const currentPlatform = platformData[platform] || platformData.default;
-        const pollUrl = `${process.env.FRONTEND_URL}/poll/${poll._id}`;
+      const platform = req.query.platform || "twitter";
+      const imageUrl = poll.previewImages?.[platform] || poll.imageUrl;
+      
+      // --- Define Metadata and Image Dimensions ---
+      const platformData = {
+          // NOTE: These dimensions are for the META TAGS, not the actual image size in CSS.
+          instagram: { title: "📊 Vote on this Instagram Poll!", description: `Join the conversation: ${poll.question}`, width: 1080, height: 1920 },
+          twitter: { title: "🗳️ Vote on this Twitter Poll!", description: `What do you think? ${poll.question}`, width: 1200, height: 628 },
+          linkedin: { title: "📈 Professional Poll - Your Opinion Matters", description: `Share your professional insight: ${poll.question}`, width: 1200, height: 627 },
+          facebook: { title: "👥 Community Poll - Make Your Voice Heard", description: `Join our community discussion: ${poll.question}`, width: 1200, height: 630 },
+          whatsapp: { title: "💬 Poll Shared via WhatsApp", description: `Vote and share your opinion: ${poll.question}`, width: 1200, height: 630 },
+          telegram: { title: "📢 Telegram Poll", description: `Cast your vote: ${poll.question}`, width: 1200, height: 630 },
+          youtube: { title: "🎥 YouTube Poll", description: `Check out this poll: ${poll.question}`, width: 1280, height: 720 },
+          gmail: { title: "📧 Email Poll", description: `Vote on this poll: ${poll.question}`, width: 1200, height: 600 },
+      };
 
-        const metaTags = `
-            <meta property="og:type" content="article" />
-            <meta property="og:title" content="${currentPlatform.title}" />
-            <meta property="og:description" content="${currentPlatform.description}" />
-            <meta property="og:url" content="${pollUrl}" />
-            <meta property="og:site_name" content="Pyngl" />
-            <meta property="og:image" content="${imageUrl}" />
-            <meta property="og:image:width" content="${currentPlatform.width}" />
-            <meta property="og:image:height" content="${currentPlatform.height}" />
-            <meta name="twitter:card" content="summary_large_image" />
-            <meta name="twitter:title" content="${currentPlatform.title}" />
-            <meta name="twitter:description" content="${currentPlatform.description}" />
-            <meta name="twitter:image" content="${imageUrl}" />
-        `;
+      const currentPlatform = platformData[platform] || platformData.twitter;
+      const imageWidth = currentPlatform.width || 1200;
+      const imageHeight = currentPlatform.height || 630;
+      
+      // --- URL Construction ---
+      const baseUrl = req.get('host').includes('localhost') || req.get('host').includes('loca.lt') 
+        ? `${req.protocol}://${req.get('host')}`
+        : 'https://yourdomain.com';
+      
+      const pollUrl = `${baseUrl}/poll/${poll._id}/vote`;
 
-//         res.send(`
-//             <!DOCTYPE html>
-//             <html lang="en">
-//             <head>
-//                 <meta charset="UTF-8" />
-//                 <title>${currentPlatform.title}</title>
-//                 ${metaTags}
-//                 <meta http-equiv="refresh" content="0; url=${pollUrl}" />
-//                 <style>
-//                     body { font-family: sans-serif; text-align: center; padding-top: 50px; background-color: #f0f2f5; }
-//                     p { font-size: 18px; color: #333; }
-//                 </style>
-//             </head>
-//             <body>
-//                 <p>Redirecting you to the poll...</p>
-//             </body>
-//             </html>
-//         `);
-//     } catch (err) {
-//         console.error('Preview generation error:', err);
-//         res.status(500).send("Error generating poll preview.");
-//     }
-// });
- res.send(`
+      // 2. Build Meta Tags Dynamically
+      const metaTags = [
+          // Standard OG Tags
+          `<meta property="og:type" content="article" />`,
+          `<meta property="og:title" content="${currentPlatform.title}" />`,
+          `<meta property="og:description" content="${currentPlatform.description}" />`,
+          
+          // CRITICAL FIX: og:url must point to the target PWA voting page
+          `<meta property="og:url" content="${pollUrl}" />`,
+          
+          `<meta property="og:site_name" content="Your Poll App" />`,
+          
+          // Twitter Card Tags
+          `<meta name="twitter:card" content="summary_large_image" />`,
+          `<meta name="twitter:title" content="${currentPlatform.title}" />`,
+          `<meta name="twitter:description" content="${currentPlatform.description}" />`,
+      ];
+
+      if (imageUrl) {
+          metaTags.push(`
+              <meta property="og:image" content="${imageUrl}" />
+              <meta property="og:image:width" content="${imageWidth}" />
+              <meta property="og:image:height" content="${imageHeight}" />
+              <meta property="og:image:type" content="image/png" />
+              <meta property="og:image:secure_url" content="${imageUrl}" />
+              <meta name="twitter:image" content="${imageUrl}" />
+              <meta name="twitter:image:alt" content="Poll preview image" />
+          `);
+      }
+
+      // 3. Send Response
+      res.send(`
         <!DOCTYPE html>
         <html lang="en">
         <head>

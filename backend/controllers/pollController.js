@@ -421,6 +421,7 @@ export const trackClick = async (req, res) => {
     res.status(500).json({ msg: "Server error" });
   }
 };
+
 export const getPollAnalytics = async (req, res) => {
   try {
     const { pollId } = req.params;
@@ -484,6 +485,7 @@ export const getPollAnalytics = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
 export const generateBrandedVariant = (masterImageSrc, logoSrc, options) => {
     return new Promise((resolve, reject) => {
         const masterImage = new Image();

@@ -471,17 +471,19 @@ export default function PreviewImagePoll() {
                         </div>
 
                         {/* QR Code & Sharable Link Card */}
-                        <div className="mt-8 p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 text-center">
+                        <div className="mt-8 p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 text-center pb-24">
                             <div className="mx-auto" style={{ width: 'fit-content' }}>
                                <StyledQRCode pollUrl={pollUrl} />
                             </div>
                         </div>
                         
                         {/* Share Button */}
-                        <div className="mt-8">
-                             <button onClick={handleSharePoll} className="w-full py-4 rounded-full text-white font-semibold bg-gradient-to-r from-cyan-400 to-pink-500 hover:opacity-90 transition-opacity">
-                                Share Poll
-                            </button>
+                        <div className="mt-8 fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-t border-gray-200 dark:border-gray-700">
+                            <div className="max-w-2xl mx-auto">
+                                <button onClick={handleSharePoll} className="w-full py-4 rounded-full text-white font-semibold bg-gradient-to-r from-cyan-400 to-pink-500 hover:opacity-90 transition-opacity">
+                                    Share Poll
+                                </button>
+                            </div>
                         </div>
                     </main>
                 </>
@@ -503,7 +505,7 @@ export default function PreviewImagePoll() {
                             </div>
                             <div className="mt-6"><StyledQRCode pollUrl={pollUrl} hideForScreenshot={true} /></div>
                         </div>
-                        <div className="mt-6 space-y-3">
+                        <div className="mt-6 space-y-3 pb-24">
                             <button onClick={handleSharePoll} className="w-full py-3 rounded-full text-white font-medium bg-gradient-to-r from-cyan-400 to-pink-500 flex items-center justify-center hover:opacity-90">Share Poll</button>
                         </div>
                     </div>

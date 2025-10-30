@@ -925,7 +925,7 @@ export default function TextToPoll() {
                     </div>
                 </>
             ) : (
-                <div className="sticky top-0 z-40 flex items-center justify-between p-4 border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-gray-200 dark:border-gray-700">
+                <div className="sticky top-0 z-40 flex items-center justify-between p-4 border-b bg-white/80 dark:bg-gray-800/80 dark:text-white backdrop-blur-md border-gray-200 dark:border-gray-700">
                     <button onClick={() => navigate(-1)} className="p-1"><ArrowLeft className="w-6 h-6" /></button>
                     <h1 className="text-lg font-semibold">Text to Poll</h1>
                     <button onClick={() => navigate('/notifications')} className="p-1"><Bell className="w-6 h-6" /></button>

@@ -1386,7 +1386,7 @@ export default function TrendingPolls() {
               {isLoading ? (
                 <InlineLoader text="Fetching polls..." />
               ) : searchedPolls.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6 w-full">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
                   {searchedPolls.map((poll) => (
                     <PollCard key={poll._id} poll={poll} />
                   ))}
