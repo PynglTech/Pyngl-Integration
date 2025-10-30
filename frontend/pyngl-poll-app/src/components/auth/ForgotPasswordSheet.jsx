@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { forgotPasswordSchema, resetPasswordSchema } from '../../utils/validationSchemas';
@@ -11,17 +12,20 @@ const ForgotPasswordSheet = ({ openSheet, closeSheet }) => {
     const [step, setStep] = useState('enterEmail');
     const [emailForReset, setEmailForReset] = useState('');
     const { forgotPassword, resetPassword, loading, error } = useAuthStore();
+    const navigate = useNavigate();
     
     const emailForm = useForm({ resolver: zodResolver(forgotPasswordSchema) });
-    const onEmailSubmit = async (data) => {
-        try {
-            await forgotPassword(data.email);
-            setEmailForReset(data.email);
-            setStep('enterOtp');
-        } catch (e) {
-            console.error(e);
-        }
-    };
+  const onEmailSubmit = async (data) => {
+  try {
+    await forgotPassword(data.email);
+    setEmailForReset(data.email);
+    setStep('enterOtp');
+    resetForm.reset({ otp: '', password: '' }); // ✅ clear old values
+  } catch (e) {
+    console.error(e);
+  }
+};
+
 
     const resetForm = useForm({ resolver: zodResolver(resetPasswordSchema) });
     const onResetSubmit = async (data) => {
@@ -67,7 +71,7 @@ const ForgotPasswordSheet = ({ openSheet, closeSheet }) => {
                 <div className="text-center p-4">
                     <h2 className="text-xl font-bold">Success!</h2>
                     <p className="text-gray-600 mt-2">Your password has been reset. Please log in with your new password.</p>
-                    <button onClick={() => openSheet('login')} className="w-full mt-6 py-3 px-4 bg-pyngl-pink text-white font-bold rounded-full shadow-lg">BACK TO LOGIN</button>
+                    <button onClick={() => navigate('/login')} className="w-full mt-6 py-3 px-4 bg-pyngl-pink text-white font-bold rounded-full shadow-lg">BACK TO LOGIN</button>
                 </div>
             </BottomSheet>
         );

@@ -942,7 +942,7 @@ export default function TextToPoll() {
                             placeholder="Enter your question..."
                             value={question}
                             onChange={(e) => setQuestion(e.target.value)}
-                            className="w-full rounded-full border border-gray-300 dark:border-gray-600 pl-12 pr-4 py-3 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-pyngl-pink"
+                            className="w-full rounded-full border border-gray-300 dark:border-gray-600 pl-12 pr-4 py-3 bg-gray-100 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-pyngl-pink"
                         />
                     </div>
                 </Card>
@@ -957,7 +957,7 @@ export default function TextToPoll() {
                                     placeholder={`Option ${i + 1}`}
                                     value={opt}
                                     onChange={(e) => handleChangeOption(i, e.target.value)}
-                                    className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-3 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-pyngl-pink"
+                                    className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-3 bg-gray-100 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-pyngl-pink"
                                 />
                                 {options.length > 2 && (
                                     <button onClick={() => handleRemoveOption(i)} className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 p-1"><Trash2 className="w-5 h-5" /></button>
@@ -978,7 +978,7 @@ export default function TextToPoll() {
                         <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Age range</p>
                         <div className="flex flex-wrap gap-2">
                             {ageRanges.map(range => (
-                                <button key={range} onClick={() => setSelectedAgeRange(range)} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedAgeRange === range ? 'bg-pyngl-purple text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
+                                <button key={range} onClick={() => setSelectedAgeRange(range)} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedAgeRange === range ? 'bg-pyngl-pink text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
                                     {range}
                                 </button>
                             ))}
@@ -988,7 +988,7 @@ export default function TextToPoll() {
                         <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Poll duration</p>
                         <div className="flex flex-wrap gap-2">
                             {durations.map(duration => (
-                                <button key={duration} onClick={() => setSelectedDuration(duration)} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedDuration === duration ? 'bg-pyngl-purple text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
+                                <button key={duration} onClick={() => setSelectedDuration(duration)} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedDuration === duration ? 'bg-pyngl-pink text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
                                     {duration}
                                 </button>
                             ))}

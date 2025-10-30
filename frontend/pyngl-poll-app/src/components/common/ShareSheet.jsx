@@ -1003,7 +1003,7 @@ export default function ShareSheet({
                 <div className="px-6 pb-8 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex gap-4">
                         <button onClick={() => setSelected([])} className="flex-1 py-3 bg-transparent border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 rounded-full font-semibold text-base transition-colors hover:bg-gray-100 dark:hover:bg-gray-800">
-                            Cancel
+                            Clear
                         </button>
                         <button onClick={handleStartMultiShare} disabled={selected.length === 0} className="flex-1 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full font-semibold text-base shadow-lg transition-all hover:shadow-xl disabled:opacity-50 disabled:shadow-none">
                             Share {selected.length > 0 ? `(${selected.length})` : ""}
@@ -1016,7 +1016,7 @@ export default function ShareSheet({
                         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-sm mx-4 shadow-lg">
                             <h2 className="text-lg font-semibold mb-4 text-center">Share via Gmail</h2>
                             <p className="text-gray-600 dark:text-gray-300 text-sm text-center mb-6">To share this poll via Gmail, please connect your Google account first.</p>
-                            <button onClick={() => { window.location.href = `http://localhost:5000/auth/login?pollId=${poll._id}`; }} className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-full font-medium transition">Connect with Google</button>
+                            <button onClick={() => { window.location.href = `https://localhost:5000/auth/login?pollId=${poll._id}`; }} className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-full font-medium transition">Connect with Google</button>
                             <button onClick={() => setShowGmailPopup(false)} className="mt-4 w-full py-2.5 rounded-full border border-gray-300 dark:border-gray-600 font-medium hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button>
                         </div>
                     </div>

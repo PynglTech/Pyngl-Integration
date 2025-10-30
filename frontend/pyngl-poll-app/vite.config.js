@@ -16,6 +16,11 @@ server: {
         changeOrigin: true, // Recommended for virtual hosted sites
         secure: false,      // Can be needed if backend is not https
       },
+       '/auth': {
+        target: 'https://localhost:5000'|| 'https://192.168.1.11:5000', // IMPORTANT: Replace with your backend server's address
+        changeOrigin: true, // Recommended for virtual hosted sites
+        secure: false,      // Can be needed if backend is not https
+      }
     },
   },
 })

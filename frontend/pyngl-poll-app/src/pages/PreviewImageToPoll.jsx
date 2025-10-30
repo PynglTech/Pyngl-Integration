@@ -475,13 +475,6 @@ export default function PreviewImagePoll() {
                             <div className="mx-auto" style={{ width: 'fit-content' }}>
                                <StyledQRCode pollUrl={pollUrl} />
                             </div>
-                            <p className="font-semibold mt-4">Shareable link</p>
-                            <div className="mt-2 flex items-center justify-between bg-gray-100 dark:bg-gray-700 rounded-full p-2 max-w-sm mx-auto">
-                                <span className="text-sm text-gray-500 dark:text-gray-300 pl-3 truncate">{pollUrl.replace('https://','')}</span>
-                                <button onClick={copyToClipboard} className="bg-white dark:bg-gray-600 rounded-full p-2 shadow-sm hover:bg-gray-50 flex-shrink-0">
-                                    <Copy size={16} />
-                                </button>
-                            </div>
                         </div>
                         
                         {/* Share Button */}
