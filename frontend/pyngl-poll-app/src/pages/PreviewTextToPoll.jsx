@@ -477,12 +477,12 @@ export default function PreviewTextPoll() {
               </div>
               <div className="flex justify-end mt-4">
                 <img
-                  src="/pynglLogoImage.png"
+                  src="/assets/pynglLogoImage.png"
                   alt="Pyngl Logo"
                   className="h-5 block dark:hidden"
                 />
                 <img
-                  src="/logo_dark.svg"
+                  src="/assets/logo_dark.svg"
                   alt="Pyngl Logo Dark"
                   className="h-5 hidden dark:block"
                 />
@@ -545,12 +545,12 @@ export default function PreviewTextPoll() {
                 </div>
                 <div className="flex justify-end mt-3">
                   <img
-                    src="/pynglLogoImage.png"
+                    src="/assets/pynglLogoImage.png"
                     alt="Pyngl Logo Light"
                     className="h-4 block dark:hidden"
                   />
                   <img
-                    src="/logo_dark.svg"
+                    src="/assets/logo_dark.svg"
                     alt="Pyngl Logo Dark"
                     className="h-4 hidden dark:block"
                   />

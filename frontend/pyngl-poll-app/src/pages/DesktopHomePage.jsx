@@ -783,7 +783,7 @@ const DesktopHomePage = () => {
       <footer className="bg-[#090016] text-gray-400 py-14 px-6 lg:px-24 border-t border-gray-800">
         <div className="grid md:grid-cols-4 gap-10 max-w-7xl mx-auto">
           <div>
-            <img src="/pynglLogoImage.png" alt="Pyngl" className="h-8 mb-4" />
+            <img src="/assets/pynglLogoImage.png" alt="Pyngl" className="h-8 mb-4" />
             <p className="text-sm">
               Pyngl helps you create interactive, beautiful polls powered by AI — in seconds.
             </p>

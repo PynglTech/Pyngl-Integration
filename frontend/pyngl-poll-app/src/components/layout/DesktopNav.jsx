@@ -121,13 +121,13 @@ const DesktopNav = () => {
       <Link to="/" className="flex items-center gap-2">
         {/* Light mode logo */}
         <img
-          src="/pynglLogoImage.png"
+          src="/assets/pynglLogoImage.png"
           alt="Pyngl Logo"
           className="h-8 block dark:hidden"
         />
         {/* Dark mode logo */}
         <img
-          src="/logo_dark.svg"
+          src="/assets/logo_dark.svg"
           alt="Pyngl Dark Logo"
           className="h-8 hidden dark:block"
         />

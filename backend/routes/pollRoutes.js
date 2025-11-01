@@ -159,7 +159,6 @@ router.get('/all', getAllPolls);
 router.get('/live', getLivePolls);
 router.post('/generate-image', generateImage); // Kept as public assuming it might be a general tool
 
-// NEW: Advanced Social Media Preview Route from friend's code
  router.get('/:id/preview', async (req, res) => {
     try {
       // 1. Fetch Poll (This is the unavoidable latency)
@@ -193,7 +192,7 @@ router.post('/generate-image', generateImage); // Kept as public assuming it mig
         ? `${req.protocol}://${req.get('host')}`
         : 'https://yourdomain.com';
       
-      const pollUrl = `${baseUrl}/poll/${poll._id}/vote`;
+      const pollUrl = `https://192.168.1.4:5173/poll/${poll._id}/vote`;
 
       // 2. Build Meta Tags Dynamically
       const metaTags = [
@@ -335,6 +334,7 @@ router.post('/generate-image', generateImage); // Kept as public assuming it mig
     }
   });
 
+router.get('/:pollId/generate-card', protect, generatePollCard);
 
 /*
  * ==========================================================
@@ -356,7 +356,6 @@ router.get('/trending', protect, getTrendingPolls);
 router.get('/last5', protect, getLast5Polls); // Your route was using checkAuth, protect is safer
 router.post('/send-gmail-poll', protect, sendGmailPoll);
 router.post('/test-whatsapp', protect, testWhatsappMessage);
-router.get('/:pollId/generate-card', protect, generatePollCard);
 router.get('/:pollId/share-image', protect, generateShareableImage);
 router.get('/:pollId/analytics', protect, getPollAnalytics);
 router.post('/:pollId/share', protect, addSharedPlatform);
