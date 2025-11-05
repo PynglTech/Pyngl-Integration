@@ -826,16 +826,6 @@ NO → ${voteUrl}/vote?pollId=${poll._id}&opt=no`;
     <!-- Poll Question -->
     <div class="poll-question">What's your favorite social media platform?</div>
 
-    <!-- Poll Image -->
-    <amp-img 
-      src="https://res.cloudinary.com/docmndwdf/image/upload/v1759733579/Pyngl/e6uxmohuwhgikqsbjkr9.jpg"
-      alt="Poll Image"
-      width="400" 
-      height="250" 
-      layout="responsive"
-      style="border-radius:15px; margin-bottom:16px;">
-    </amp-img>
-
     <!-- Options -->
     <amp-selector name="optionId" layout="container" role="listbox">
       <div option="opt1">Instagram</div>

@@ -820,7 +820,7 @@
 //     );
 // }
 import React, { useState, useEffect, useRef } from "react";
-import { X, Check } from "lucide-react";
+import { X, Check, ArrowLeft } from "lucide-react";
 import { AiFillInstagram, AiFillYoutube } from "react-icons/ai";
 import {
   FaWhatsapp,
@@ -834,7 +834,7 @@ import { MdMessage, MdSms } from "react-icons/md";
 import apiClient from "../../api/axiosConfig";
 import PlatformPreview from "../preview/PlatformPreview.jsx";
 
-const POLL_PAGE_DOMAIN = "https://grumpy-geckos-act.loca.lt";
+const POLL_PAGE_DOMAIN = "https://soft-suits-stand.loca.lt";
 const POLL_PREVIEW_BASE = `${POLL_PAGE_DOMAIN}/api/polls/`;
 
 const shareLinks = {
@@ -1013,94 +1013,49 @@ export default function ShareSheet({
   };
 
   return (
-    <div className="fixed inset-0 flex flex-col z-50 bg-white dark:bg-gray-900 transition-colors">
-      {/* Header */}
-      <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-        <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100">
-          Share Via
-        </h3>
-        <button onClick={onClose} className="p-1">
-          <X size={24} className="text-gray-600 dark:text-gray-300" />
-        </button>
-      </div>
+    <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-end sm:items-center sm:justify-center animate-fade-in">
+            <div className="w-full sm:max-w-lg flex flex-col bg-white dark:bg-gray-900 transition-colors sm:rounded-2xl h-[90vh] sm:h-auto">
+                <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <button onClick={onClose} className="p-1 sm:hidden"><ArrowLeft size={24} className="text-gray-600 dark:text-gray-300" /></button>
+                    <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100">Share Via</h3>
+                    <span className="text-sm text-gray-500 hidden sm:block">Tap to select</span>
+                    <button onClick={onClose} className="p-1 hidden sm:block"><X size={24} className="text-gray-600 dark:text-gray-300" /></button>
+                </div>
 
-      {/* Grid */}
-      <div className="flex-1 flex flex-col justify-center px-6">
-        <div className="grid grid-cols-3 sm:grid-cols-4 gap-x-8 gap-y-8 max-w-md mx-auto">
-          {platforms.map((platform) => (
-            <ShareButton
-              key={platform}
-              platform={platform}
-              onSelect={handleSelectPlatform}
-              isSelected={selected.includes(platform)}
-              completed={completed}
-            />
-          ))}
+                <div className="flex-1 flex flex-col justify-center p-6">
+                    <div className="grid grid-cols-3 gap-x-6 gap-y-8 max-w-xs mx-auto">
+                        {platforms.map((platform) => (
+                            <ShareButton key={platform} platform={platform} onSelect={handleSelectPlatform} isSelected={selected.includes(platform)} completed={completed} />
+                        ))}
+                    </div>
+                </div>
+
+                <div className="px-6 pb-8 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className="flex gap-4">
+                        <button onClick={() => setSelected([])} className="flex-1 py-3 bg-transparent border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 rounded-full font-semibold text-base transition-colors hover:bg-gray-100 dark:hover:bg-gray-800">
+                            Clear
+                        </button>
+                        <button onClick={handleStartMultiShare} disabled={selected.length === 0} className="flex-1 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full font-semibold text-base shadow-lg transition-all hover:shadow-xl disabled:opacity-50 disabled:shadow-none">
+                            Share {selected.length > 0 ? `(${selected.length})` : ""}
+                        </button>
+                    </div>
+                </div>
+
+                {showGmailPopup && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
+                        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-sm mx-4 shadow-lg">
+                            <h2 className="text-lg font-semibold mb-4 text-center">Share via Gmail</h2>
+                            <p className="text-gray-600 dark:text-gray-300 text-sm text-center mb-6">To share this poll via Gmail, please connect your Google account first.</p>
+                            <button onClick={() => { window.location.href = `https://localhost:5000/auth/login?pollId=${poll._id}`; }} className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-full font-medium transition">Connect with Google</button>
+                            <button onClick={() => setShowGmailPopup(false)} className="mt-4 w-full py-2.5 rounded-full border border-gray-300 dark:border-gray-600 font-medium hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button>
+                        </div>
+                    </div>
+                )}
+
+                {currentPlatform && (
+                    <PlatformPreview platform={currentPlatform} poll={{ ...poll, image: capturedImage || poll.image }} onClose={() => setCurrentPlatform(null)} onConfirm={handleConfirmShare} />
+                )}
+            </div>
         </div>
-      </div>
-
-      {/* Footer buttons */}
-      <div className="px-6 pb-8 pt-4 border-t border-gray-200 dark:border-gray-700 md:m-auto md:w-4/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 transition-all duration-300">
-        <div className="flex gap-3">
-          <button
-            onClick={() => {
-              setSelected([]);
-              setCompleted([]);
-              setShareQueue([]);
-              setCurrentPlatform(null);
-            }}
-            className="flex-1 py-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-full font-semibold text-base"
-          >
-            Clear
-          </button>
-
-          <button
-            onClick={handleStartMultiShare}
-            disabled={selected.length === 0}
-            className="flex-1 py-4 bg-pink-500 text-white rounded-full font-semibold text-base shadow-md disabled:opacity-50"
-          >
-            Share {selected.length > 0 ? `(${selected.length})` : ""}
-          </button>
-        </div>
-      </div>
-
-      {/* Gmail Popup */}
-      {showGmailPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-96 shadow-lg transition-colors">
-            <h2 className="text-lg font-semibold mb-4 text-center text-gray-900 dark:text-gray-100">
-              Share via Gmail
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300 text-sm text-center mb-6">
-              To share this poll via Gmail, connect your Google account.
-            </p>
-            <button
-              onClick={() => {
-                window.location.href = `http://localhost:5000/auth/login?pollId=${poll._id}`;
-              }}
-              className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-full font-medium transition"
-            >
-              Connect with Google
-            </button>
-            <button
-              onClick={() => setShowGmailPopup(false)}
-              className="mt-4 w-full py-2 rounded-full border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Platform Preview Modal */}
-      {currentPlatform && (
-        <PlatformPreview
-          platform={currentPlatform}
-          poll={{ ...poll, image: capturedImage || poll.image }}
-          onClose={() => setCurrentPlatform(null)}
-          onConfirm={handleConfirmShare}
-        />
-      )}
-    </div>
-  );
+    );
 }

@@ -32,18 +32,18 @@ const app = express();
 app.use(compression()); 
 // --- HTTPS and Socket.IO Server Setup ---
 // CORRECTED: Using your file path for the certificates
-// const privateKey = fs.readFileSync(path.resolve(__dirname, '../key.pem'), 'utf8');
-// const certificate = fs.readFileSync(path.resolve(__dirname, '../cert.pem'), 'utf8');
-// const credentials = { key: privateKey, cert: certificate };
+const privateKey = fs.readFileSync(path.resolve(__dirname, '../key.pem'), 'utf8');
+const certificate = fs.readFileSync(path.resolve(__dirname, '../cert.pem'), 'utf8');
+const credentials = { key: privateKey, cert: certificate };
 
-// const server = https.createServer(credentials, app);
+const server = https.createServer(credentials, app);
 
 const PORT = process.env.PORT || 5000;
 
-const server = app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
-  initScheduledJobs(io); // Scheduler can still use IO
-});
+// const server = app.listen(PORT, () => {
+//   console.log(`✅ Server running on http://localhost:${PORT}`);
+//   initScheduledJobs(io); // Scheduler can still use IO
+// });
 
 // MERGED: Combining all origins for flexibility
 const allowedOrigins = [
@@ -106,7 +106,7 @@ app.get('/', (req, res) => {
 });
 
 // --- Start the Secure Server ---
-// server.listen(PORT, () => {
-//   console.log(`✅ Secure server with real-time notifications is running on https://localhost:${PORT}`);
-//   initScheduledJobs(io);
-// });
+server.listen(PORT, () => {
+  console.log(`✅ Secure server with real-time notifications is running on https://localhost:${PORT}`);
+  initScheduledJobs(io);
+});

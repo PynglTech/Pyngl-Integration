@@ -1,26 +1,55 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import basicSsl from '@vitejs/plugin-basic-ssl'; 
+import basicSsl from '@vitejs/plugin-basic-ssl'
+import { VitePWA } from 'vite-plugin-pwa'
+
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(),
-  basicSsl()
-  ],
-  // frontend/vite.config.js
-server: {
-   https: true,
-    proxy: {
-      // This will proxy any request starting with /api to your backend
-      '/api': {
-        target: 'http://localhost:5000'|| 'http://192.168.1.11:5000', // IMPORTANT: Replace with your backend server's address
-        changeOrigin: true, // Recommended for virtual hosted sites
-        secure: false,      // Can be needed if backend is not https
-      },
-       '/auth': {
-        target: 'http://localhost:5000'|| 'http://192.168.1.11:5000', // IMPORTANT: Replace with your backend server's address
-        changeOrigin: true, // Recommended for virtual hosted sites
-        secure: false,      // Can be needed if backend is not https
+  plugins: [
+    react(),
+    basicSsl(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['vite.svg', 'icons/icon-192x192.png', 'icons/icon-512x512.png'],
+      manifest: {
+        name: 'Pyngl',
+        short_name: 'Pyngl',
+        description: 'Polls made simple — Create, Share, and Vote with Pyngl.',
+        start_url: '/?source=pwa',
+        scope: '/',
+        display: 'standalone',
+        background_color: '#ffffff',
+        theme_color: '#ffffff',
+        orientation: 'portrait',
+        icons: [
+              {
+      "src": "/PynglSingleLogo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpg"
+    },
+    {
+      "src": "/PynglSingleLogo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpg"
+    }
+        ]
       }
+    })
+  ],
+
+  server: {
+    https: true,
+    proxy: {
+      '/api': {
+        target: 'https://localhost:5000', // or your backend IP
+        changeOrigin: true,
+        secure: false,
+      },
+      '/auth': {
+        target: 'https://localhost:5000', // or your backend IP
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
 })

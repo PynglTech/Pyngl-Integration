@@ -491,20 +491,22 @@ export default function PreviewTextPoll() {
 
             {/* QR Code & Sharable Link Card */}
             {createdPoll && (
-              <div className="mt-8 p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 text-center">
+              <div className="mt-8 p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 text-center pb-10">
                 <StyledQRCode pollUrl={pollUrl} setQrDataUrl={setQrDataUrl} />
               </div>
             )}
 
             {/* Share Button */}
-            <div className="mt-8">
+            <div className="fixed bottom-0 left-0 right-0 p-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-t border-gray-200 dark:border-gray-700">
+              <div className="max-w-xl mx-auto">
               <button
                 onClick={() => setIsShareSheetOpen(true)}
                 disabled={!createdPoll || isLoading}
-                className="w-full py-4 rounded-full text-white font-semibold bg-gradient-to-r from-cyan-400 to-pink-500 hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="w-full py-3 rounded-full text-white font-semibold bg-gradient-to-r from-cyan-400 to-pink-500 hover:opacity-90 transition-opacity disabled:opacity-50"
               >
                 {isLoading ? "Creating Poll..." : "Share Poll"}
               </button>
+            </div>
             </div>
           </main>
         </>

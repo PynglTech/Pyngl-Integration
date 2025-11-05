@@ -320,50 +320,106 @@ export default function PlatformPreview({
     }
   };
 
-  const handleShare = async () => {
-    if (isLoading) return; // Prevent double-clicking
-    setIsLoading(true);
+const handleShare = async () => {
+  if (isLoading) return;
+  setIsLoading(true);
 
-    try {
-      if (!pollRef.current) throw new Error("Poll reference missing.");
+  try {
+    if (!pollRef.current) throw new Error("Poll reference missing.");
 
-      // --- Hide Edit/Restore buttons before capture ---
-      const editButtons = pollRef.current.querySelectorAll(
-        ".edit-button, .restore-button"
-      );
-      editButtons.forEach((btn) => (btn.style.display = "none"));
+    // Hide Edit/Restore buttons before capture
+    const editButtons = pollRef.current.querySelectorAll(
+      ".edit-button, .restore-button"
+    );
+    editButtons.forEach((btn) => (btn.style.display = "none"));
 
-      // --- Capture image ---
-      const dataUrl = await htmlToImage.toPng(pollRef.current);
-      const blob = await (await fetch(dataUrl)).blob();
+    // --- Ensure all images are fully loaded & inline before capture ---
+    const imgs = pollRef.current.querySelectorAll("img");
+    await Promise.all(
+      Array.from(imgs).map(async (img) => {
+        if (!img.complete || img.naturalWidth === 0) {
+          // Wait until image loads
+          await new Promise((resolve) => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        }
 
-      // --- Restore buttons after capture ---
-      editButtons.forEach((btn) => (btn.style.display = ""));
+        // Convert to inline data URL (to avoid iOS CORS blank issue)
+        if (!img.src.startsWith("data:")) {
+          try {
+            const res = await fetch(img.src, { mode: "cors" });
+            const blob = await res.blob();
+            const reader = new FileReader();
+            await new Promise((resolve) => {
+              reader.onload = () => {
+                img.src = reader.result;
+                resolve();
+              };
+              reader.readAsDataURL(blob);
+            });
+          } catch (e) {
+            console.warn("Image skipped due to fetch restriction:", img.src);
+          }
+        }
+      })
+    );
 
-      // --- Upload and share ---
-      const hostedPreviewImage = await uploadPreviewImage(blob);
-      if (!hostedPreviewImage) throw new Error("Image upload failed.");
+    // --- Give iOS a short delay to finish rendering inline images ---
+    await new Promise((r) => setTimeout(r, 150));
 
-      if (platform === "instagram" || platform === "facebook") {
-        await navigator.share({
-          files: [new File([blob], "poll.png", { type: blob.type })],
-          title: "Check out my poll!",
-          text: "Vote on this poll",
-        });
-      }
+    // --- Capture image ---
+    const dataUrl = await htmlToImage.toPng(pollRef.current, {
+      cacheBust: true,
+      backgroundColor: getComputedStyle(document.body).backgroundColor || "#ffffff",
+      quality: 1,
+    });
 
-      if (typeof onConfirm === "function") {
-        onConfirm(hostedPreviewImage);
-      }
-    } catch (error) {
-      console.error(`${platform} sharing failed:`, error);
-      if (!error.message.includes("Image upload failed.")) {
-        alert("Sharing failed. Please try again.");
-      }
-    } finally {
-      setIsLoading(false);
+    const blob = await (await fetch(dataUrl)).blob();
+
+    // Restore buttons after capture
+    editButtons.forEach((btn) => (btn.style.display = ""));
+
+    // --- Upload to backend ---
+    const hostedPreviewImage = await uploadPreviewImage(blob);
+    if (!hostedPreviewImage) throw new Error("Image upload failed.");
+
+    // --- Create shareable file ---
+    const file = new File([blob], "poll.png", { type: blob.type });
+
+    // --- Share (Android / supported browsers) ---
+    if (
+      navigator.share &&
+      navigator.canShare &&
+      navigator.canShare({ files: [file] })
+    ) {
+      await navigator.share({
+        files: [file],
+        title: "Check out my poll!",
+        text: "Vote on this poll",
+      });
+    } else {
+      // --- Fallback for iOS Safari / macOS Chrome ---
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "poll.png";
+      a.click();
+      alert("Sharing not supported on this browser — image downloaded instead.");
     }
-  };
+
+    if (typeof onConfirm === "function") {
+      onConfirm(hostedPreviewImage);
+    }
+  } catch (error) {
+    console.error(`${platform} sharing failed:`, error);
+    if (!error.message.includes("Image upload failed.")) {
+      alert("Sharing failed. Please try again.");
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <>
