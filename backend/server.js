@@ -14,6 +14,7 @@ import userRoutes from './routes/userRoutes.js';
 import pollRoutes from './routes/pollRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import linkedinRoutes from './routes/linkedinRoutes.js';
+import uploadRoutes from './routes/uploadRoutes.js';
 import googleRoutes from './routes/googleRoutes.js';
 
 // Utility Imports
@@ -88,6 +89,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/polls', pollRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/linkedin', linkedinRoutes);
+app.use('/api/upload', uploadRoutes);
 app.use("/auth", googleRoutes);
 
 app.get('/', (req, res) => {

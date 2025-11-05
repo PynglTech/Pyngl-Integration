@@ -13,7 +13,7 @@ import { MdMessage, MdSms } from "react-icons/md";
 import apiClient from "../../api/axiosConfig";
 import PlatformPreview from "../preview/PlatformPreview";
 
-const POLL_PAGE_DOMAIN = 'https://slow-results-stand.loca.lt';
+const POLL_PAGE_DOMAIN = 'https://clear-cameras-invent.loca.lt';
 const POLL_PREVIEW_BASE = `${POLL_PAGE_DOMAIN}/api/polls/`;
 
 const shareLinks = {
