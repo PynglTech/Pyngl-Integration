@@ -166,63 +166,67 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { Navigate, useLocation, Link } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import ForgotPasswordsheet from '../components/auth/ForgotPasswordsheet';
-// Import all three possible layouts
 import DesktopHomePage from './DesktopHomePage';
 import DesktopAuthPage from '../components/auth/DesktopAuthPage';
 import MobileAuthPage from './MobileAuthPage';
+import InstallPrompt from './InstallPrompt';
 
-// Simple hook to check for desktop screen size
 const useIsDesktop = () => {
-    const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
-    useEffect(() => {
-        const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-    return isDesktop;
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  return isDesktop;
 };
+    
 
 const PublicAuthPage = () => {
-    const { userInfo, isInitialized, checkUserStatus } = useAuthStore();
-    const isDesktop = useIsDesktop();
-    const location = useLocation(); // Get the current URL path
+  const { userInfo, isInitialized, checkUserStatus } = useAuthStore();
+  const isDesktop = useIsDesktop();
+  const location = useLocation();
 
-    useEffect(() => {
-        if (!isInitialized) {
-            checkUserStatus();
-        }
-    }, [isInitialized, checkUserStatus]);
-
-    // Show a loading spinner while checking auth status
+  useEffect(() => {
     if (!isInitialized) {
-        return <LoadingSpinner />;
+      checkUserStatus();
     }
+  }, [isInitialized, checkUserStatus]);
 
-    // If user is logged in, redirect to the dashboard
-    if (userInfo) {
-        return <Navigate to="/dashboard" replace />;
-    }
+  if (!isInitialized) {
+    return <LoadingSpinner />;
+  }
 
-    // ** THE NEW, SMARTER SWITCH LOGIC **
-    if (isDesktop) {
-        // On desktop, check the path to decide which page to show
-        if (location.pathname === '/login' || location.pathname === '/signup') {
-            return <DesktopAuthPage />;
-        }
-        if (location.pathname === '/forgot-password') {
-            return <ForgotPasswordsheet />;
-        }
-        // For any other path (like '/'), show the main landing page
-        return <DesktopHomePage />;
+  if (userInfo) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // Render different layouts
+  let content;
+  if (isDesktop) {
+    if (location.pathname === '/login' || location.pathname === '/signup') {
+      content = <DesktopAuthPage />;
+    } else if (location.pathname === '/forgot-password') {
+      content = <ForgotPasswordsheet />;
     } else {
-        // On mobile/tablet, the MobileAuthPage handles all logic internally
-        return <MobileAuthPage />;
+      content = <DesktopHomePage />;
     }
+  } else {
+    content = <MobileAuthPage />;
+  }
+
+  return (
+    <>
+      {content}
+      <InstallPrompt /> 
+    </>
+  );
 };
 
 export default PublicAuthPage;
+
 
