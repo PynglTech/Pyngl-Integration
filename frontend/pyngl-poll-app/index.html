@@ -3,11 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Polls made simple — Create, Share, and Vote with Pyngl." />
 
     <title>Pyngl</title>
 
     <!-- ✅ Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/png" href="/PynglLogo-192.png" />
 
     <!-- ✅ Android Chrome full-screen -->
     <meta name="mobile-web-app-capable" content="yes" />
@@ -15,11 +16,20 @@
 
     <!-- ✅ iOS Safari full-screen -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <!-- black-translucent = blends with app background -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Pyngl" />
 
-    <!-- ✅ iOS App Icon -->
-    <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+    <!-- ✅ iOS App Icons -->
+    <link rel="apple-touch-icon" href="/PynglLogo-192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/PynglLogo-512.png" />
+
+    <!-- ✅ Optional splash screen for iOS (looks native) -->
+    <link rel="apple-touch-startup-image" href="/PynglSplash.png" media="(device-width: 390px)" />
+
+    <!-- ✅ Ensure PWA manifest (automatically injected by VitePWA) -->
+    <!-- No need to manually include <link rel="manifest"> -->
+
   </head>
 
   <body>

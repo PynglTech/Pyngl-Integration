@@ -8,33 +8,34 @@ export default defineConfig({
   plugins: [
     react(),
     basicSsl(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['vite.svg', 'icons/icon-192x192.png', 'icons/icon-512x512.png'],
-      manifest: {
-        name: 'Pyngl',
-        short_name: 'Pyngl',
-        description: 'Polls made simple — Create, Share, and Vote with Pyngl.',
-        start_url: '/?source=pwa',
-        scope: '/',
-        display: 'standalone',
-        background_color: '#ffffff',
-        theme_color: '#ffffff',
-        orientation: 'portrait',
-        icons: [
-              {
-      "src": "/PynglSingleLogo.jpg",
-      "sizes": "192x192",
-      "type": "image/jpg"
-    },
-    {
-      "src": "/PynglSingleLogo.jpg",
-      "sizes": "512x512",
-      "type": "image/jpg"
-    }
-        ]
+   VitePWA({
+  registerType: 'autoUpdate',
+  includeAssets: ['vite.svg', 'PynglLogo-192.png', 'PynglLogo-512.png'],
+  manifest: {
+    name: 'Pyngl',
+    short_name: 'Pyngl',
+    description: 'Polls made simple — Create, Share, and Vote with Pyngl.',
+    start_url: '/?source=pwa',
+    scope: '/',
+    display: 'standalone',
+    background_color: '#ffffff',
+    theme_color: '#ffffff',
+    orientation: 'portrait',
+    icons: [
+      {
+        src: '/PynglLogo-192.png',
+        sizes: '192x192',
+        type: 'image/png'
+      },
+      {
+        src: '/PynglLogo-512.png',
+        sizes: '512x512',
+        type: 'image/png'
       }
-    })
+    ]
+  }
+})
+
   ],
 
   server: {
