@@ -120,13 +120,13 @@ import { fileURLToPath } from "url";
 import cors from "cors";
 import mongoose from "mongoose";
 import { Server } from "socket.io";
-import http from "http"; // ✅ Use HTTP — Render provides HTTPS
+import http from "http"; // ✅ Use HTTP — Render automatically provides HTTPS
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import passport from "passport";
 import compression from "compression";
 
-// Route Imports
+// --- Route Imports ---
 import userRoutes from "./routes/userRoutes.js";
 import pollRoutes from "./routes/pollRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
@@ -134,7 +134,7 @@ import linkedinRoutes from "./routes/linkedinRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import googleRoutes from "./routes/googleRoutes.js";
 
-// Utility Imports
+// --- Utility Imports ---
 import initScheduledJobs from "./utils/scheduler.js";
 import "./config/passport-setup.js";
 import { schedulePollNotifications } from "./jobs/pollScheduler.js";
@@ -153,15 +153,24 @@ const PORT = process.env.PORT || 5000;
 
 // --- Allowed Origins ---
 const allowedOrigins = [
-  process.env.FRONTEND_URL, // e.g. https://pyngl.vercel.app
-  "http://localhost:5173",
+  process.env.FRONTEND_URL, // ✅ e.g. https://pyngl-integration-9jx6.vercel.app
+  "https://pyngl-integration-9jx6.vercel.app",
   "https://localhost:5173",
+  "http://localhost:5173",
+  "https://192.168.1.7:5173",
 ];
 
 // --- WebSocket Setup ---
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn("❌ CORS Blocked Origin:", origin);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   },
 });
@@ -169,21 +178,37 @@ const io = new Server(server, {
 // --- Middleware ---
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn("❌ CORS Blocked Origin:", origin);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
+
+// ✅ Ensure preflight (OPTIONS) requests are handled
+app.options("*", cors());
+
 app.use(cookieParser());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "default_secret_key",
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: process.env.NODE_ENV === "production" },
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // ✅ secure cookies in prod
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    },
   })
 );
+
 app.use(passport.initialize());
 app.use(passport.session());
 app.set("trust proxy", 1);
@@ -191,15 +216,15 @@ app.set("io", io);
 
 // --- WebSocket Handlers ---
 io.on("connection", (socket) => {
-  console.log("A user connected:", socket.id);
+  console.log("✅ User connected:", socket.id);
 
   socket.on("join", (userId) => {
-    console.log(`User ${userId} joined notifications room.`);
+    console.log(`📨 User ${userId} joined notifications room.`);
     socket.join(userId);
   });
 
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
+    console.log("❌ User disconnected:", socket.id);
   });
 });
 
@@ -222,7 +247,7 @@ schedulePollNotifications();
 
 // --- Root Route ---
 app.get("/", (req, res) => {
-  res.send("<h1>✅ Pyngl Backend is Live on Render!</h1>");
+  res.send("<h1>✅ Pyngl Backend is Live on Render (CORS Fixed)!</h1>");
 });
 
 // --- Start Server ---
@@ -230,3 +255,4 @@ server.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
   initScheduledJobs(io);
 });
+
