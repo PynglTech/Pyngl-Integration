@@ -68,6 +68,7 @@ const useAuthStore = create((set) => ({
             set({ loading: false });
 
         } catch (error) {
+        console.log("🚀 ~ error:", error)
 
             // Use the same error handling as your login function
 

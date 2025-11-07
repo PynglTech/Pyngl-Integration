@@ -925,7 +925,7 @@ export default function TextToPoll() {
                     </div>
                 </>
             ) : (
-                <div className="sticky top-0 z-40 flex items-center justify-between p-4 border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-gray-200 dark:border-gray-700">
+                <div className="sticky top-0 z-40 flex items-center justify-between p-4 border-b bg-white/80 dark:bg-gray-800/80 dark:text-white backdrop-blur-md border-gray-200 dark:border-gray-700">
                     <button onClick={() => navigate(-1)} className="p-1"><ArrowLeft className="w-6 h-6" /></button>
                     <h1 className="text-lg font-semibold">Text to Poll</h1>
                     <button onClick={() => navigate('/notifications')} className="p-1"><Bell className="w-6 h-6" /></button>
@@ -942,7 +942,7 @@ export default function TextToPoll() {
                             placeholder="Enter your question..."
                             value={question}
                             onChange={(e) => setQuestion(e.target.value)}
-                            className="w-full rounded-full border border-gray-300 dark:border-gray-600 pl-12 pr-4 py-3 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-pyngl-pink"
+                            className="w-full rounded-full border border-gray-300 dark:border-gray-600 pl-12 pr-4 py-3 bg-gray-100 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-pyngl-pink"
                         />
                     </div>
                 </Card>
@@ -957,7 +957,7 @@ export default function TextToPoll() {
                                     placeholder={`Option ${i + 1}`}
                                     value={opt}
                                     onChange={(e) => handleChangeOption(i, e.target.value)}
-                                    className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-3 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-pyngl-pink"
+                                    className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-3 bg-gray-100 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-pyngl-pink"
                                 />
                                 {options.length > 2 && (
                                     <button onClick={() => handleRemoveOption(i)} className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 p-1"><Trash2 className="w-5 h-5" /></button>
@@ -978,7 +978,7 @@ export default function TextToPoll() {
                         <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Age range</p>
                         <div className="flex flex-wrap gap-2">
                             {ageRanges.map(range => (
-                                <button key={range} onClick={() => setSelectedAgeRange(range)} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedAgeRange === range ? 'bg-pyngl-purple text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
+                                <button key={range} onClick={() => setSelectedAgeRange(range)} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedAgeRange === range ? 'bg-pyngl-pink text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
                                     {range}
                                 </button>
                             ))}
@@ -988,13 +988,13 @@ export default function TextToPoll() {
                         <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Poll duration</p>
                         <div className="flex flex-wrap gap-2">
                             {durations.map(duration => (
-                                <button key={duration} onClick={() => setSelectedDuration(duration)} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedDuration === duration ? 'bg-pyngl-purple text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
+                                <button key={duration} onClick={() => setSelectedDuration(duration)} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedDuration === duration ? 'bg-pyngl-pink text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
                                     {duration}
                                 </button>
                             ))}
                         </div>
                     </div>
-                    <label className="flex items-center cursor-pointer mt-6">
+                    <label className="flex items-center cursor-pointer mt-6 pb-10">
                         <input type="checkbox" checked={shareToTrending} onChange={(e) => setShareToTrending(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-pyngl-pink focus:ring-pyngl-pink" />
                         <span className="text-sm text-gray-600 dark:text-gray-400 ml-3">Also share to Trending polls</span>
                     </label>
@@ -1003,14 +1003,17 @@ export default function TextToPoll() {
                 {/* --- THIS IS THE FIX --- */}
                 {/* The Desktop button is now correctly placed INSIDE the content wrapper */}
                 {isDesktop && (
-                    <div className="mt-6">
+                    <div className="fixed bottom-0 left-0 right-0 p-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-t border-gray-200 dark:border-gray-700">
+                    <div className="max-w-xl mx-auto">
+
                         <button
                             onClick={handlePreview}
-                            className="w-full py-4 rounded-full text-white font-semibold bg-gradient-to-r from-cyan-400 to-pink-500 hover:opacity-90 transition-opacity disabled:opacity-50"
+                            className="w-full py-3 rounded-full text-white font-semibold bg-gradient-to-r from-cyan-400 to-pink-500 hover:opacity-90 transition-opacity disabled:opacity-50"
                         >
                             Preview Poll
                         </button>
                         {errorMessage && <p className="text-sm text-red-500 mt-2 text-center">{errorMessage}</p>}
+                    </div>
                     </div>
                 )}
             </div>

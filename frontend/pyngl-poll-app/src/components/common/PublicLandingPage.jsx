@@ -16,7 +16,7 @@ const PublicLandingPage = () => {
             <div className="container mx-auto px-6 lg:px-8">
                 {/* --- Responsive Header with Mobile Menu --- */}
                 <header className="flex justify-between items-center py-6">
-                    <Link to="/"><img src="/pynglLogoImage.png" alt="Pyngl Logo" className="h-8" /></Link>
+                    <Link to="/"><img src="/assets/pynglLogoImage.png" alt="Pyngl Logo" className="h-8" /></Link>
                     
                     {/* Desktop Navigation */}
                     <nav className="hidden lg:flex items-center gap-8"><Link to="/" className="font-semibold text-pink-500">Home</Link><Link to="/trending" className="font-semibold text-gray-600 hover:text-pink-500">Trending</Link><Link to="/analytics" className="font-semibold text-gray-600 hover:text-pink-500">Analytics</Link><Link to="/polls" className="font-semibold text-gray-600 hover:text-pink-500">Polls activity</Link></nav>

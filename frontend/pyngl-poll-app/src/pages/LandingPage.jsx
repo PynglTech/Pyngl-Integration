@@ -280,6 +280,7 @@
 import React, { useState, useEffect } from 'react';
 import PynglBrand from '../components/common/PynglBrand';
 import { ChevronLeft,ChevronRight } from 'lucide-react';
+import InstallPrompt from './InstallPrompt';
 
 const landingSlides = [
   {
@@ -365,7 +366,9 @@ const LandingPage = ({ openSheet }) => {
                     </button>
                 </div>
             </div>
+            {/* <InstallPrompt /> */}
         </div>
+        
     );
 };
 
