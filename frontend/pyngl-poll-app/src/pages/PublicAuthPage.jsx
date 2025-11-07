@@ -170,7 +170,6 @@ import { Navigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import ForgotPasswordSheet from '../components/auth/ForgotPasswordSheet';
-
 import DesktopHomePage from './DesktopHomePage';
 import DesktopAuthPage from '../components/auth/DesktopAuthPage';
 import MobileAuthPage from './MobileAuthPage';
@@ -202,19 +201,6 @@ const PublicAuthPage = () => {
     return <LoadingSpinner />;
   }
 
-<<<<<<< HEAD
-    // ** THE NEW, SMARTER SWITCH LOGIC **
-    if (isDesktop) {
-        // On desktop, check the path to decide which page to show
-        if (location.pathname === '/login' || location.pathname === '/signup') {
-            return <DesktopAuthPage />;
-        }
-        if (location.pathname === '/forgot-password') {
-            return <ForgotPasswordSheet />;
-        }
-        // For any other path (like '/'), show the main landing page
-        return <DesktopHomePage />;
-=======
   if (userInfo) {
     return <Navigate to="/dashboard" replace />;
   }
@@ -225,8 +211,7 @@ const PublicAuthPage = () => {
     if (location.pathname === '/login' || location.pathname === '/signup') {
       content = <DesktopAuthPage />;
     } else if (location.pathname === '/forgot-password') {
-      content = <ForgotPasswordsheet />;
->>>>>>> 154d2881a3fc30d186e2a0a0fb2cdc595f6e75a8
+      content = <ForgotPasswordSheet />;
     } else {
       content = <DesktopHomePage />;
     }
