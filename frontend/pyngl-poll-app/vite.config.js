@@ -191,12 +191,12 @@ export default defineConfig({
 
     proxy: {
       "/api": {
-        target: "https://localhost:5000",
+        target: "http://localhost:5000",
         changeOrigin: true,
         secure: false,
       },
       "/auth": {
-        target: "https://localhost:5000",
+        target: "http://localhost:5000",
         changeOrigin: true,
         secure: false,
       },
