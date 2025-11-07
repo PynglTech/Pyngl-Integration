@@ -27,46 +27,33 @@
 
 
 // export default apiClient;
-
 import axios from 'axios';
 import useAuthStore from '../store/useAuthStore';
 
-// Create a new Axios instance. This will be the single source for all API calls.
+// ✅ Dynamic API base URL
+const baseURL =
+  import.meta.env.MODE === 'development'
+    ? 'http://localhost:5000' // your local dev backend
+    : import.meta.env.VITE_API_URL; // Render backend for production
+
+// ✅ Create Axios instance
 const apiClient = axios.create({
-    // The baseURL can be empty because your Vite proxy is already configured
-    // to forward requests to your backend server.
-    baseURL: '', 
-    
-    // This is the most critical setting. It tells Axios to automatically
-    // send the httpOnly cookie with every single request to the backend.
-    withCredentials: true, 
+  baseURL,
+  withCredentials: true,
 });
 
-// 🔥 This is a "response interceptor" — a powerful piece of code that acts
-// as a global security guard for your entire application. It inspects every
-// response that comes back from your server.
+// ✅ Global interceptor for 401 Unauthorized
 apiClient.interceptors.response.use(
-    // If the response is successful (e.g., status 200), just pass it through.
-    (response) => response, 
-    
-    // If the response is an error...
-    (error) => {
-        // ...check if it's a "401 Unauthorized" error. This means the user's
-        // login session has expired or is invalid.
-        if (error.response && error.response.status === 401) {
-            
-            // Use the global logout function from your auth store.
-            // This clears the user's data from the frontend.
-            useAuthStore.getState().logout();
-            
-            // Redirect the user to the login page.
-            window.location.href = '/'; 
-        }
-        
-        // Return any other errors so that individual components can handle them.
-        return Promise.reject(error);
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      useAuthStore.getState().logout();
+      window.location.href = '/';
     }
+    return Promise.reject(error);
+  }
 );
 
 export default apiClient;
+
 
