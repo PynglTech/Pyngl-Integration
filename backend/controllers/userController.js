@@ -562,6 +562,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   }
 
   const resetOtp = user.generatePasswordResetOtp();
+  console.log("🚀 ~ resetOtp:", resetOtp)
   await user.save({ validateBeforeSave: false });
 
   // This is the HTML body for the email
@@ -581,7 +582,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   try {
     // Replaced sendEmail with resend.emails.send
     const { data, error } = await resend.emails.send({
-      from: 'Pyngl <onboarding@resend.dev>', // Or your verified domain
+      from: 'Pyngl <notifications@pyngl.com>', // Or your verified domain
       to: user.email,
       subject: 'Your Password Reset OTP',
       html: htmlBody,
