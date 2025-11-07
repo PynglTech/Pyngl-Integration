@@ -190,8 +190,12 @@ app.use(
   })
 );
 
-// ✅ Ensure preflight (OPTIONS) requests are handled
-app.options("*", cors());
+// ❌ REMOVE this old line that breaks Express 5
+// app.options("*", cors());
+
+// ✅ Express 5-safe optional version
+app.options(/.*/, cors());
+
 
 app.use(cookieParser());
 app.use(express.json({ limit: "50mb" }));
