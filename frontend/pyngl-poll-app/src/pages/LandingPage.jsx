@@ -346,7 +346,7 @@ const LandingPage = ({ openSheet }) => {
                         onClick={() => openSheet('login')}
                         className="flex-1 py-3 px-4 bg-pyngl-pink text-white font-semibold rounded-full shadow-lg hover:opacity-90"
                     >
-                        Login Account
+                        Login Accounttt
                     </button>
                 </div>
                 <div className="flex justify-between text-gray-500 dark:text-gray-400 font-semibold mt-6">
