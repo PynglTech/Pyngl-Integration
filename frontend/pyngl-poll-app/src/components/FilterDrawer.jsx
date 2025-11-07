@@ -50,7 +50,7 @@ export default function FilterDrawer({
         <div className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
           <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-100">
             <img
-              src="./pynglLogoImage.png"
+              src="./assets/pynglLogoImage.png"
               alt="Pyngl"
               className="h-6 object-contain"
             />

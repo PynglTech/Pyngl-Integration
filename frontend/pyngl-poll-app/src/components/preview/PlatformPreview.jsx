@@ -235,60 +235,29 @@ import PollPreview from "./PollPreview";
 import apiClient from "../../api/axiosConfig";
 import * as htmlToImage from "html-to-image";
 
-export default function PlatformPreview({
-  platform,
-  poll,
-  onClose,
-  onConfirm,
-}) {
+export default function PlatformPreview({ platform, poll, onClose, onConfirm }) {
   const platformDimensions = {
-    instagram: {
-      width: 1080,
-      height: 1920,
-      label: "Reels / Stories",
-      aspect: 9 / 16,
-    },
-    twitter: {
-      width: 1200,
-      height: 628,
-      label: "X / Twitter",
-      aspect: 1200 / 628,
-    },
-    linkedin: {
-      width: 1200,
-      height: 627,
-      label: "LinkedIn",
-      aspect: 1200 / 627,
-    },
-    facebook: {
-      width: 1200,
-      height: 630,
-      label: "Facebook",
-      aspect: 1200 / 630,
-    },
-    whatsapp: {
-      width: 1200,
-      height: 630,
-      label: "WhatsApp",
-      aspect: 1200 / 630,
-    },
+    instagram: { width: 1080, height: 1920, label: "Reels / Stories", aspect: 9 / 16 },
+    twitter: { width: 1200, height: 628, label: "X / Twitter", aspect: 1200 / 628 },
+    linkedin: { width: 1200, height: 627, label: "LinkedIn", aspect: 1200 / 627 },
+    facebook: { width: 1200, height: 630, label: "Facebook", aspect: 1200 / 630 },
+    whatsapp: { width: 1200, height: 630, label: "WhatsApp", aspect: 1200 / 630 },
     youtube: { width: 1280, height: 720, label: "YouTube", aspect: 16 / 9 },
     gmail: { width: 1200, height: 600, label: "Email Banner", aspect: 2 },
   };
 
-  const [imageDimensions, setImageDimensions] = useState(
-    platformDimensions[platform] || { width: 400, height: 300 }
-  );
+  const [imageDimensions, setImageDimensions] = useState(platformDimensions[platform] || { width: 400, height: 300 });
   const [isEditing, setIsEditing] = useState(false);
   const [dbImage, setDbImage] = useState(poll.imageUrl || null);
-  const [previewImage, setPreviewImage] = useState(
-    poll.previewImages?.[platform] || poll.imageUrl || null
-  );
+  const [previewImage, setPreviewImage] = useState(poll.previewImages?.[platform] || poll.imageUrl || null);
   const [editedOnce, setEditedOnce] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const sheetRef = useRef(null);
   const pollRef = useRef(null);
+
+  const POLL_PAGE_DOMAIN = "https://soft-suits-stand.loca.lt";
+  const POLL_PREVIEW_BASE = `${POLL_PAGE_DOMAIN}/api/polls/`;
 
   const handleRestore = () => {
     setImageDimensions(platformDimensions[platform]);
@@ -299,7 +268,7 @@ export default function PlatformPreview({
     if (sheetRef.current && !sheetRef.current.contains(e.target)) onClose();
   };
 
-  // Upload preview image to backend and save in DB (No change)
+  // Upload preview image to backend and save in DB
   const uploadPreviewImage = async (blob) => {
     try {
       const formData = new FormData();
@@ -320,121 +289,127 @@ export default function PlatformPreview({
     }
   };
 
-const handleShare = async () => {
-  if (isLoading) return;
-  setIsLoading(true);
+  const handleShare = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
 
-  try {
-    if (!pollRef.current) throw new Error("Poll reference missing.");
+    try {
+      if (!pollRef.current) throw new Error("Poll reference missing.");
 
-    // Hide Edit/Restore buttons before capture
-    const editButtons = pollRef.current.querySelectorAll(
-      ".edit-button, .restore-button"
-    );
-    editButtons.forEach((btn) => (btn.style.display = "none"));
+      // --- Hide Edit/Restore buttons before capture ---
+      const editButtons = pollRef.current.querySelectorAll(".edit-button, .restore-button");
+      editButtons.forEach((btn) => (btn.style.display = "none"));
 
-    // --- Ensure all images are fully loaded & inline before capture ---
-    const imgs = pollRef.current.querySelectorAll("img");
-    await Promise.all(
-      Array.from(imgs).map(async (img) => {
-        if (!img.complete || img.naturalWidth === 0) {
-          // Wait until image loads
-          await new Promise((resolve) => {
-            img.onload = resolve;
-            img.onerror = resolve;
-          });
-        }
-
-        // Convert to inline data URL (to avoid iOS CORS blank issue)
-        if (!img.src.startsWith("data:")) {
-          try {
-            const res = await fetch(img.src, { mode: "cors" });
-            const blob = await res.blob();
-            const reader = new FileReader();
+      // --- Ensure all images are loaded and inlined ---
+      const imgs = pollRef.current.querySelectorAll("img");
+      await Promise.all(
+        Array.from(imgs).map(async (img) => {
+          if (!img.complete || img.naturalWidth === 0) {
             await new Promise((resolve) => {
-              reader.onload = () => {
-                img.src = reader.result;
-                resolve();
-              };
-              reader.readAsDataURL(blob);
+              img.onload = resolve;
+              img.onerror = resolve;
             });
-          } catch (e) {
-            console.warn("Image skipped due to fetch restriction:", img.src);
           }
-        }
-      })
-    );
 
-    // --- Give iOS a short delay to finish rendering inline images ---
-    await new Promise((r) => setTimeout(r, 150));
+          if (!img.src.startsWith("data:")) {
+            try {
+              const res = await fetch(img.src, { mode: "cors" });
+              const blob = await res.blob();
+              const reader = new FileReader();
+              await new Promise((resolve) => {
+                reader.onload = () => {
+                  img.src = reader.result;
+                  resolve();
+                };
+                reader.readAsDataURL(blob);
+              });
+            } catch {
+              console.warn("Skipped non-inlineable image:", img.src);
+            }
+          }
+        })
+      );
 
-    // --- Capture image ---
-    const dataUrl = await htmlToImage.toPng(pollRef.current, {
-      cacheBust: true,
-      backgroundColor: getComputedStyle(document.body).backgroundColor || "#ffffff",
-      quality: 1,
-    });
+      // --- Small delay to stabilize rendering ---
+      await new Promise((r) => setTimeout(r, 150));
 
-    const blob = await (await fetch(dataUrl)).blob();
-
-    // Restore buttons after capture
-    editButtons.forEach((btn) => (btn.style.display = ""));
-
-    // --- Upload to backend ---
-    const hostedPreviewImage = await uploadPreviewImage(blob);
-    if (!hostedPreviewImage) throw new Error("Image upload failed.");
-
-    // --- Create shareable file ---
-    const file = new File([blob], "poll.png", { type: blob.type });
-
-    // --- Share (Android / supported browsers) ---
-    if (
-      navigator.share &&
-      navigator.canShare &&
-      navigator.canShare({ files: [file] })
-    ) {
-      await navigator.share({
-        files: [file],
-        title: "Check out my poll!",
-        text: "Vote on this poll",
+      // --- Capture DOM to image ---
+      const dataUrl = await htmlToImage.toPng(pollRef.current, {
+        cacheBust: true,
+        backgroundColor: getComputedStyle(document.body).backgroundColor || "#ffffff",
+        quality: 1,
       });
-    } else {
-      // --- Fallback for iOS Safari / macOS Chrome ---
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "poll.png";
-      a.click();
-      alert("Sharing not supported on this browser — image downloaded instead.");
-    }
 
-    if (typeof onConfirm === "function") {
-      onConfirm(hostedPreviewImage);
-    }
-  } catch (error) {
-    console.error(`${platform} sharing failed:`, error);
-    if (!error.message.includes("Image upload failed.")) {
-      alert("Sharing failed. Please try again.");
-    }
-  } finally {
-    setIsLoading(false);
-  }
-};
+      const blob = await (await fetch(dataUrl)).blob();
+      editButtons.forEach((btn) => (btn.style.display = "")); // restore buttons
 
+      const hostedPreviewImage = await uploadPreviewImage(blob);
+      if (!hostedPreviewImage) throw new Error("Image upload failed.");
+
+      // --- Twitter share link ---
+      if (platform === "twitter") {
+        const previewUrl = `${POLL_PREVIEW_BASE}${poll._id}/preview?platform=twitter`;
+        const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+          poll.question
+        )}&url=${encodeURIComponent(previewUrl)}`;
+        window.open(twitterShareUrl, "_blank");
+      }
+      // --- Instagram native share ---
+      else if (platform === "instagram") {
+        const file = new File([blob], "poll.png", { type: blob.type });
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: "Check out my poll!",
+            text: "Vote on this poll",
+          });
+        } else {
+          alert("Instagram sharing not supported on this browser.");
+        }
+      }
+      // --- Default fallback ---
+      else {
+        const file = new File([blob], "poll.png", { type: blob.type });
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: "Check out my poll!",
+            text: "Vote on this poll",
+          });
+        } else {
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = "poll.png";
+          a.click();
+          alert("Sharing not supported on this browser — image downloaded instead.");
+        }
+      }
+
+      // Notify parent (ShareSheet)
+      if (typeof onConfirm === "function") {
+        onConfirm(hostedPreviewImage);
+      }
+    } catch (error) {
+      console.error(`${platform} sharing failed:`, error);
+      if (!error.message.includes("Image upload failed.")) {
+        alert("Sharing failed. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <>
-      {/* Bottom Sheet */}
       <div
         className="fixed inset-0 bg-black/40 flex items-end justify-center z-50"
         onClick={handleOverlayClick}
       >
         <div
           ref={sheetRef}
-          // Updated with dark mode class
           className="bg-white dark:bg-[#0f121d] w-full rounded-t-3xl shadow-xl animate-slideUp relative border-t border-gray-700"
           style={{ height: "75vh", maxHeight: "75vh", overflowY: "auto" }}
         >
-          {/* Close button - Updated with dark mode classes */}
           <button
             onClick={onClose}
             className="absolute top-4 right-4 w-8 h-8 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center z-10 shadow"
@@ -443,7 +418,6 @@ const handleShare = async () => {
           </button>
 
           <div className="px-6 py-4 relative">
-            {/* Header - Updated with dark mode class */}
             <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 capitalize mb-4">
               Preview - {platform}
             </h4>
@@ -456,42 +430,32 @@ const handleShare = async () => {
               />
 
               {editedOnce && poll.type !== "text" && (
-                // Restore Button - Updated with dark mode classes
                 <button
                   onClick={handleRestore}
                   className="restore-button absolute top-0 left-6 w-8 h-8 bg-pink-100 dark:bg-pink-900/50 rounded-full flex items-center justify-center shadow border border-pink-200 dark:border-pink-800"
                   disabled={isLoading}
                 >
-                  <RotateCw
-                    size={18}
-                    className="text-pink-600 dark:text-pink-300"
-                  />
+                  <RotateCw size={18} className="text-pink-600 dark:text-pink-300" />
                 </button>
               )}
 
               {poll.type !== "text" && (
-                // Edit Button - Updated with dark mode classes
                 <button
                   onClick={() => setIsEditing(true)}
                   className="edit-button absolute top-0 right-6 w-8 h-8 bg-pink-100 dark:bg-pink-900/50 rounded-full flex items-center justify-center shadow border border-pink-200 dark:border-pink-800"
                   disabled={isLoading}
                 >
-                  <Edit2
-                    size={16}
-                    className="text-pink-600 dark:text-pink-300"
-                  />
+                  <Edit2 size={16} className="text-pink-600 dark:text-pink-300" />
                 </button>
               )}
             </div>
 
-            {/* Dimensions - Updated with dark mode classes */}
             <div className="flex justify-center mt-3 gap-14">
               <div className="text-xs font-semibold text-gray-900 dark:text-gray-100">
                 {platformDimensions[platform]?.label || platform}
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400">
-                {platformDimensions[platform]?.width}×
-                {platformDimensions[platform]?.height}
+                {platformDimensions[platform]?.width}×{platformDimensions[platform]?.height}
               </div>
             </div>
           </div>
@@ -508,16 +472,13 @@ const handleShare = async () => {
                   Preparing Share...
                 </>
               ) : (
-                `Share on ${
-                  platform.charAt(0).toUpperCase() + platform.slice(1)
-                }`
+                `Share on ${platform.charAt(0).toUpperCase() + platform.slice(1)}`
               )}
             </button>
           </div>
         </div>
       </div>
 
-      {/* ImageEditPreview modal (no changes needed here, assuming it's a separate component) */}
       {isEditing && (
         <ImageEditPreview
           imageSrc={dbImage}
@@ -535,3 +496,4 @@ const handleShare = async () => {
     </>
   );
 }
+

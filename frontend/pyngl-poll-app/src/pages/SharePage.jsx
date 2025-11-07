@@ -72,9 +72,9 @@ export default function SharePage() {
                 // --- THIS IS THE UPDATED LOGIC ---
                 // It checks the poll type and calls the correct function
                 if (poll.type === 'image' && poll.imageUrl) {
-                    imageFile = await createImagePollShareable(poll, '/pynglLogoImage.png');
+                    imageFile = await createImagePollShareable(poll, '/assets/pynglLogoImage.png');
                 } else {
-                    imageFile = await createTextPollBanner(poll, '/pynglLogoImage.png');
+                    imageFile = await createTextPollBanner(poll, '/assets/pynglLogoImage.png');
                 }
                 setGeneratedCardFile(imageFile);
                 setGeneratedCardUrl(URL.createObjectURL(imageFile));

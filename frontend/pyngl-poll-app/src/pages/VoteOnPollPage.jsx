@@ -345,7 +345,7 @@ const VoteOnPollPage = () => {
     );
 
   return (
-    <div className="mx-auto bg-white dark:bg-gray-900 min-h-screen p-4 font-sans md:w-7/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 transition-all duration-300">
+    <div className="mx-auto bg-white dark:bg-gray-800 min-h-screen p-4 font-sans md:w-7/6 lg:w-4/5 xl:w-full 2xl:w-full transition-all duration-300">
       <div className="rounded-xl border mx-auto border-gray-200 dark:border-gray-700 p-4 md:w-4/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 transition-all duration-300">
         {poll.imageUrl && (
           <img
