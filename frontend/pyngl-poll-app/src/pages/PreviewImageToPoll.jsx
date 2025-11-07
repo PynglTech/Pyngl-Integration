@@ -465,30 +465,25 @@ export default function PreviewImagePoll() {
                                 ))}
                             </div>
                             <div className="flex justify-end mt-4">
-                                <img src="/pynglLogoImage.png" alt="Pyngl Logo" className="h-5 block dark:hidden" />
-                                <img src="/logo_dark.svg" alt="Pyngl Logo Dark" className="h-5 hidden dark:block" />
+                                <img src="/assets/pynglLogoImage.png" alt="Pyngl Logo" className="h-5 block dark:hidden" />
+                                <img src="/assets/logo_dark.svg" alt="Pyngl Logo Dark" className="h-5 hidden dark:block" />
                             </div>
                         </div>
 
                         {/* QR Code & Sharable Link Card */}
-                        <div className="mt-8 p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 text-center">
+                        <div className="mt-8 p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 text-center pb-24">
                             <div className="mx-auto" style={{ width: 'fit-content' }}>
                                <StyledQRCode pollUrl={pollUrl} />
-                            </div>
-                            <p className="font-semibold mt-4">Shareable link</p>
-                            <div className="mt-2 flex items-center justify-between bg-gray-100 dark:bg-gray-700 rounded-full p-2 max-w-sm mx-auto">
-                                <span className="text-sm text-gray-500 dark:text-gray-300 pl-3 truncate">{pollUrl.replace('https://','')}</span>
-                                <button onClick={copyToClipboard} className="bg-white dark:bg-gray-600 rounded-full p-2 shadow-sm hover:bg-gray-50 flex-shrink-0">
-                                    <Copy size={16} />
-                                </button>
                             </div>
                         </div>
                         
                         {/* Share Button */}
-                        <div className="mt-8">
-                             <button onClick={handleSharePoll} className="w-full py-4 rounded-full text-white font-semibold bg-gradient-to-r from-cyan-400 to-pink-500 hover:opacity-90 transition-opacity">
-                                Share Poll
-                            </button>
+                        <div className="mt-8 fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-t border-gray-200 dark:border-gray-700">
+                            <div className="max-w-2xl mx-auto">
+                                <button onClick={handleSharePoll} className="w-full py-4 rounded-full text-white font-semibold bg-gradient-to-r from-cyan-400 to-pink-500 hover:opacity-90 transition-opacity">
+                                    Share Poll
+                                </button>
+                            </div>
                         </div>
                     </main>
                 </>
@@ -506,11 +501,11 @@ export default function PreviewImagePoll() {
                                 <h2 className="font-medium mb-4 text-gray-900 dark:text-gray-100">{createdPoll.question}</h2>
                                 {createdPoll.imageUrl && <img src={createdPoll.imageUrl} alt="Poll visual" className="rounded-xl mb-4 w-full h-48 object-cover" />}
                                 <div className="space-y-3">{createdPoll.options.map((opt, i) => ( <div key={opt._id || i} className="w-full border rounded-full px-4 py-2 text-left text-gray-700 dark:text-gray-100 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700">{opt.text}</div> ))}</div>
-                                <div className="flex justify-end mt-3"><img src="/pynglLogoImage.png" alt="Pyngl Logo Light" className="h-4 block dark:hidden" /><img src="/logo_dark.svg" alt="Pyngl Logo Dark" className="h-4 hidden dark:block" /></div>
+                                <div className="flex justify-end mt-3"><img src="/assets/pynglLogoImage.png" alt="Pyngl Logo Light" className="h-4 block dark:hidden" /><img src="/assets/logo_dark.svg" alt="Pyngl Logo Dark" className="h-4 hidden dark:block" /></div>
                             </div>
                             <div className="mt-6"><StyledQRCode pollUrl={pollUrl} hideForScreenshot={true} /></div>
                         </div>
-                        <div className="mt-6 space-y-3">
+                        <div className="mt-6 space-y-3 pb-24">
                             <button onClick={handleSharePoll} className="w-full py-3 rounded-full text-white font-medium bg-gradient-to-r from-cyan-400 to-pink-500 flex items-center justify-center hover:opacity-90">Share Poll</button>
                         </div>
                     </div>

@@ -97,7 +97,7 @@ const DesktopAuthPage = () => {
         <div className="w-full min-h-screen grid grid-cols-1 lg:grid-cols-2">
             {/* Left Side: Image / Branding */}
             <div className="hidden lg:flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 p-12">
-                <img src="/pynglLogoImage.png" alt="Pyngl Logo" className="h-12 mb-8" />
+                <img src="/assets/pynglLogoImage.png" alt="Pyngl Logo" className="h-12 mb-8" />
                 <img src="/homePageImage1.png" alt="Poll smarter" className="max-w-md" />
                 <h2 className="text-3xl font-bold mt-8">Poll smarter, Engage smarter.</h2>
                 <p className="text-gray-500 mt-2">The best way to interact with your audience.</p>

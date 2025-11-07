@@ -38,6 +38,13 @@ const credentials = { key: privateKey, cert: certificate };
 
 const server = https.createServer(credentials, app);
 
+const PORT = process.env.PORT || 5000;
+
+// const server = app.listen(PORT, () => {
+//   console.log(`✅ Server running on http://localhost:${PORT}`);
+//   initScheduledJobs(io); // Scheduler can still use IO
+// });
+
 // MERGED: Combining all origins for flexibility
 const allowedOrigins = [
     process.env.FRONTEND_URL,
@@ -52,7 +59,6 @@ const io = new Server(server, {
     }
 });
 
-const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 
 // --- Middleware Setup ---

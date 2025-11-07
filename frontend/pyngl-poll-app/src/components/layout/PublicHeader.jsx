@@ -5,7 +5,7 @@ import { Bell, User } from 'lucide-react';
 const PublicHeader = () => {
     return (
         <header className="sticky top-0 z-50 flex justify-between items-center px-6 lg:px-24 py-3 border-b border-gray-200 bg-white/80 backdrop-blur-md">
-            <Link to="/"><img src="/pynglLogoImage.png" alt="Pyngl Logo" className="h-8" /></Link>
+            <Link to="/"><img src="/assets/pynglLogoImage.png" alt="Pyngl Logo" className="h-8" /></Link>
             
             <nav className="hidden lg:flex items-center gap-8">
                 <Link to="/" className="font-semibold text-pink-500">Home</Link>
