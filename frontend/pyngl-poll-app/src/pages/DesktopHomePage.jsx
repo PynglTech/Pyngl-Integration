@@ -700,7 +700,7 @@ const DesktopHomePage = () => {
       </section>
 
            {/* TESTIMONIALS */}
-      <section className="px-6 lg:px-24 py-20 bg-slate-50 dark:bg-[#12092A]">
+      {/* <section className="px-6 lg:px-24 py-20 bg-slate-50 dark:bg-[#12092A]">
         <h2 className="text-4xl font-bold text-center mb-16">Loved by Creators and Brands</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
           <TestimonialCard
@@ -722,7 +722,7 @@ const DesktopHomePage = () => {
             quote="Creating audience polls has never been this smooth. Pyngl’s analytics dashboard gives us powerful insights instantly."
           />
         </div>
-      </section>
+      </section> */}
 
       {/* PRICING */}
       <section className="px-6 lg:px-24 py-24">
