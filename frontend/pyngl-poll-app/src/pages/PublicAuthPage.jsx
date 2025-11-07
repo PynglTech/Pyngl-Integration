@@ -169,7 +169,7 @@ import React, { useState, useEffect } from 'react';
 import { Navigate, useLocation, Link } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import ForgotPasswordsheet from '../components/auth/ForgotPasswordsheet';
+import ForgotPasswordSheet from '../components/auth/ForgotPasswordSheet';
 // Import all three possible layouts
 import DesktopHomePage from './DesktopHomePage';
 import DesktopAuthPage from '../components/auth/DesktopAuthPage';
@@ -214,7 +214,7 @@ const PublicAuthPage = () => {
             return <DesktopAuthPage />;
         }
         if (location.pathname === '/forgot-password') {
-            return <ForgotPasswordsheet />;
+            return <ForgotPasswordSheet />;
         }
         // For any other path (like '/'), show the main landing page
         return <DesktopHomePage />;
