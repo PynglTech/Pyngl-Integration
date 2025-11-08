@@ -38,55 +38,47 @@ import { useThemeEffect } from './hooks/useThemeEffect';
 import './App.css';
 
 export default function App() {
-    const { isInitialized, userInfo, loading, checkUserStatus } = useAuthStore();
-    const { theme } = useThemeStore();
-    const [showDelayedLoader, setShowDelayedLoader] = useState(false);
-     useThemeEffect(); 
-    // This effect runs once when the app starts to check the user's login status.
-    useEffect(() => {
-        if (!isInitialized) {
-            checkUserStatus();
-        }
-    }, [isInitialized, checkUserStatus]);
+  const { isInitialized, userInfo, loading, checkUserStatus } = useAuthStore();
+  const { theme } = useThemeStore();
+  const [showDelayedLoader, setShowDelayedLoader] = useState(false);
 
-    // This effect watches for changes in the theme and updates the entire app's class.
-    useEffect(() => {
-        const root = window.document.documentElement;
-        root.classList.remove('light', 'dark');
-        root.classList.add(theme);
-    }, [theme]);
+  useThemeEffect();
 
-    // This effect shows a specific loader for a better UX during certain loading states.
-    useEffect(() => {
-        let timer;
-        // If there's a logged-in user but the app is still loading something,
-        // show the loader after a short delay to avoid a quick flash.
-        if (loading && userInfo) {
-            timer = setTimeout(() => {
-                setShowDelayedLoader(true);
-            }, 300); // 300ms delay
-        } else {
-            setShowDelayedLoader(false);
-        }
-        return () => clearTimeout(timer);
-    }, [loading, userInfo]);
-
-    // Show the initial loading screen until the first auth check is complete.
+  // ✅ Verify session or initialize local user
+  useEffect(() => {
     if (!isInitialized) {
-        return <LoadingScreen text="Loading..." />;
+      checkUserStatus(); // must exist in store
     }
+  }, [isInitialized, checkUserStatus]);
 
-    // Show the delayed loader if its condition is met.
-    if (showDelayedLoader) {
-        return <LoadingScreen text="Getting your feed ready..." />;
+  // ✅ Sync theme globally
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove('light', 'dark');
+    root.classList.add(theme);
+  }, [theme]);
+
+  // ✅ Manage delayed loader
+  useEffect(() => {
+    let timer;
+    if (loading && userInfo) {
+      timer = setTimeout(() => setShowDelayedLoader(true), 300);
+    } else {
+      setShowDelayedLoader(false);
     }
+    return () => clearTimeout(timer);
+  }, [loading, userInfo]);
 
-    // Render the main application.
-    return (
-        <>
-            <Toaster position="top-center" reverseOrder={false}/>
-            <AppRoutes />
-        </>
-    );
+  // ✅ Controlled loading states
+  if (!isInitialized) return <LoadingScreen text="Loading..." />;
+  if (showDelayedLoader) return <LoadingScreen text="Getting your feed ready..." />;
+
+  // ✅ Main app render
+  return (
+    <>
+      <Toaster position="top-center" reverseOrder={false} />
+      <AppRoutes />
+    </>
+  );
 }
 

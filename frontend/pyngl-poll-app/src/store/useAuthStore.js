@@ -10,22 +10,19 @@ const useAuthStore = create((set) => ({
   error: null,
 
   // ✅ Check user session from cookie (Render)
-  checkUserStatus: async () => {
-    set({ loading: true, error: null });
+ checkUserStatus: async () => {
     try {
-      const { data } = await apiClient.get(`${API_URL}/status`);
-      if (data?.user) {
-        localStorage.setItem("userInfo", JSON.stringify(data.user));
-        set({ userInfo: data.user, isInitialized: true, loading: false });
-      } else {
-        localStorage.removeItem("userInfo");
-        set({ userInfo: null, isInitialized: true, loading: false });
-      }
+        const { data } = await apiClient.get('/api/users/status', { withCredentials: true });
+        if (data.user) {
+            set({ userInfo: data.user, isInitialized: true });
+        } else {
+            set({ userInfo: null, isInitialized: true });
+        }
     } catch (error) {
-      console.error("checkUserStatus error:", error);
-      set({ userInfo: null, isInitialized: true, loading: false });
+        console.error('User status check failed:', error);
+        set({ userInfo: null, isInitialized: true });
     }
-  },
+},
 
   finishLoading: () => set({ loading: false }),
   clearError: () => set({ error: null }),
