@@ -154,7 +154,7 @@ const PORT = process.env.PORT || 5000;
 // --- Allowed Origins ---
 const allowedOrigins = [
   process.env.FRONTEND_URL, // ✅ e.g. https://pyngl-integration-9jx6.vercel.app
-  "https://pyngl-integration-9jx6.vercel.app",
+  "https://pyngl-integration-9jx6-git-main-pyngls-projects.vercel.app",
   "https://localhost:5173",
   "http://localhost:5173",
   "https://192.168.1.7:5173",
