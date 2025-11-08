@@ -16,7 +16,8 @@ import {
     updateUserProfile,
     updateUserPassword,
     updateUserProfilePicture,
-    saveUserLocation 
+    saveUserLocation, 
+    getUserStatus
 } from '../controllers/userController.js';
 import { upload } from '../config/cloudinary.js';
 const router = express.Router();
@@ -31,6 +32,7 @@ router.post('/resetpassword-otp', resetPasswordOtp); // New route for OTP-based 
 router.put('/resetpassword', resetPassword); // PUT is often used for updates
 router.post('/logout', logoutUser);
 router.get('/profile-stats', protect, getUserProfileStats);
+router.get('/status', getUserStatus);
 router.put('/profile', protect, updateUserProfile);
 router.put('/profile/password', protect, updateUserPassword);
 router.put(

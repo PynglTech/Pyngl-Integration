@@ -696,3 +696,19 @@ export const saveUserLocation = async (req, res) => {
     res.status(500).json({ message: "Internal server error." });
   }
 };
+
+
+export const getUserStatus = async (req, res) => {
+try {
+    if (req.isAuthenticated && req.isAuthenticated()) {
+      return res.json({ user: req.user });
+    } else if (req.session?.user) {
+      return res.json({ user: req.session.user });
+    } else {
+      return res.json({ user: null });
+    }
+  } catch (error) {
+    console.error("Error checking status:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
