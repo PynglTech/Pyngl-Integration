@@ -256,7 +256,7 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
   const sheetRef = useRef(null);
   const pollRef = useRef(null);
 
-  const POLL_PAGE_DOMAIN = "https://soft-suits-stand.loca.lt";
+  const POLL_PAGE_DOMAIN = "https://petite-lights-say.loca.lt";
   const POLL_PREVIEW_BASE = `${POLL_PAGE_DOMAIN}/api/polls/`;
 
   const handleRestore = () => {

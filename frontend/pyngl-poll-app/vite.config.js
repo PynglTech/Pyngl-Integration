@@ -186,17 +186,17 @@ export default defineConfig({
   ],
 
   server: {
-    https: false, // ✅ CHANGED: Enable HTTPS for LAN access
-    host: true, // ✅ Expose to network
+    https: true, // ✅ CHANGED: Enable HTTPS for LAN access
+    // host: true, // ✅ Expose to network
 
     proxy: {
       "/api": {
-        target: "https://localhost:5000",
+        target: "http://localhost:5000",
         changeOrigin: true,
         secure: false,
       },
       "/auth": {
-        target: "https://localhost:5000",
+        target: "http://localhost:5000",
         changeOrigin: true,
         secure: false,
       },
