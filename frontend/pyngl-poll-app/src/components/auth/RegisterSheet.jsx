@@ -117,7 +117,8 @@ const RegisterSheet = ({ openSheet, closeSheet }) => {
 
     const onSubmit = async (data) => {
         // We no longer need the .catch here as the store handles the error state
-        await registerUser(data.username, data.email, data.password, data.phoneNumber, data.birthDate);
+        // [NEW]
+await registerUser(data);
     };
 
     return (

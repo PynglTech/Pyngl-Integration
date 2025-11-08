@@ -205,13 +205,16 @@ app.use(
   session({
     secret: process.env.SESSION_SECRET || "default_secret_key",
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false, // ✅ critical
     cookie: {
-      secure: process.env.NODE_ENV === "production", // ✅ secure cookies in prod
+      secure: process.env.NODE_ENV === "production", // true on Render
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      httpOnly: true, // ✅ secure
+      maxAge: 1000 * 60 * 60 * 24 * 7, // ✅ 7 days
     },
   })
 );
+
 
 app.use(passport.initialize());
 app.use(passport.session());
