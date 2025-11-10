@@ -49,7 +49,7 @@ export default function PollPreview({ poll, croppedImage, aspect = 9 / 16 }) {
 
         {/* Dark mode logo */}
         <img
-          src="/assets/logo_dark.svg"
+          src="/assets/logo_dark.png"
           alt="logo"
           className="hidden dark:inline-block h-4"
         />

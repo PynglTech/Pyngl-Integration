@@ -127,7 +127,7 @@ const DesktopNav = () => {
         />
         {/* Dark mode logo */}
         <img
-          src="/assets/logo_dark.svg"
+          src="/assets/logo_dark.png"
           alt="Pyngl Dark Logo"
           className="h-8 hidden dark:block"
         />

@@ -780,92 +780,148 @@ const DesktopHomePage = () => {
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-[#090016] text-gray-400 py-14 px-6 lg:px-24 border-t border-gray-800">
-        <div className="grid md:grid-cols-4 gap-10 max-w-7xl mx-auto">
+    <footer className="bg-[#252547] text-gray-400 py-14 px-6 lg:px-24 border-t border-gray-800">
+  <div className="max-w-7xl mx-auto">
+    <div className="grid md:grid-cols-4 gap-10 mb-10">
+      {/* Logo and Short Info */}
+      <div>
+        <img
+          src="/assets/logo_dark.png"
+          alt="Pyngl"
+          className="h-8 mb-4"
+        />
+        <p className="text-sm leading-relaxed text-gray-400">
+          Pyngl helps you create interactive, AI-powered polls that engage your
+          audience instantly across platforms.
+        </p>
+      </div>
+
+      {/* Company Links */}
+      <div>
+        <h4 className="font-semibold text-white mb-3 tracking-wide">Company</h4>
+        <ul className="space-y-2 text-sm">
+          <li>
+            <Link
+              to="/dashboard"
+              className="hover:text-pink-400 transition-colors duration-200"
+            >
+              Home
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/trending"
+              className="hover:text-pink-400 transition-colors duration-200"
+            >
+              Trending
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/analytics"
+              className="hover:text-pink-400 transition-colors duration-200"
+            >
+              Analytics
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/profile"
+              className="hover:text-pink-400 transition-colors duration-200"
+            >
+              Profile
+            </Link>
+          </li>
+        </ul>
+      </div>
+
+      {/* Help Links */}
+      <div>
+        <h4 className="font-semibold text-white mb-3 tracking-wide">Help</h4>
+        <ul className="space-y-2 text-sm">
+          <li>
+            <Link
+              to="/help-center"
+              className="hover:text-pink-400 transition-colors duration-200"
+            >
+              Customer Support
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/terms-of-service"
+              className="hover:text-pink-400 transition-colors duration-200"
+            >
+              Terms & Conditions
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/privacy-policy"
+              className="hover:text-pink-400 transition-colors duration-200"
+            >
+              Privacy Policy
+            </Link>
+          </li>
+        </ul>
+      </div>
+
+      {/* Contact & Socials */}
+      <div>
+        <h4 className="font-semibold text-white mb-3 tracking-wide">
+          Follow us
+        </h4>
+        <div className="flex items-center gap-4 mb-6">
+          <a
+            href="https://www.linkedin.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-pink-400"
+          >
+            <Linkedin size={20} />
+          </a>
+          <a
+            href="https://www.instagram.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-pink-400"
+          >
+            <Instagram size={20} />
+          </a>
+          <a
+            href="https://www.facebook.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-pink-400"
+          >
+            <Facebook size={20} />
+          </a>
+        </div>
+
+        <div className="space-y-3 text-sm">
+          {/* <div>
+            <p className="uppercase text-xs text-gray-500 mb-1">Call Us</p>
+            <p className="font-semibold text-white text-base">
+              (+91) 456-4933555
+            </p>
+          </div> */}
           <div>
-            <img src="/assets/pynglLogoImage.png" alt="Pyngl" className="h-8 mb-4" />
-            <p className="text-sm">
-              Pyngl helps you create interactive, beautiful polls powered by AI — in seconds.
+            <p className="uppercase text-xs text-gray-500 mb-1">Email Us</p>
+            <p className="font-semibold text-white text-base">
+              tech@pyngl.com
             </p>
           </div>
-
-          <div>
-            <h4 className="font-bold text-white mb-3">Product</h4>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link to="/create-text-poll" className="hover:text-pink-400 transition">
-                  Create Text Poll
-                </Link>
-              </li>
-              <li>
-                <Link to="/create-image-poll" className="hover:text-pink-400 transition">
-                  Create Image Poll
-                </Link>
-              </li>
-              <li>
-                <Link to="/analytics" className="hover:text-pink-400 transition">
-                  Analytics Dashboard
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-bold text-white mb-3">Company</h4>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link to="/about" className="hover:text-pink-400 transition">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="hover:text-pink-400 transition">
-                  Contact
-                </Link>
-              </li>
-              <li>
-                <Link to="/terms" className="hover:text-pink-400 transition">
-                  Terms & Privacy
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-bold text-white mb-3">Connect</h4>
-            <div className="flex space-x-4 mt-4">
-              <a
-                href="https://www.linkedin.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-pink-400"
-              >
-                <Linkedin size={22} />
-              </a>
-              <a
-                href="https://www.instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-pink-400"
-              >
-                <Instagram size={22} />
-              </a>
-              <a
-                href="https://www.facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-pink-400"
-              >
-                <Facebook size={22} />
-              </a>
-            </div>
-          </div>
         </div>
+      </div>
+    </div>
 
-        <div className="text-center text-sm text-gray-500 mt-10 border-t border-gray-800 pt-6">
-          © {new Date().getFullYear()} Pyngl. All rights reserved.
-        </div>
-      </footer>
+    {/* Divider */}
+    <div className="border-t border-gray-800 pt-6 text-center text-sm text-gray-500">
+      © {new Date().getFullYear()} Pyngl. All Rights Reserved
+    </div>
+  </div>
+</footer>
+
     </div>
   );
 };
