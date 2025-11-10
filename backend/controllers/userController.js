@@ -699,16 +699,10 @@ export const saveUserLocation = async (req, res) => {
 
 
 export const getUserStatus = async (req, res) => {
-try {
-    if (req.isAuthenticated && req.isAuthenticated()) {
-      return res.json({ user: req.user });
-    } else if (req.session?.user) {
-      return res.json({ user: req.session.user });
-    } else {
-      return res.json({ user: null });
-    }
+  try {
+    if (req.user) return res.json({ user: formatUserResponse(req.user) });
+    res.json({ user: null });
   } catch (error) {
-    console.error("Error checking status:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };

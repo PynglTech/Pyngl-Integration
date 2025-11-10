@@ -68,31 +68,38 @@ const MobileAuthPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ Safely access store methods
-  const clearError = useAuthStore((state) => state.clearError);
+  const { userInfo, clearError } = useAuthStore();
 
-  // ✅ Map for routes (kept outside handler for clarity)
   const pathMap = {
     login: "/login",
     register: "/signup",
     forgot: "/forgot-password",
   };
 
-  // ✅ Effect: Watch URL and set active sheet accordingly
+  // ✅ Automatically close auth modals after successful login/register
+  useEffect(() => {
+    if (userInfo) {
+      setActiveSheet(null);
+      navigate("/dashboard", { replace: true });
+    }
+  }, [userInfo, navigate]);
+
+  // ✅ Update active sheet based on URL path
   useEffect(() => {
     const path = location.pathname;
     if (path === "/login") setActiveSheet("login");
     else if (path === "/signup") setActiveSheet("register");
     else if (path === "/forgot-password") setActiveSheet("forgot");
     else setActiveSheet(null);
+
+    // 🧹 Reset state on unmount
+    return () => setActiveSheet(null);
   }, [location.pathname]);
 
-  // ✅ Wrapped in useCallback (avoids stale closures)
+  // ✅ Open sheet handler
   const openSheet = useCallback(
     (sheetName) => {
       if (typeof clearError === "function") clearError();
-      else console.warn("⚠️ clearError is not a function — check useAuthStore");
-
       const newPath = pathMap[sheetName] || "/";
       navigate(newPath, { replace: true });
       setActiveSheet(sheetName);
@@ -100,6 +107,7 @@ const MobileAuthPage = () => {
     [navigate, clearError]
   );
 
+  // ✅ Close sheet handler
   const closeSheet = useCallback(() => {
     navigate("/", { replace: true });
     setActiveSheet(null);
@@ -107,20 +115,17 @@ const MobileAuthPage = () => {
 
   return (
     <div className="font-sans bg-white dark:bg-gray-950 min-h-screen">
-      {/* Landing Page */}
       <div className="w-full h-screen bg-white dark:bg-gray-900">
         <LandingPage openSheet={openSheet} />
       </div>
 
-      {/* Conditional Modals */}
+      {/* Conditional Auth Sheets */}
       {activeSheet === "login" && (
         <LoginSheet openSheet={openSheet} closeSheet={closeSheet} />
       )}
-
       {activeSheet === "register" && (
         <RegisterSheet openSheet={openSheet} closeSheet={closeSheet} />
       )}
-
       {activeSheet === "forgot" && (
         <ForgotPasswordSheet openSheet={openSheet} closeSheet={closeSheet} />
       )}
@@ -129,3 +134,4 @@ const MobileAuthPage = () => {
 };
 
 export default MobileAuthPage;
+
