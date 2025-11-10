@@ -59,7 +59,7 @@ const oauth2callback = async (req, res) => {
 
     // Redirect with pollId
     res.redirect(
-      `https://localhost:5173/share?connectedEmail=${encodeURIComponent(
+      `https://pyngl.com/share?connectedEmail=${encodeURIComponent(
         data.email
       )}&pollId=${pollId}`
     );
