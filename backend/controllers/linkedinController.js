@@ -14,7 +14,7 @@ async function getAuthorUrn(accessToken) {
 
 function generateTrackableLink(pollId) {
     const params = new URLSearchParams({ utm_source: 'linkedin', utm_medium: 'native_poll' });
-    return `https://your-domain.com/poll/${pollId}?${params.toString()}`;
+    return `https://pyngl.com/poll/${pollId}?${params.toString()}`;
 }
 
 // --- AUTHENTICATION CONTROLLERS ---
@@ -31,7 +31,7 @@ export const redirectToLinkedInAuth = (req, res) => {
 
 export const handleLinkedInCallback = async (req, res) => {
     // This now redirects back to your React PWA page
-     const frontendUrl = 'http://localhost:5173/share-linkedin'; 
+     const frontendUrl = 'https://pyngl.com/share-linkedin'; 
     try {
         const tokenResponse = await axios.post(
             "https://www.linkedin.com/oauth/v2/accessToken",

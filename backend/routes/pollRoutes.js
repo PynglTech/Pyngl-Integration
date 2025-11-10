@@ -190,9 +190,9 @@ router.post('/generate-image', generateImage); // Kept as public assuming it mig
       // --- URL Construction ---
       const baseUrl = req.get('host').includes('localhost') || req.get('host').includes('loca.lt') 
         ? `${req.protocol}://${req.get('host')}`
-        : 'https://yourdomain.com';
+        : 'https://pyngl.com';
       
-      const pollUrl = `https://192.168.1.4:5173/poll/${poll._id}/vote`;
+      const pollUrl = `https://pyngl.com/poll/${poll._id}`;
 
       // 2. Build Meta Tags Dynamically
       const metaTags = [
