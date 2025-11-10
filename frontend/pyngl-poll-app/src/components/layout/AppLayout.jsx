@@ -1627,7 +1627,7 @@ const AppHeader = () => {
         <header className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md sticky top-0 z-30">
             <Link to="/dashboard">
                 <img src="/assets/pynglLogoImage.png" alt="Logo" className="h-[27px] w-[76px] block dark:hidden" />
-                <img src="/assets/logo_dark.svg" alt="Logo Dark" className="h-[27px] w-[76px] hidden dark:block" />
+                <img src="/assets/logo_dark.png" alt="Logo Dark" className="h-[27px] w-[76px] hidden dark:block" />
             </Link>
             
             <div className="flex items-center gap-4">

@@ -482,7 +482,7 @@ export default function PreviewTextPoll() {
                   className="h-5 block dark:hidden"
                 />
                 <img
-                  src="/assets/logo_dark.svg"
+                  src="/assets/logo_dark.png"
                   alt="Pyngl Logo Dark"
                   className="h-5 hidden dark:block"
                 />
@@ -552,7 +552,7 @@ export default function PreviewTextPoll() {
                     className="h-4 block dark:hidden"
                   />
                   <img
-                    src="/assets/logo_dark.svg"
+                    src="/assets/logo_dark.png"
                     alt="Pyngl Logo Dark"
                     className="h-4 hidden dark:block"
                   />

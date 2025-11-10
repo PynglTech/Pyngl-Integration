@@ -466,7 +466,7 @@ export default function PreviewImagePoll() {
                             </div>
                             <div className="flex justify-end mt-4">
                                 <img src="/assets/pynglLogoImage.png" alt="Pyngl Logo" className="h-5 block dark:hidden" />
-                                <img src="/assets/logo_dark.svg" alt="Pyngl Logo Dark" className="h-5 hidden dark:block" />
+                                <img src="/assets/logo_dark.png" alt="Pyngl Logo Dark" className="h-5 hidden dark:block" />
                             </div>
                         </div>
 
@@ -501,7 +501,7 @@ export default function PreviewImagePoll() {
                                 <h2 className="font-medium mb-4 text-gray-900 dark:text-gray-100">{createdPoll.question}</h2>
                                 {createdPoll.imageUrl && <img src={createdPoll.imageUrl} alt="Poll visual" className="rounded-xl mb-4 w-full h-48 object-cover" />}
                                 <div className="space-y-3">{createdPoll.options.map((opt, i) => ( <div key={opt._id || i} className="w-full border rounded-full px-4 py-2 text-left text-gray-700 dark:text-gray-100 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700">{opt.text}</div> ))}</div>
-                                <div className="flex justify-end mt-3"><img src="/assets/pynglLogoImage.png" alt="Pyngl Logo Light" className="h-4 block dark:hidden" /><img src="/assets/logo_dark.svg" alt="Pyngl Logo Dark" className="h-4 hidden dark:block" /></div>
+                                <div className="flex justify-end mt-3"><img src="/assets/pynglLogoImage.png" alt="Pyngl Logo Light" className="h-4 block dark:hidden" /><img src="/assets/logo_dark.png" alt="Pyngl Logo Dark" className="h-4 hidden dark:block" /></div>
                             </div>
                             <div className="mt-6"><StyledQRCode pollUrl={pollUrl} hideForScreenshot={true} /></div>
                         </div>
