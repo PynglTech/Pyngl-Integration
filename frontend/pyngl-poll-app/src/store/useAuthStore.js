@@ -9,20 +9,39 @@ const useAuthStore = create((set) => ({
   loading: false,
   error: null,
 
-  // ✅ Check user session from cookie (Render)
- checkUserStatus: async () => {
+  // ✅ FIXED: Check BOTH localStorage AND server session
+  checkUserStatus: async () => {
     try {
-        const { data } = await apiClient.get('/api/users/status', { withCredentials: true });
-        if (data.user) {
-            set({ userInfo: data.user, isInitialized: true });
-        } else {
-            set({ userInfo: null, isInitialized: true });
+      // First, try to get user from localStorage
+      const storedUser = localStorage.getItem("userInfo");
+      if (storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          set({ userInfo: parsedUser, isInitialized: true });
+          return; // User found in localStorage, we're done
+        } catch (e) {
+          console.error("Failed to parse stored user:", e);
+          localStorage.removeItem("userInfo");
         }
-    } catch (error) {
-        console.error('User status check failed:', error);
+      }
+
+      // If no localStorage user, check server session
+      const { data } = await apiClient.get('/api/users/status', { 
+        withCredentials: true 
+      });
+      
+      if (data.user) {
+        // Sync server session to localStorage
+        localStorage.setItem("userInfo", JSON.stringify(data.user));
+        set({ userInfo: data.user, isInitialized: true });
+      } else {
         set({ userInfo: null, isInitialized: true });
+      }
+    } catch (error) {
+      console.error('User status check failed:', error);
+      set({ userInfo: null, isInitialized: true });
     }
-},
+  },
 
   finishLoading: () => set({ loading: false }),
   clearError: () => set({ error: null }),
@@ -30,9 +49,18 @@ const useAuthStore = create((set) => ({
   login: async (email, password) => {
     set({ loading: true, error: null });
     try {
-      const { data } = await apiClient.post(`${API_URL}/login`, { email, password });
+      const { data } = await apiClient.post(`${API_URL}/login`, { 
+        email, 
+        password 
+      }, {
+        withCredentials: true // ✅ CRITICAL: Include credentials
+      });
+      
+      // Save to both localStorage and state
       localStorage.setItem("userInfo", JSON.stringify(data));
       set({ userInfo: data, loading: false });
+      
+      return data; // ✅ Return data for success handling
     } catch (error) {
       const message = error.response?.data?.message || "An unexpected error occurred.";
       set({ error: message, loading: false });
@@ -43,9 +71,15 @@ const useAuthStore = create((set) => ({
   register: async (userData) => {
     set({ loading: true, error: null });
     try {
-      const { data } = await apiClient.post(`${API_URL}/register`, userData);
+      const { data } = await apiClient.post(`${API_URL}/register`, userData, {
+        withCredentials: true // ✅ CRITICAL: Include credentials
+      });
+      
+      // Save to both localStorage and state
       localStorage.setItem("userInfo", JSON.stringify(data));
       set({ userInfo: data, loading: false });
+      
+      return data; // ✅ Return data for success handling
     } catch (err) {
       const errorMessage = err.response?.data?.message || "Registration failed.";
       set({ error: errorMessage, loading: false });
@@ -84,7 +118,9 @@ const useAuthStore = create((set) => ({
 
   logout: async () => {
     try {
-      await apiClient.post(`${API_URL}/logout`);
+      await apiClient.post(`${API_URL}/logout`, {}, {
+        withCredentials: true // ✅ Include credentials
+      });
     } catch (error) {
       console.error("Logout failed:", error);
     } finally {

@@ -164,7 +164,6 @@
 
 // export default PublicAuthPage;
 
-
 import React, { useState, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
@@ -175,37 +174,41 @@ import DesktopAuthPage from '../components/auth/DesktopAuthPage';
 import MobileAuthPage from './MobileAuthPage';
 import InstallPrompt from './InstallPrompt';
 
+// Responsive utility
 const useIsDesktop = () => {
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
   useEffect(() => {
-    const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
+    let timeout;
+    const handleResize = () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => setIsDesktop(window.innerWidth >= 1024), 200);
+    };
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      clearTimeout(timeout);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
   return isDesktop;
 };
-    
 
 const PublicAuthPage = () => {
   const { userInfo, isInitialized, checkUserStatus } = useAuthStore();
   const isDesktop = useIsDesktop();
   const location = useLocation();
 
+  // ✅ Run only once on initial mount
   useEffect(() => {
     if (!isInitialized) {
       checkUserStatus();
     }
-  }, [isInitialized, checkUserStatus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  if (!isInitialized) {
-    return <LoadingSpinner />;
-  }
+  if (!isInitialized) return <LoadingSpinner />;
+  if (userInfo) return <Navigate to="/dashboard" replace />;
 
-  if (userInfo) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  // Render different layouts
+  // ✅ Route-based rendering
   let content;
   if (isDesktop) {
     if (location.pathname === '/login' || location.pathname === '/signup') {
@@ -222,11 +225,12 @@ const PublicAuthPage = () => {
   return (
     <>
       {content}
-      <InstallPrompt /> 
+      <InstallPrompt />
     </>
   );
 };
 
 export default PublicAuthPage;
+
 
 
