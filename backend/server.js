@@ -156,23 +156,27 @@ app.use(compression());
 
 // --- Allowed Origins ---
 const allowedOrigins = [
-  process.env.FRONTEND_URL, // e.g. https://pyngl-integration-9jx6.vercel.app
-  "https://pyngl-integration-itfu.vercel.app",
-  "https://pyngl.com",
+  process.env.FRONTEND_URL, // from .env (e.g. https://www.pyngl.com)
   "https://www.pyngl.com",
+  "https://pyngl.com",
   "http://localhost:5173",
   "https://localhost:5173",
-  "https://192.168.1.7:5173",
 ];
 
 // --- CORS Middleware ---
-app.use(cors({
-  origin: [
-    'https://pyngl-integration-itfu.vercel.app',  // ✅ your frontend URL
-    'http://localhost:5173'
-  ],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn("❌ CORS Blocked Origin:", origin);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 
 // --- Preflight for all routes ---
 app.options(/.*/, cors());
@@ -189,8 +193,8 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production", // ✅ required on Render
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // ✅ matches JWT cookie
+      secure: process.env.NODE_ENV === "production", // ✅ required for HTTPS cookies
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // ✅ allows cross-origin cookies
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     },
@@ -204,28 +208,18 @@ app.use(passport.session());
 // --- Socket.io Setup ---
 const io = new Server(server, {
   cors: {
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.warn("❌ Socket.io Blocked Origin:", origin);
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: allowedOrigins,
     credentials: true,
   },
 });
-
 app.set("io", io);
 
 io.on("connection", (socket) => {
   console.log("✅ User connected:", socket.id);
-
   socket.on("join", (userId) => {
     console.log(`📨 User ${userId} joined notifications room.`);
     socket.join(userId);
   });
-
   socket.on("disconnect", () => {
     console.log("❌ User disconnected:", socket.id);
   });
@@ -245,14 +239,19 @@ app.use("/api/linkedin", linkedinRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/auth", googleRoutes);
 
-// --- Schedulers ---
+// --- Health Check Root ---
+app.get("/", (req, res) => {
+  res.send("<h1>✅ Pyngl API is Live at api.pyngl.com</h1>");
+});
+
+// --- Global 404 Handler (for API routes) ---
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
+});
+
+// --- Scheduled Jobs ---
 schedulePollNotifications();
 initScheduledJobs(io);
-
-// --- Root Route ---
-app.get("/", (req, res) => {
-  res.send("<h1>✅ Pyngl Backend is Live (CORS + Cookies Fixed)</h1>");
-});
 
 // --- Start Server ---
 server.listen(PORT, () => {
