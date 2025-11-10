@@ -120,7 +120,7 @@ import { fileURLToPath } from "url";
 import cors from "cors";
 import mongoose from "mongoose";
 import { Server } from "socket.io";
-import http from "http"; // ✅ Use HTTP — Render automatically provides HTTPS
+import http from "http";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import passport from "passport";
@@ -139,35 +139,76 @@ import initScheduledJobs from "./utils/scheduler.js";
 import "./config/passport-setup.js";
 import { schedulePollNotifications } from "./jobs/pollScheduler.js";
 
-// --- Load Environment Variables ---
+// --- Environment Setup ---
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, "./.env") });
 
 const app = express();
-app.use(compression());
-
-// --- Use HTTP for Cloud Deployment ---
 const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 
+// --- ⚙️ Trust Proxy (critical for HTTPS cookies on Render) ---
+app.set("trust proxy", 1);
+
+// --- Compression ---
+app.use(compression());
+
 // --- Allowed Origins ---
 const allowedOrigins = [
-  process.env.FRONTEND_URL, // ✅ e.g. https://pyngl-integration-9jx6.vercel.app
+  process.env.FRONTEND_URL, // e.g. https://pyngl-integration-9jx6.vercel.app
   "https://pyngl-integration-itfu.vercel.app",
-  "https://localhost:5173",
+  "https://pyngl.com",
+  "https://www.pyngl.com",
   "http://localhost:5173",
+  "https://localhost:5173",
   "https://192.168.1.7:5173",
 ];
 
-// --- WebSocket Setup ---
+// --- CORS Middleware ---
+app.use(cors({
+  origin: [
+    'https://pyngl-integration-itfu.vercel.app',  // ✅ your frontend URL
+    'http://localhost:5173'
+  ],
+  credentials: true
+}));
+
+// --- Preflight for all routes ---
+app.options(/.*/, cors());
+
+// --- Body Parsing & Cookies ---
+app.use(cookieParser());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
+// --- Session Config (used by Passport & OAuth) ---
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "default_secret_key",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // ✅ required on Render
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // ✅ matches JWT cookie
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    },
+  })
+);
+
+// --- Passport Setup ---
+app.use(passport.initialize());
+app.use(passport.session());
+
+// --- Socket.io Setup ---
 const io = new Server(server, {
   cors: {
     origin: (origin, callback) => {
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        console.warn("❌ CORS Blocked Origin:", origin);
+        console.warn("❌ Socket.io Blocked Origin:", origin);
         callback(new Error("Not allowed by CORS"));
       }
     },
@@ -175,53 +216,8 @@ const io = new Server(server, {
   },
 });
 
-// --- Middleware ---
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.warn("❌ CORS Blocked Origin:", origin);
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-  })
-);
-
-// ❌ REMOVE this old line that breaks Express 5
-// app.options("*", cors());
-
-// ✅ Express 5-safe optional version
-app.options(/.*/, cors());
-
-
-app.use(cookieParser());
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ limit: "50mb", extended: true }));
-
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "default_secret_key",
-    resave: false,
-    saveUninitialized: false, // ✅ critical
-    cookie: {
-      secure: process.env.NODE_ENV === "production", // true on Render
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      httpOnly: true, // ✅ secure
-      maxAge: 1000 * 60 * 60 * 24 * 7, // ✅ 7 days
-    },
-  })
-);
-
-
-app.use(passport.initialize());
-app.use(passport.session());
-app.set("trust proxy", 1);
 app.set("io", io);
 
-// --- WebSocket Handlers ---
 io.on("connection", (socket) => {
   console.log("✅ User connected:", socket.id);
 
@@ -249,17 +245,16 @@ app.use("/api/linkedin", linkedinRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/auth", googleRoutes);
 
-// --- Scheduler ---
+// --- Schedulers ---
 schedulePollNotifications();
+initScheduledJobs(io);
 
 // --- Root Route ---
 app.get("/", (req, res) => {
-  res.send("<h1>✅ Pyngl Backend is Live on Render (CORS Fixed)!</h1>");
+  res.send("<h1>✅ Pyngl Backend is Live (CORS + Cookies Fixed)</h1>");
 });
 
 // --- Start Server ---
 server.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
-  initScheduledJobs(io);
 });
-
