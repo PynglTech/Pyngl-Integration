@@ -1310,8 +1310,8 @@ export default function TrendingPolls() {
     }
   };
 
-  const PollCard = ({ poll }) => (
-    <div
+  const PollCard = ({ poll }) => {
+    return <div
       key={poll.id}
       className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 cursor-pointer hover:shadow-lg transition-shadow"
       onClick={() => handlePollClick(poll)}
@@ -1344,8 +1344,8 @@ export default function TrendingPolls() {
           ))}
         </div>
       </div>
-    </div>
-  );
+    </div>;
+  };
 
   return (
     <div className="bg-white dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-200">
@@ -1454,49 +1454,65 @@ export default function TrendingPolls() {
       )}
 
       {selectedPoll && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-60 dark:bg-opacity-70 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
-          onClick={closeModal}
-        >
-          <div
-            className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md p-6 space-y-5"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-200 leading-tight">
-              {selectedPoll.question}
-            </h3>
-            {!pollResults ? (
-              <div className="space-y-3">
-                {(selectedPoll.options || []).map((option) => (
-                  <button
-                    key={option._id}
-                    onClick={() => setSelectedOptionId(option._id)}
-                    className={`w-full p-3 text-left font-medium rounded-xl border-2 transition-all ${
-                      selectedOptionId === option._id
-                        ? "border-pink-500 text-pink-600 dark:text-pink-400"
-                        : "border-transparent bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
-                    }`}
-                  >
-                    {option.text}
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <PollResultsView results={pollResults} />
-            )}
-            <button
-              onClick={handleVote}
-              disabled={!selectedOptionId || isSubmittingVote || pollResults}
-              className="w-full py-3 rounded-xl font-bold text-white bg-[#F43F86] hover:bg-pink-600 transition-opacity disabled:opacity-50"
-            >
-              {isSubmittingVote ? "Voting..." : "Vote Now"}
-            </button>
-            <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-              {calculateDaysLeft(selectedPoll.expiresAt)}
-            </p>
-          </div>
-        </div>
+  <div
+    className="fixed inset-0 bg-black bg-opacity-60 dark:bg-opacity-70 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
+    onClick={closeModal}
+  >
+    <div
+      className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md p-6 space-y-5"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <h3 className="text-xl font-bold text-gray-900 dark:text-gray-200 leading-tight">
+        {selectedPoll.question}
+      </h3>
+
+      {/* ✅ Add this block to show poll image */}
+      {selectedPoll.imageUrl && (
+        <img
+          src={
+            selectedPoll.imageUrl.startsWith("http")
+              ? selectedPoll.imageUrl
+              : `http://api.pyngl.com/{selectedPoll.imageUrl}` // ✅ adjust IP for your LAN
+          }
+          alt="Poll"
+          className="rounded-xl w-full h-[180px] object-cover"
+        />
       )}
+
+      {!pollResults ? (
+        <div className="space-y-3">
+          {(selectedPoll.options || []).map((option) => (
+            <button
+              key={option._id}
+              onClick={() => setSelectedOptionId(option._id)}
+              className={`w-full p-3 text-left font-medium rounded-xl border-2 transition-all ${
+                selectedOptionId === option._id
+                  ? "border-pink-500 text-pink-600 dark:text-pink-400"
+                  : "border-transparent bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+              }`}
+            >
+              {option.text}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <PollResultsView results={pollResults} />
+      )}
+
+      <button
+        onClick={handleVote}
+        disabled={!selectedOptionId || isSubmittingVote || pollResults}
+        className="w-full py-3 rounded-xl font-bold text-white bg-[#F43F86] hover:bg-pink-600 transition-opacity disabled:opacity-50"
+      >
+        {isSubmittingVote ? "Voting..." : "Vote Now"}
+      </button>
+      <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+        {calculateDaysLeft(selectedPoll.expiresAt)}
+      </p>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }
