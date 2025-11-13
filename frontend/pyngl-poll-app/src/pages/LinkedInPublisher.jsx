@@ -46,7 +46,8 @@ const LinkedInPublisher = () => {
 
     const handleLogin = () => {
         if (poll) sessionStorage.setItem('linkedinSharePollId', poll._id);
-        window.location.href = 'http://localhost:5000/api/linkedin/auth';
+    window.location.href = `https://localhost:5000/api/linkedin/auth/linkedin/login?pollId=${poll._id}`;
+
     };
     
   const handlePublish = async () => {

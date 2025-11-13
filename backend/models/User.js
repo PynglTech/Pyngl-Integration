@@ -27,7 +27,11 @@ const userSchema = new mongoose.Schema(
       index: true,
       trim: true,
       lowercase: true
-    },
+    },telegramChatId: {
+  type: String,
+  default: null,
+},
+
     password: { 
       type: String, 
       required: true 

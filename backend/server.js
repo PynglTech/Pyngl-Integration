@@ -17,6 +17,7 @@ import userRoutes from './routes/userRoutes.js';
 import pollRoutes from './routes/pollRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import linkedinRoutes from './routes/linkedinRoutes.js';
+import telegramRoutes from './routes/telegramRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import googleRoutes from './routes/googleRoutes.js'; // ADDED: The missing Google route
 // Utility Imports
@@ -92,7 +93,8 @@ mongoose.connect(MONGO_URI)
 app.use('/api/users', userRoutes);
 app.use('/api/polls', pollRoutes);
 app.use('/api/notifications', notificationRoutes);
-app.use('/api/linkedin', linkedinRoutes); // ADDED: The missing LinkedIn route
+app.use('/api/linkedin', linkedinRoutes); 
+app.use("/api/telegram", telegramRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use("/auth", googleRoutes);
 app.get('/', (req, res) => {

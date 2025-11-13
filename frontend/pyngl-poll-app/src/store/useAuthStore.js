@@ -41,6 +41,7 @@ const useAuthStore = create((set) => ({
   register: async (userData) => { // 1. Ensure 'birthDate' is an argument here
     set({ loading: true, error: null });
     try {
+           console.log("DATA SENT:", userData);
             // 2. Pass that object directly to the backend
             const { data } = await apiClient.post('/api/users/register', userData);
       

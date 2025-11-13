@@ -76,7 +76,7 @@ import VoteOnPollPage from '../pages/VoteOnPollPage';
 import TrendingPolls from '../pages/TrendingPolls';
 import ProfilePage from '../pages/ProfilePage';
 import Analytics from '../pages/Analytics';
-import LinkedInPublisher from '../pages/LinkedInPublisher';
+import LinkedInShowPage from '../pages/LinkedInShowPage';
 import HelpCenter from '../pages/HelpCenter';
 import Terms from '../pages/TermsPage';
 import PrivacyPolicy from '../pages/PrivacyPolicyPage';
@@ -95,6 +95,8 @@ import ProAnalytics from '../components/analytics/ProAnalytics';
 import CompareLastPolls from '../components/analytics/comparePolls';
 import CreateSegment from '../components/analytics/CreateSegment';
 import EnterpriseAnalytics from '../components/analytics/EnterpriseAnalytics';
+
+
 const AppRoutes = () => {
       const { userInfo } = useAuthStore();
     return (
@@ -137,7 +139,8 @@ const AppRoutes = () => {
                         <Route path="/create-segment/:pollId" element={<CreateSegment />} /> 
                         <Route path="/profile" element={<ProfilePage />} />
                         <Route path="/notifications" element={<NotificationsPage />} />
-                        <Route path="/share-linkedin" element={<LinkedInPublisher />} />
+                        <Route path="/share-linkedin" element={<LinkedInShowPage />} />
+
                         <Route path='/share' element={<GmailShare />} /> 
                         <Route path='/help-center' element={<HelpCenter />} />
                         <Route path='/terms-of-service' element={<Terms />} />
