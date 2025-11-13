@@ -370,82 +370,82 @@ if (isDesktop) {
   }, [livePolls, activeFilter]);
 
 
-    const handleGetLocation = async () => {
-        // First, check if a user is actually logged in
-        if (!user) {
-            setLocationError("You must be logged in to save your location.");
-            return;
-        }
+//     const handleGetLocation = async () => {
+//         // First, check if a user is actually logged in
+//         if (!user) {
+//             setLocationError("You must be logged in to save your location.");
+//             return;
+//         }
 
-        if (!("geolocation" in navigator)) {
-            setLocationError("Geolocation is not supported in your browser.");
-            return;
-        }
+//         if (!("geolocation" in navigator)) {
+//             setLocationError("Geolocation is not supported in your browser.");
+//             return;
+//         }
      
-        setLocationError(null);
-        console.log("⏳ Getting your location...");
- if ('permissions' in navigator) {
-        const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
+//         setLocationError(null);
+//         console.log("⏳ Getting your location...");
+//  if ('permissions' in navigator) {
+//         const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
 
-        if (permissionStatus.state === 'denied') {
-            // Set the state to true and show the instructional error
-            setIsLocationBlocked(true);
-            setLocationError("Location access is blocked. Please enable it in your browser's site settings.");
-            return;
-        }
-         permissionStatus.onchange = () => {
-            if (permissionStatus.state === 'denied') {
-                setIsLocationBlocked(true);
-                setLocationError("You've denied location access. You can enable it in settings.");
-            } else if (permissionStatus.state === 'granted') {
-                // If they re-enable it, reset the state
-                setIsLocationBlocked(false);
-                setLocationError(null);
-            }
-        };
-    }
+//         if (permissionStatus.state === 'denied') {
+//             // Set the state to true and show the instructional error
+//             setIsLocationBlocked(true);
+//             setLocationError("Location access is blocked. Please enable it in your browser's site settings.");
+//             return;
+//         }
+//          permissionStatus.onchange = () => {
+//             if (permissionStatus.state === 'denied') {
+//                 setIsLocationBlocked(true);
+//                 setLocationError("You've denied location access. You can enable it in settings.");
+//             } else if (permissionStatus.state === 'granted') {
+//                 // If they re-enable it, reset the state
+//                 setIsLocationBlocked(false);
+//                 setLocationError(null);
+//             }
+//         };
+//     }
 
-        navigator.geolocation.getCurrentPosition(
-            async (pos) => {
-                const { latitude, longitude, accuracy } = pos.coords;
-                setUserLocation({ latitude, longitude, accuracy });
-                console.log("📍 Location:", latitude, longitude, "🎯 Accuracy:", accuracy);
+//         navigator.geolocation.getCurrentPosition(
+//             async (pos) => {
+//                 const { latitude, longitude, accuracy } = pos.coords;
+//                 setUserLocation({ latitude, longitude, accuracy });
+//                 console.log("📍 Location:", latitude, longitude, "🎯 Accuracy:", accuracy);
 
-                try {
-                    // ✅ UPDATED: Send to backend using apiClient
-                    const response = await apiClient.post("/api/users/save-location", {
-                        // The body only needs the location data.
-                        // The user ID is handled by the auth token.
-                        latitude,
-                        longitude,
-                        accuracy,
-                    });
+//                 try {
+//                     // ✅ UPDATED: Send to backend using apiClient
+//                     const response = await apiClient.post("/api/users/save-location", {
+//                         // The body only needs the location data.
+//                         // The user ID is handled by the auth token.
+//                         latitude,
+//                         longitude,
+//                         accuracy,
+//                     });
 
-                    console.log("✅ Location saved successfully:", response.data);
+//                     console.log("✅ Location saved successfully:", response.data);
 
-                } catch (error) {
-                    console.error("⚠️ Error sending location to backend:", error);
-                    const errorMessage = error.response?.data?.message || "Failed to send location to server.";
-                    setLocationError(errorMessage);
-                }
-            },
+//                 } catch (error) {
+//                     console.error("⚠️ Error sending location to backend:", error);
+//                     const errorMessage = error.response?.data?.message || "Failed to send location to server.";
+//                     setLocationError(errorMessage);
+//                 }
+//             },
             
-            (err) => {
-                let message = "Unknown error occurred.";
-                if (err.code === 1) message = "Permission denied. Please allow location access.";
-                else if (err.code === 2) message = "Location unavailable.";
-                else if (err.code === 3) message = "Request timed out.";
-                setLocationError(message);
-                console.error("📍 Location error:", err);
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0,
-            }
+//             (err) => {
+//                 let message = "Unknown error occurred.";
+//                 if (err.code === 1) message = "Permission denied. Please allow location access.";
+//                 else if (err.code === 2) message = "Location unavailable.";
+//                 else if (err.code === 3) message = "Request timed out.";
+//                 setLocationError(message);
+//                 console.error("📍 Location error:", err);
+//             },
+//             {
+//                 enableHighAccuracy: true,
+//                 timeout: 10000,
+//                 maximumAge: 0,
+//             }
             
-        );
-    };
+//         );
+//     };
 
   return (
     <div
@@ -530,7 +530,7 @@ if (isDesktop) {
     </button>
   </Link>
 </div>
-<div className="mt-4 p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-md text-center">
+{/* <div className="mt-4 p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-md text-center">
   <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-100">
     Share Your Location
   </h3>
@@ -562,7 +562,7 @@ if (isDesktop) {
    {!isLocationBlocked && locationError && (
     <p className="mt-3 text-sm text-red-500">{locationError}</p>
   )}
-</div>
+</div> */}
 
       {/* Live Polls Section */}
       <div className="mt-4">
