@@ -382,11 +382,14 @@ const formatUserResponse = (user) => {
         username: user.username,
         email: user.email,
         phoneNumber: user.phoneNumber,
+        telegramChatId: user.telegramChatId,   // <---- Add this!
         profilePictureUrl: user.profilePictureUrl,
-        birthDate: user.birthDate, // NEW: Include birthDate
-        age: user.age,             // NEW: Include virtual age property
+        birthDate: user.birthDate,
+        age: user.age,
+           // <---- ADD TOKEN HERE
     };
 };
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 // @desc    Register a new user
 // @route   POST /api/users/register
@@ -437,22 +440,50 @@ export const registerUser = asyncHandler(async (req, res) => {
 // @desc    Auth user & get token (Login)
 // @route   POST /api/users/login
 // @access  Public
+// export const loginUser = asyncHandler(async (req, res) => {
+//     const { email, password } = req.body;
+//     const user = await User.findOne({ email });
+
+//     if (user && (await user.matchPassword(password))) {
+//         generateToken(res, user._id);
+        
+//         // Record login for the nudge scheduler
+//         await user.recordLogin();
+
+//         res.status(200).json(formatUserResponse(user));
+//     } else {
+//         res.status(401);
+//         throw new Error('Invalid email or password');
+//     }
+// });
 export const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
-    if (user && (await user.matchPassword(password))) {
-        generateToken(res, user._id);
-        
-        // Record login for the nudge scheduler
-        await user.recordLogin();
-
-        res.status(200).json(formatUserResponse(user));
-    } else {
+    if (!user || !(await user.matchPassword(password))) {
         res.status(401);
         throw new Error('Invalid email or password');
     }
+
+    // Correct call
+    const token = generateToken(res, user._id);
+
+    // Record login
+    await user.recordLogin();
+
+    res.status(200).json({
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        telegramChatId: user.telegramChatId,
+        profilePictureUrl: user.profilePictureUrl,
+        birthDate: user.birthDate,
+        age: user.age,
+        token, // send token to frontend
+    });
 });
+
 
 // @desc    Logout user / clear cookie
 // @route   POST /api/users/logout

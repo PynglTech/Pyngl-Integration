@@ -1,5 +1,5 @@
 import express from 'express';
-import { requestRegistrationCode } from '../controllers/whatsappAdminController.js';
+import { requestRegistrationCode } from '../controllers/whatsappController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();

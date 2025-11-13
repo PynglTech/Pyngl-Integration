@@ -1032,6 +1032,8 @@
 
 
 import React, { useState, useEffect, useRef } from "react";
+import useAuthStore from "../../store/useAuthStore";
+
 import { X, Check, Link2, ArrowLeft } from "lucide-react";
 import { toast } from 'react-hot-toast';
 import { AiFillInstagram, AiFillYoutube } from "react-icons/ai";
@@ -1111,6 +1113,9 @@ export default function ShareSheet({
     const [currentPlatform, setCurrentPlatform] = useState(null);
     const [showGmailPopup, setShowGmailPopup] = useState(false);
     const lastShared = useRef(null);
+    // get logged-in user info (and phone)
+const { userInfo } = useAuthStore.getState();
+const userPhoneNumber = userInfo?.phoneNumber || null;
 
     const pollText = poll.question;
     const platforms = ['instagram', 'youtube', 'whatsapp', 'gmail', 'linkedin', 'twitter', 'facebook', 'messages', 'sms', 'telegram', 'copy'];
@@ -1252,7 +1257,29 @@ else if (platform === "telegram") {
     console.error("❌ Telegram share error:", err);
     toast.error("❌ Failed to share poll to Telegram.");
   }
-} else if (platform !== 'instagram') {
+}else if (platform === "whatsapp") {
+  try {
+    const userInfo = useAuthStore.getState().userInfo;
+
+    if (!userInfo?._id) {
+      toast.error("User not logged in");
+      return;
+    }
+
+    const { data } = await apiClient.post("/api/whatsapp/send", {
+      pollId: poll._id,
+      userId: userInfo._id,
+    });
+
+    toast.success("Poll sent on WhatsApp!");
+  } catch (err) {
+    console.error("WhatsApp error:", err?.response?.data || err);
+    toast.error("Failed to send poll on WhatsApp");
+  }
+}
+
+
+else if (platform !== 'instagram') {
   // For all other platforms
   const shareUrl = shareLinks[platform](previewUrl, pollText);
   if (shareUrl) {

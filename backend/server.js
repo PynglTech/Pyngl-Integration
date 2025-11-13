@@ -20,6 +20,7 @@ import linkedinRoutes from './routes/linkedinRoutes.js';
 import telegramRoutes from './routes/telegramRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import googleRoutes from './routes/googleRoutes.js'; // ADDED: The missing Google route
+import whatsappRoutes from "./routes/whatsappRoutes.js";
 // Utility Imports
 import initScheduledJobs from './utils/scheduler.js';
 import './config/passport-setup.js'; // This line runs the passport config
@@ -96,6 +97,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/linkedin', linkedinRoutes); 
 app.use("/api/telegram", telegramRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use("/api/whatsapp", whatsappRoutes);
 app.use("/auth", googleRoutes);
 app.get('/', (req, res) => {
   res.send('<h1>Pyngl Server is running securely!</h1>');
