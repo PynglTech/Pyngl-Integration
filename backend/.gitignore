@@ -36,3 +36,6 @@ Thumbs.db
 # Local development files
 package-lock.json
 npm-debug.log
+
+
+/firebase-service-account.json
