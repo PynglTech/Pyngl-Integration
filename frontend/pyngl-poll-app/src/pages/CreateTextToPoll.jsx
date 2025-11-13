@@ -879,7 +879,7 @@ const Card = ({ title, children, icon }) => (
         <div className="mt-5">{children}</div>
     </div>
 );
-
+    
 export default function TextToPoll() {
     const navigate = useNavigate();
     const location = useLocation();

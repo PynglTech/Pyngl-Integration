@@ -780,7 +780,7 @@
 //   );
 // }
 import React, { useState, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import apiClient from "../api/axiosConfig";
 import imageCompression from "browser-image-compression";
@@ -801,13 +801,16 @@ const Card = ({ title, children, icon }) => (
 export default function CreateImagePoll() {
     const navigate = useNavigate();
       const isDesktop = useBreakpoint();
-    const [question, setQuestion] = useState("");
-    const [options, setOptions] = useState(["", ""]);
-    const [selectedDuration, setSelectedDuration] = useState("1 hr");
-    const [selectedAgeRange, setSelectedAgeRange] = useState("13-17");
-    const [shareToTrending, setShareToTrending] = useState(false);
-    const [imageFile, setImageFile] = useState(null);
-    const [imagePreview, setImagePreview] = useState(null);
+   const { state } = useLocation();
+
+const [question, setQuestion] = useState(state?.question || "");
+const [options, setOptions] = useState(state?.options || ["", ""]);
+const [selectedDuration, setSelectedDuration] = useState(state?.selectedDuration || "1 hr");
+const [selectedAgeRange, setSelectedAgeRange] = useState(state?.selectedAgeRange || "13-17");
+const [shareToTrending, setShareToTrending] = useState(state?.shareToTrending || false);
+const [imageFile, setImageFile] = useState(state?.imageFile || null);
+const [imagePreview, setImagePreview] = useState(state?.imagePreview || null);
+
     const [status, setStatus] = useState("idle");
     const [errorMessage, setErrorMessage] = useState("");
     const fileInputRef = useRef(null);
@@ -871,7 +874,19 @@ export default function CreateImagePoll() {
             const createRes = await apiClient.post("/api/polls/create-poll", pollData);
             toast.dismiss(toastId);
             setErrorMessage("");
-            navigate("/preview-image-poll", { state: { createdPoll: createRes.data } });
+            navigate("/preview-image-poll", {
+                state: {
+                    createdPoll: createRes.data,
+                    question,
+                    options,
+                    selectedDuration,
+                    selectedAgeRange,
+                    shareToTrending,
+                    imagePreview,
+                    imageFile,
+                },
+            });
+
         } catch (error) {
             console.error("Poll creation failed:", error);
             toast.error(error.response?.data?.error || "Poll creation failed.", { id: toastId });

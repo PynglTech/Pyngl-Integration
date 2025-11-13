@@ -514,10 +514,21 @@ export default function PreviewTextPoll() {
         // --- MOBILE/TABLET LAYOUT ---
         <div className="w-full">
           <div className="flex items-center border-b-2 border-gray-100 dark:border-gray-700 dark:bg-gray-800 shadow-sm bg-white p-4 sticky top-0 z-50">
-            <button
+           <button
               className="text-gray-600 text-lg"
-              onClick={() => navigate("/create-text-poll")}
+              onClick={() =>
+                navigate("/create-text-poll", {
+                  state: {
+                    question: state.question,
+                    options: state.options,
+                    selectedDuration: state.selectedDuration,
+                    selectedAgeRange: state.selectedAgeRange,
+                    shareToTrending: state.shareToTrending,
+                  },
+                })
+              }
             >
+
               ←
             </button>
             <h1 className="flex-1 text-center font-semibold">
