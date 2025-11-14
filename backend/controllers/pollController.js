@@ -727,6 +727,154 @@ const SOURCE_ORIGIN = process.env.FRONTEND_URL || 'https://localhost:5173';
 /* -------------------- GMAIL AMP POLLS -------------------- */
 // ✅ sendPoll controller
 // 🔹 Helper: Get fresh access token from MS
+// async function getAccessToken() {
+//   const res = await fetch(
+//     `https://login.microsoftonline.com/${process.env.MS_TENANT_ID}/oauth2/v2.0/token`,
+//     {
+//       method: "POST",
+//       headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//       body: new URLSearchParams({
+//         client_id: process.env.MS_CLIENT_ID,
+//         client_secret: process.env.MS_CLIENT_SECRET,
+//         refresh_token: process.env.MS_REFRESH_TOKEN,
+//         grant_type: "refresh_token",
+//         scope: "https://outlook.office365.com/SMTP.Send offline_access", // 👈 IMPORTANT
+//       }),
+//     }
+//   );
+
+//   const data = await res.json();
+//   if (!data.access_token) {
+//     console.error("❌ Failed to fetch Microsoft access token:", data);
+//     throw new Error("Could not fetch Microsoft access token");
+//   }
+//   return data.access_token;
+// }
+
+// export const sendPoll = async (req, res) => {
+//   try {
+//     const { recipients, pollId } = req.body;
+
+//     // Fetch poll
+//     const poll = await Poll.findById(pollId);
+//     console.log("🚀 ~ sendPoll ~ poll:", poll);
+//     if (!poll) return res.status(404).send("Poll not found");
+
+//     // Extract valid emails
+//     const emails = recipients
+//       .map((r) => (typeof r === "string" ? r : r.email))
+//       .filter(Boolean);
+
+//     if (emails.length === 0)
+//       return res.status(400).send("No valid recipient emails provided");
+
+//     // ✅ Get fresh Microsoft access token
+//     const accessToken = await getAccessToken();
+
+//     // Configure Nodemailer transporter with OAuth2
+//     const transporter = nodemailer.createTransport({
+//       service: "hotmail", // works for Office365 too
+//       auth: {
+//         type: "OAuth2",
+//         user: "notifications@pyngl.com",
+//         clientId: process.env.MS_CLIENT_ID,
+//         clientSecret: process.env.MS_CLIENT_SECRET,
+//         refreshToken: process.env.MS_REFRESH_TOKEN,
+//         accessToken, // freshly fetched
+//       },
+//     });
+
+//     const voteUrl = process.env.VOTE_URL;
+
+//     // Email content
+//     const plain = `Vote now: ${poll.question}
+// YES → ${voteUrl}/vote?pollId=${poll._id}&opt=yes
+// NO → ${voteUrl}/vote?pollId=${poll._id}&opt=no`;
+
+//     const html = `<div style="padding:20px;text-align:center;">
+//       <h3>${poll.question}</h3>
+//       <a href="${voteUrl}/vote?pollId=${poll._id}&opt=yes">YES</a> |
+//       <a href="${voteUrl}/vote?pollId=${poll._id}&opt=no">NO</a>
+//     </div>`;
+
+//     const ampHtml = `<!doctype html>
+//     <html ⚡4email data-css-strict>
+//     <head>
+//     <meta charset="utf-8">
+//     <script async src="https://cdn.ampproject.org/v0.js"></script>
+//     <script async custom-element="amp-form" src="https://cdn.ampproject.org/v0/amp-form-0.1.js"></script>
+//     <script async custom-template="amp-mustache" src="https://cdn.ampproject.org/v0/amp-mustache-0.2.js"></script>
+//     <script async custom-element="amp-selector" src="https://cdn.ampproject.org/v0/amp-selector-0.1.js"></script>
+
+//     <style amp4email-boilerplate>body{visibility:hidden}</style>
+//     <style amp-custom>
+//         body { font-family: Arial,sans-serif; background:#f9fafb; padding:20px; color:#333; }
+//         .poll-container { background:#fff; border-radius:25px; padding:20px; max-width:480px; margin:auto; border:1px solid #e5e7eb; box-shadow:0 4px 10px rgba(0,0,0,0.05); }
+//         h2.vote { font-size:20px; margin:16px 0; text-align:center; color:#111827; }
+//         .poll-question { font-size:18px; font-weight:600; margin-bottom:12px; text-align:start; }
+//         amp-selector[role="listbox"] div[option] { display:block; padding:12px 16px; margin:8px 0; border-radius:20px; border:1px solid #d1d5db; background:#f3f4f6; cursor:pointer; font-size:14px; }
+//         amp-selector[role="listbox"] div[option][selected] { background:linear-gradient(90deg,#ec4899,#8b5cf6); color:#fff; font-weight:600; }
+//         input[type=submit] { width:100%; padding:14px; border:none; border-radius:25px; font-size:15px; font-weight:600; background:#ff4da6; color:#fff; cursor:pointer; margin-top:16px; transition:opacity .2s ease; }
+//         input[type=submit]:hover { opacity:.9; }
+//         .footer { margin-top:20px; text-align:center; font-size:12px; color:#6b7280; }
+//     </style>
+//     </head>
+//     <body>
+//     <h2 class="vote">Vote Now 🎉</h2>
+//     <div class="poll-container">
+//   <form method="post" action-xhr="https://api.pyngl.com/api/polls/vote">
+//     <!-- Poll Question -->
+//     <div class="poll-question">What's your favorite social media platform?</div>
+
+//     <!-- Options -->
+//     <amp-selector name="optionId" layout="container" role="listbox">
+//       <div option="opt1">Instagram</div>
+//       <div option="opt2">Twitter (X)</div>
+//       <div option="opt3">LinkedIn</div>
+//       <div option="opt4">YouTube</div>
+//     </amp-selector>
+
+//     <input type="submit" value="Submit Vote">
+
+//     <div submit-success>
+//       <template type="amp-mustache">
+//         ✅ Your vote has been submitted!
+//       </template>
+//     </div>
+//     <div submit-error>
+//       <template type="amp-mustache">
+//         ❌ Something went wrong. Please try again.
+//       </template>
+//     </div>
+//   </form>
+// </div>
+
+
+//     <div class="footer">
+//         <p>You’re receiving this interactive poll from</p>
+//         <amp-img src="https://pyngl.com/assets/logo-okWbCxdr.png" alt="Pyngl Logo" width="100" height="35" layout="fixed"></amp-img>
+//     </div>
+//     </body>
+//     </html>
+// `;
+
+//     // Send mail
+//     await transporter.sendMail({
+//       from: '"Pyngl Notifications" <notifications@pyngl.com>',
+//       to: emails.join(", "),
+//       subject: poll.question,
+//       text: plain,
+//       html,
+//       amp: ampHtml,
+//     });
+
+//     res.send("✅ Poll sent via Office365 SMTP with OAuth2!");
+//   } catch (err) {
+//     console.error("❌ Error in sendPoll:", err);
+//     res.status(500).send("Error sending poll email");
+//   }
+// };
+
 async function getAccessToken() {
   const res = await fetch(
     `https://login.microsoftonline.com/${process.env.MS_TENANT_ID}/oauth2/v2.0/token`,
@@ -738,7 +886,7 @@ async function getAccessToken() {
         client_secret: process.env.MS_CLIENT_SECRET,
         refresh_token: process.env.MS_REFRESH_TOKEN,
         grant_type: "refresh_token",
-        scope: "https://outlook.office365.com/SMTP.Send offline_access", // 👈 IMPORTANT
+        scope: "https://outlook.office365.com/SMTP.Send offline_access",
       }),
     }
   );
@@ -751,114 +899,145 @@ async function getAccessToken() {
   return data.access_token;
 }
 
+
 export const sendPoll = async (req, res) => {
   try {
     const { recipients, pollId } = req.body;
 
-    // Fetch poll
+    // 🧩 1. Validate poll & recipients
     const poll = await Poll.findById(pollId);
-    console.log("🚀 ~ sendPoll ~ poll:", poll);
     if (!poll) return res.status(404).send("Poll not found");
 
-    // Extract valid emails
-    const emails = recipients
+    const emails = (recipients || [])
       .map((r) => (typeof r === "string" ? r : r.email))
       .filter(Boolean);
-
     if (emails.length === 0)
       return res.status(400).send("No valid recipient emails provided");
 
-    // ✅ Get fresh Microsoft access token
+    // 🪙 2. Get Microsoft OAuth token (fresh)
     const accessToken = await getAccessToken();
+    const voteUrl = process.env.VOTE_URL || "https://pyngl.com";
 
-    // Configure Nodemailer transporter with OAuth2
-    const transporter = nodemailer.createTransport({
-      service: "hotmail", // works for Office365 too
-      auth: {
-        type: "OAuth2",
-        user: "notifications@pyngl.com",
-        clientId: process.env.MS_CLIENT_ID,
-        clientSecret: process.env.MS_CLIENT_SECRET,
-        refreshToken: process.env.MS_REFRESH_TOKEN,
-        accessToken, // freshly fetched
-      },
-    });
+    // 📨 3. Create transporter (OAuth2)
+  const transporter = nodemailer.createTransport({
+  host: "smtp.office365.com", // ✅ Correct host for Microsoft 365
+  port: 587,                  // ✅ STARTTLS port
+  secure: false,              // ✅ must be false for STARTTLS
+  auth: {
+    type: "OAuth2",
+    user: "notifications@pyngl.com",
+    clientId: process.env.MS_CLIENT_ID,
+    clientSecret: process.env.MS_CLIENT_SECRET,
+    refreshToken: process.env.MS_REFRESH_TOKEN,
+    accessToken,
+  },
+  tls: {
+    ciphers: "SSLv3",
+  },
+  pool: true,
+  maxConnections: 3,
+});
 
-    const voteUrl = process.env.VOTE_URL;
 
-    // Email content
-    const plain = `Vote now: ${poll.question}
+    // 📄 4. Build message parts
+    const plain = `
+Hi there 👋,
+
+We’d love your quick opinion on this Pyngl poll:
+
+"${poll.question}"
+
+Vote now:
 YES → ${voteUrl}/vote?pollId=${poll._id}&opt=yes
-NO → ${voteUrl}/vote?pollId=${poll._id}&opt=no`;
+NO  → ${voteUrl}/vote?pollId=${poll._id}&opt=no
 
-    const html = `<div style="padding:20px;text-align:center;">
-      <h3>${poll.question}</h3>
-      <a href="${voteUrl}/vote?pollId=${poll._id}&opt=yes">YES</a> |
-      <a href="${voteUrl}/vote?pollId=${poll._id}&opt=no">NO</a>
-    </div>`;
-
-    const ampHtml = `<!doctype html>
-    <html ⚡4email data-css-strict>
-    <head>
-    <meta charset="utf-8">
-    <script async src="https://cdn.ampproject.org/v0.js"></script>
-    <script async custom-element="amp-form" src="https://cdn.ampproject.org/v0/amp-form-0.1.js"></script>
-    <script async custom-template="amp-mustache" src="https://cdn.ampproject.org/v0/amp-mustache-0.2.js"></script>
-    <script async custom-element="amp-selector" src="https://cdn.ampproject.org/v0/amp-selector-0.1.js"></script>
-
-    <style amp4email-boilerplate>body{visibility:hidden}</style>
-    <style amp-custom>
-        body { font-family: Arial,sans-serif; background:#f9fafb; padding:20px; color:#333; }
-        .poll-container { background:#fff; border-radius:25px; padding:20px; max-width:480px; margin:auto; border:1px solid #e5e7eb; box-shadow:0 4px 10px rgba(0,0,0,0.05); }
-        h2.vote { font-size:20px; margin:16px 0; text-align:center; color:#111827; }
-        .poll-question { font-size:18px; font-weight:600; margin-bottom:12px; text-align:start; }
-        amp-selector[role="listbox"] div[option] { display:block; padding:12px 16px; margin:8px 0; border-radius:20px; border:1px solid #d1d5db; background:#f3f4f6; cursor:pointer; font-size:14px; }
-        amp-selector[role="listbox"] div[option][selected] { background:linear-gradient(90deg,#ec4899,#8b5cf6); color:#fff; font-weight:600; }
-        input[type=submit] { width:100%; padding:14px; border:none; border-radius:25px; font-size:15px; font-weight:600; background:#ff4da6; color:#fff; cursor:pointer; margin-top:16px; transition:opacity .2s ease; }
-        input[type=submit]:hover { opacity:.9; }
-        .footer { margin-top:20px; text-align:center; font-size:12px; color:#6b7280; }
-    </style>
-    </head>
-    <body>
-    <h2 class="vote">Vote Now 🎉</h2>
-    <div class="poll-container">
-  <form method="post" action-xhr="https://api.pyngl.com/api/polls/vote">
-    <!-- Poll Question -->
-    <div class="poll-question">What's your favorite social media platform?</div>
-
-    <!-- Options -->
-    <amp-selector name="optionId" layout="container" role="listbox">
-      <div option="opt1">Instagram</div>
-      <div option="opt2">Twitter (X)</div>
-      <div option="opt3">LinkedIn</div>
-      <div option="opt4">YouTube</div>
-    </amp-selector>
-
-    <input type="submit" value="Submit Vote">
-
-    <div submit-success>
-      <template type="amp-mustache">
-        ✅ Your vote has been submitted!
-      </template>
-    </div>
-    <div submit-error>
-      <template type="amp-mustache">
-        ❌ Something went wrong. Please try again.
-      </template>
-    </div>
-  </form>
-</div>
-
-
-    <div class="footer">
-        <p>You’re receiving this interactive poll from</p>
-        <amp-img src="https://pyngl.com/assets/logo-okWbCxdr.png" alt="Pyngl Logo" width="100" height="35" layout="fixed"></amp-img>
-    </div>
-    </body>
-    </html>
+Thank you for being part of the Pyngl community.
+To stop receiving polls, visit https://pyngl.com/unsubscribe
 `;
 
-    // Send mail
+    const html = `
+<div style="padding:20px;text-align:center;font-family:Arial,sans-serif;background:#fafafa;">
+  <p style="font-size:14px;color:#333;">Hi there 👋,</p>
+  <p style="font-size:14px;color:#333;">We’d love your quick vote on this Pyngl poll:</p>
+  <h3 style="color:#111;">${poll.question}</h3>
+  ${
+    poll.imageUrl
+      ? `<img src="${poll.imageUrl}" width="480" height="270" style="border-radius:10px;margin-top:10px;" alt="poll"/>`
+      : ""
+  }
+  <div style="margin-top:20px;">
+    <a href="${voteUrl}/vote?pollId=${poll._id}&opt=yes"
+       style="background:#4F46E5;color:#fff;padding:10px 20px;border-radius:20px;text-decoration:none;margin-right:10px;display:inline-block;">
+       ✅ YES
+    </a>
+    <a href="${voteUrl}/vote?pollId=${poll._id}&opt=no"
+       style="background:#E11D48;color:#fff;padding:10px 20px;border-radius:20px;text-decoration:none;display:inline-block;">
+       ❌ NO
+    </a>
+  </div>
+  <p style="margin-top:25px;color:#666;font-size:13px;line-height:1.5;">
+    You're receiving this poll from <strong>Pyngl</strong>.<br/>
+    Visit <a href="https://pyngl.com" style="color:#4F46E5;text-decoration:none;">pyngl.com</a> for more.
+  </p>
+  <hr style="border:none;border-top:1px solid #eee;margin:20px 0;"/>
+  <p style="font-size:12px;color:#999;">© 2025 Pyngl. All rights reserved.<br/>
+  <a href="https://pyngl.com/privacy" style="color:#999;">Privacy Policy</a> |
+  <a href="https://pyngl.com/unsubscribe" style="color:#999;">Unsubscribe</a></p>
+</div>`;
+
+    const ampHtml = `<!doctype html>
+<html ⚡4email data-css-strict>
+<head>
+  <meta charset="utf-8">
+  <script async src="https://cdn.ampproject.org/v0.js"></script>
+  <script async custom-element="amp-form" src="https://cdn.ampproject.org/v0/amp-form-0.1.js"></script>
+  <script async custom-element="amp-selector" src="https://cdn.ampproject.org/v0/amp-selector-0.1.js"></script>
+  <script async custom-template="amp-mustache" src="https://cdn.ampproject.org/v0/amp-mustache-0.2.js"></script>
+  <style amp4email-boilerplate>body{visibility:hidden}</style>
+  <style amp-custom>
+    body { font-family: Arial; background:#f9fafb; color:#111; padding:20px; }
+    .poll-container { background:#fff; border-radius:16px; padding:20px; max-width:480px; margin:auto; border:1px solid #ddd; }
+    amp-selector div[option] {
+      display:block; padding:12px; margin:8px 0; border:1px solid #ccc;
+      border-radius:20px; cursor:pointer;
+    }
+    amp-selector div[option][selected] {
+      background:linear-gradient(90deg,#ec4899,#8b5cf6); color:white;
+    }
+    input[type=submit] {
+      width:100%; padding:12px; border:none; border-radius:25px;
+      background:#ff4da6; color:#fff; font-weight:600;
+    }
+  </style>
+</head>
+<body>
+  <div class="poll-container">
+    <h3>${poll.question}</h3>
+    ${
+      poll.imageUrl
+        ? `<amp-img src="${poll.imageUrl}" width="480" height="270" layout="responsive"></amp-img>`
+        : ""
+    }
+    <form method="post" action-xhr="https://api.pyngl.com/api/polls/vote-from-gmail">
+      <input type="hidden" name="pollId" value="${poll._id}" />
+      <amp-selector name="opt" layout="container" role="listbox">
+        ${poll.options
+          .map((opt) => `<div option="${opt.text}">${opt.text}</div>`)
+          .join("")}
+      </amp-selector>
+      <input type="submit" value="Submit Vote" />
+      <div submit-success>
+        <template type="amp-mustache">✅ Thanks! Your vote has been recorded.</template>
+      </div>
+      <div submit-error>
+        <template type="amp-mustache">❌ Something went wrong. Please try again.</template>
+      </div>
+    </form>
+  </div>
+</body>
+</html>`;
+
+    // ✉️ 5. Send the email
     await transporter.sendMail({
       from: '"Pyngl Notifications" <notifications@pyngl.com>',
       to: emails.join(", "),
@@ -866,14 +1045,24 @@ NO → ${voteUrl}/vote?pollId=${poll._id}&opt=no`;
       text: plain,
       html,
       amp: ampHtml,
+      headers: {
+        "X-List-Unsubscribe":
+          "<mailto:unsubscribe@pyngl.com>, <https://pyngl.com/unsubscribe>",
+        "X-List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+        "Reply-To": "support@pyngl.com",
+      },
     });
 
-    res.send("✅ Poll sent via Office365 SMTP with OAuth2!");
+    console.log(`✅ Poll "${poll.question}" sent to: ${emails.join(", ")}`);
+    res.send("✅ Poll sent via Office365 OAuth2 with AMP + HTML + Text!");
   } catch (err) {
     console.error("❌ Error in sendPoll:", err);
     res.status(500).send("Error sending poll email");
   }
 };
+
+
+
 export const votePoll = async (req, res) => {
     const { pollId, opt } = req.body;
     try {
