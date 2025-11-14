@@ -40,7 +40,7 @@ import { FormInput } from '../common/FormInput';
 import { Mail, Lock, AlertTriangle } from 'lucide-react';
 
 const LoginSheet = ({ openSheet, closeSheet }) => {
-    const { login, loading, error } = useAuthStore();
+    const { login, loading, error, loginWithGoogle  } = useAuthStore();
     const { register, handleSubmit, formState: { errors } } = useForm({
         resolver: zodResolver(loginSchema),
     });
@@ -113,7 +113,28 @@ const LoginSheet = ({ openSheet, closeSheet }) => {
                             Create Account
                         </button>
                     </div>
-
+                    <button
+    type="button"
+    onClick={async () => {
+        try {
+            await loginWithGoogle();
+            closeSheet(); // optional: close bottom sheet after login
+        } catch (err) {
+            console.error("Google login failed", err);
+        }
+    }}
+    className="w-full flex items-center justify-center gap-3 mt-2 py-3 border border-gray-300 rounded-full shadow-sm hover:bg-gray-50 transition"
+    disabled={loading}
+>
+    <img
+        src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+        alt="Google"
+        className="h-5 w-5"
+    />
+    <span className="font-medium text-gray-700">
+        Continue with Google
+    </span>
+</button>   
                     {/* Submit Button */}
                     <button
                         type="submit"

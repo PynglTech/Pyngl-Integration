@@ -32,14 +32,10 @@ import axios from 'axios';
 import useAuthStore from '../store/useAuthStore';
 
 // Create a new Axios instance. This will be the single source for all API calls.
+
 const apiClient = axios.create({
-    // The baseURL can be empty because your Vite proxy is already configured
-    // to forward requests to your backend server.
-    baseURL: '', 
-    
-    // This is the most critical setting. It tells Axios to automatically
-    // send the httpOnly cookie with every single request to the backend.
-    withCredentials: true, 
+    baseURL: "https://localhost:5000",   // ← HTTPS backend URL
+    withCredentials: true,               // required for cookie JWT
 });
 
 // 🔥 This is a "response interceptor" — a powerful piece of code that acts

@@ -24,6 +24,7 @@ import whatsappRoutes from "./routes/whatsappRoutes.js";
 // Utility Imports
 import initScheduledJobs from './utils/scheduler.js';
 import './config/passport-setup.js'; // This line runs the passport config
+import firebaseAuthRoutes from "./routes/firebaseAuthRoutes.js";
 import { schedulePollNotifications } from './jobs/pollScheduler.js'; // ADDED: Import the poll scheduler job
 // --- FIX: Explicitly load the .env file to prevent errors ---
 const __filename = fileURLToPath(import.meta.url);
@@ -92,6 +93,7 @@ mongoose.connect(MONGO_URI)
 
 // --- API Routes ---
 app.use('/api/users', userRoutes);
+app.use("/api/auth", firebaseAuthRoutes);
 app.use('/api/polls', pollRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/linkedin', linkedinRoutes); 
