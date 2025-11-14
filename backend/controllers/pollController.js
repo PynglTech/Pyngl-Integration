@@ -1277,7 +1277,7 @@ export const sendPoll = async (req, res) => {
     accessToken,
   },
   tls: {
-    ciphers: "SSLv3",
+   rejectUnauthorized: false,
   },
   pool: true,
   maxConnections: 3,
