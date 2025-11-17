@@ -113,7 +113,7 @@
 // export { login, oauth2callback, getContacts };
 import { google } from "googleapis";
 import GoogleUser from "../models/GoogleUser.js";
-
+import User from "../models/User.js";
 const oAuth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
@@ -151,61 +151,83 @@ const oauth2callback = async (req, res) => {
     const oauth2 = google.oauth2({ version: "v2", auth: oAuth2Client });
     const { data } = await oauth2.userinfo.get();
 
-    // 1️⃣ Find or create main user
-    let user = await User.findOne({ email: data.email });
+    let user = await GoogleUser.findOne({ email: data.email });
 
     if (!user) {
-      user = await User.create({
+      user = new GoogleUser({
         email: data.email,
-        username: data.email.split("@")[0],
-        password: crypto.randomBytes(20).toString("hex"), // Fake password
-        phoneNumber: "0000000000",                       // placeholder
-        birthDate: new Date("2000-01-01"),               // placeholder
-      });
-    }
-
-    // 2️⃣ Save Google tokens
-    await GoogleUser.findOneAndUpdate(
-      { email: data.email },
-      {
         googleId: data.id,
         access_token: tokens.access_token,
         refresh_token: tokens.refresh_token,
         expiry_date: tokens.expiry_date,
-      },
-      { upsert: true }
-    );
+      });
+    } else {
+      // Update tokens if user already exists
+      user.access_token = tokens.access_token;
+      if (tokens.refresh_token) user.refresh_token = tokens.refresh_token;
+      user.expiry_date = tokens.expiry_date;
+    }
 
-    // 3️⃣ Create JWT session cookie
-    const token = user._id.toString();
+    await user.save();
 
-    res.cookie("authToken", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "None",
-      domain: ".pyngl.com",
-    });
-
-    // 4️⃣ Redirect to frontend
-    const FRONTEND_URL =
-      process.env.NODE_ENV === "production"
-        ? "https://pyngl.com"
-        : "http://localhost:5173";
-
+    // Redirect with pollId
     res.redirect(
-      `${FRONTEND_URL}/share?connectedEmail=${encodeURIComponent(
-        user.email
+      `https://pyngl.com/share?connectedEmail=${encodeURIComponent(
+        data.email
       )}&pollId=${pollId}`
     );
-
   } catch (err) {
     console.error("OAuth error:", err);
     res.status(500).send("Authentication failed");
   }
 };
 
-
 // --- Fetch Contacts ---
+// const getContacts = async (req, res) => {
+//   try {
+//     const user = await GoogleUser.findOne({ email: req.query.email });
+//     if (!user || !user.access_token) return res.status(401).send("Unauthorized");
+
+//     oAuth2Client.setCredentials({
+//       access_token: user.access_token,
+//       refresh_token: user.refresh_token,
+//       expiry_date: user.expiry_date,
+//     });
+
+//     if (Date.now() > user.expiry_date) {
+//       const newToken = await oAuth2Client.refreshAccessToken();
+//       user.access_token = newToken.credentials.access_token;
+//       user.expiry_date = newToken.credentials.expiry_date;
+//       await user.save();
+//       oAuth2Client.setCredentials(newToken.credentials);
+//       console.log("🔄 Access token refreshed!");
+//     }
+
+//     const people = google.people({ version: "v1", auth: oAuth2Client });
+//     const response = await people.people.connections.list({
+//       resourceName: "people/me",
+//       personFields: "names,emailAddresses,phoneNumbers",
+//       pageSize: 200,
+//     });
+
+//     const contacts =
+//       response.data.connections?.map((c) => {
+//         return {
+//           name: c.names?.[0]?.displayName || "",
+//           email: c.emailAddresses?.[0]?.value || "",
+//            phone: c.phoneNumbers?.[0]?.value || "",
+//         };
+//       }) || [];
+//       console.log("🚀 ~ getContacts ~ response.data.connections:", response.data.connections)
+//       console.log("🚀 ~ getContacts ~ response.data:", response.data)
+//       console.log("🚀 ~ getContacts ~ contacts:", contacts)
+
+//     res.json({ contacts });
+//   } catch (err) {
+//     console.error("Error fetching contacts:", err);
+//     res.status(500).send("Failed to fetch contacts");
+//   }
+// };
 const getContacts = async (req, res) => {
   try {
     const user = await GoogleUser.findOne({ email: req.query.email });
@@ -219,11 +241,14 @@ const getContacts = async (req, res) => {
 
     if (Date.now() > user.expiry_date) {
       const newToken = await oAuth2Client.refreshAccessToken();
-      user.access_token = newToken.credentials.access_token;
-      user.expiry_date = newToken.credentials.expiry_date;
-      await user.save();
+      await GoogleUser.findOneAndUpdate(
+        { email: user.email },
+        {
+          access_token: newToken.credentials.access_token,
+          expiry_date: newToken.credentials.expiry_date,
+        }
+      );
       oAuth2Client.setCredentials(newToken.credentials);
-      console.log("🔄 Access token refreshed!");
     }
 
     const people = google.people({ version: "v1", auth: oAuth2Client });
@@ -234,18 +259,26 @@ const getContacts = async (req, res) => {
     });
 
     const contacts =
-      response.data.connections?.map((c) => {
-        return {
-          name: c.names?.[0]?.displayName || "",
-          email: c.emailAddresses?.[0]?.value || "",
-           phone: c.phoneNumbers?.[0]?.value || "",
-        };
-      }) || [];
-      console.log("🚀 ~ getContacts ~ response.data.connections:", response.data.connections)
-      console.log("🚀 ~ getContacts ~ response.data:", response.data)
-      console.log("🚀 ~ getContacts ~ contacts:", contacts)
+      response.data.connections?.map((c) => ({
+        name: c.names?.[0]?.displayName || "",
+        email: c.emailAddresses?.[0]?.value || "",
+        phone: c.phoneNumbers?.[0]?.value || "",
+      })) || [];
+
+    // ⭐ SAFE UPDATE — NO VERSION CONFLICTS
+    await GoogleUser.findOneAndUpdate(
+      { email: user.email },
+      { contacts },
+      { new: true }
+    );
+    await User.findOneAndUpdate(
+  { email: user.email },
+  { googleContacts: contacts },
+  { new: true }
+);
 
     res.json({ contacts });
+
   } catch (err) {
     console.error("Error fetching contacts:", err);
     res.status(500).send("Failed to fetch contacts");

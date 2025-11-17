@@ -143,6 +143,9 @@ const userSchema = new mongoose.Schema(
   type: String,
   default: null,
 },
+googleContacts: [
+  { name: String, email: String, phone: String }
+],
 
     password: { 
       type: String, 

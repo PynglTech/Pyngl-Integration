@@ -117,7 +117,7 @@ const AppRoutes = () => {
                 <Route path="/" element={<PublicAuthPage />} />
                 {/* Kept public so anyone can vote on a shared poll link */}
                 <Route path="/poll/:pollId" element={<VoteOnPollPage />} />
-
+        <Route path='/share' element={<GmailShare />} /> 
                 {/* --- Protected Routes (Login Required) --- */}
                 <Route element={<ProtectedRoute />}>
                     <Route element={<AppLayout />}>
@@ -139,7 +139,7 @@ const AppRoutes = () => {
                         <Route path="/profile" element={<ProfilePage />} />
                         <Route path="/notifications" element={<NotificationsPage />} />
                         <Route path="/share-linkedin" element={<LinkedinShowPage />} />
-                        <Route path='/share' element={<GmailShare />} /> 
+                
                         <Route path='/help-center' element={<HelpCenter />} />
                         <Route path='/terms-of-service' element={<Terms />} />
                         <Route path='/privacy-policy' element={<PrivacyPolicy />} />

@@ -38,10 +38,9 @@ const baseURL =
 
 // ✅ Create Axios instance
 const apiClient = axios.create({
-  baseURL,
-  withCredentials: true,
+  baseURL: "http://localhost:5000",
+  withCredentials: true   // ⬅ IMPORTANT
 });
-
 // ✅ Global interceptor for 401 Unauthorized
 apiClient.interceptors.response.use(
   (response) => response,

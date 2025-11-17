@@ -255,6 +255,7 @@ import { SiGmail } from "react-icons/si";
 import { MdMessage, MdSms } from "react-icons/md";
 import apiClient from "../../api/axiosConfig";
 import PlatformPreview from "../preview/PlatformPreview.jsx";
+import ContactSelectorModal from "../ContactSelectorModal.jsx";
 
 const POLL_PAGE_DOMAIN = "https://puny-pants-share.loca.lt";
 const POLL_PREVIEW_BASE = `${POLL_PAGE_DOMAIN}/api/polls/`;
@@ -319,6 +320,9 @@ export default function ShareSheet({
     const [completed, setCompleted] = useState([]);
     const [currentPlatform, setCurrentPlatform] = useState(null);
     const [showGmailPopup, setShowGmailPopup] = useState(false);
+    const [showContactSelector, setShowContactSelector] = useState(false);
+  const [availableContacts, setAvailableContacts] = useState([]);
+
     const lastShared = useRef(null);
     // get logged-in user info (and phone)
 const { userInfo } = useAuthStore.getState();
@@ -469,57 +473,93 @@ else if (platform === "telegram") {
     console.error("❌ Telegram share error:", err);
     toast.error("❌ Failed to share poll to Telegram.");
   }
-}else if (platform === "whatsapp") {
+// }else if (platform === "whatsapp") {
+//   try {
+//     const user = useAuthStore.getState().userInfo;
+
+//     if (!user?._id) {
+//       toast.error("User not logged in");
+//       return;
+//     }
+// console.log("Syncing Google contacts...");
+// await apiClient.get(`/auth/contacts?email=${user.email}`);
+
+
+// console.log("Fetching merged contacts...");
+// const { data } = await apiClient.get("/api/users/contacts");
+// setAvailableContacts(data.contacts);
+// setShowContactSelector(true);
+
+
+// console.log("Loaded contacts:", data.contacts);
+
+//     // Open selection modal
+//     setAvailableContacts(data.contacts);
+//     setShowContactSelector(true);
+
+//     return; // Stop further execution
+//   } catch (err) {
+//     console.error("WhatsApp error:", err?.response?.data || err);
+//     toast.error("Failed to load WhatsApp contacts");
+//   }
+// }
+// }else if (platform === "whatsapp") {
+//   try {
+//     const user = useAuthStore.getState().userInfo;
+//     if (!user?._id) {
+//       toast.error("User not logged in");
+//       return;
+//     }
+
+//     // console.log("Syncing Google contacts...");
+//     // await apiClient.get(`/auth/contacts?email=${user.email}`);
+
+//     console.log("Fetching merged contacts...");
+//     const { data } = await apiClient.get("/api/users/contacts", {
+//   withCredentials: true
+// });
+
+
+//     console.log("Loaded contacts:", data.contacts);
+
+//     setAvailableContacts(data.contacts);
+//     setShowContactSelector(true);
+
+//     return;
+//   } catch (err) {
+//     console.error("WhatsApp error:", err?.response?.data || err);
+//     toast.error("Failed to load WhatsApp contacts");
+//   }
+// }
+}
+else if (platform === "whatsapp") {
   try {
     const user = useAuthStore.getState().userInfo;
 
-    if (!user?._id) {
+    if (!user?.email) {
       toast.error("User not logged in");
       return;
     }
 
-    // STEP 1 — Ask user for phone numbers
-    const input = prompt(
-      "Enter phone numbers separated by commas.\nExample: 9876543210, 9123456789"
+    console.log("Loading Google contacts...");
+    const { data } = await apiClient.get(
+      `/auth/contacts?email=${user.email}`,
+      { withCredentials: true }
     );
 
-    let phoneNumbers = [];
+    console.log("Loaded contacts:", data.contacts);
 
-    if (input && input.trim() !== "") {
-      phoneNumbers = input
-        .split(",")
-        .map((num) => num.trim())
-        .filter((num) => num.length >= 10); // simple validation
-    }
+    setAvailableContacts(data.contacts || []);
+    setShowContactSelector(true);
 
-    // STEP 2 — If NO manual numbers → send to user’s registered number
-    if (phoneNumbers.length === 0) {
-      await apiClient.post("/api/whatsapp/send", {
-        pollId: poll._id,
-        userId: user._id,
-      });
-
-      toast.success("Poll sent to your WhatsApp!");
-      return;
-    }
-
-    // STEP 3 — Save contacts in DB
-    await apiClient.post("/api/users/save-contacts", {
-      contacts: phoneNumbers.map((p) => ({ phone: p, name: "" })),
-    });
-
-    // STEP 4 — Send poll to ALL saved contacts
-    await apiClient.post("/api/whatsapp/send-all", {
-      pollId: poll._id,
-    });
-
-    toast.success("Poll sent to all entered numbers!");
-
+    return;
   } catch (err) {
     console.error("WhatsApp error:", err?.response?.data || err);
-    toast.error("Failed to send poll on WhatsApp");
+    toast.error("Failed to load WhatsApp contacts");
   }
 }
+
+
 
 
 
@@ -591,6 +631,29 @@ setTimeout(() => {
                     <PlatformPreview platform={currentPlatform} poll={{ ...poll, image: capturedImage || poll.image }} onClose={() => setCurrentPlatform(null)} onConfirm={handleConfirmShare} />
 
             )}
+
+{showContactSelector && (
+  <ContactSelectorModal
+    contacts={availableContacts}
+    onCancel={() => setShowContactSelector(false)}
+    onConfirm={async (selectedContacts) => {
+      try {
+        await apiClient.post("/api/whatsapp/send-selected", {
+          pollId: poll._id,
+          contacts: selectedContacts
+        });
+
+        toast.success("Poll sent to selected WhatsApp contacts!");
+      } catch (err) {
+        toast.error("Failed to send poll");
+      }
+
+      setShowContactSelector(false);
+      setCurrentPlatform(null);
+    }}
+  />
+)}
+
             </div>
         </div>
     );

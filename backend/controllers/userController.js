@@ -374,7 +374,7 @@ import asyncHandler from '../middleware/asyncHandler.js';
 import generateToken from '../utils/generateToken.js';
 import { Resend } from 'resend';
 import { sendOtp, verifyOtp } from '../utils/otpServices.js';
-
+import GoogleUser from '../models/GoogleUser.js';
 // --- Reusable function to format user data for responses ---
 const formatUserResponse = (user) => {
     return {
@@ -726,5 +726,118 @@ export const saveUserContacts = async (req, res) => {
 
   } catch (error) {
     res.status(500).json({ message: "Failed to save contacts", error });
+  }
+};
+// export const getUserContacts = async (req, res) => {
+//   try {
+//     const user = await User.findById(req.user._id);
+
+//     if (!user) return res.status(404).json({ message: "User not found" });
+
+//     const fromGoogle = user.googleContacts || [];
+//     const saved = user.savedContacts || [];
+
+//     const merged = [
+//       ...fromGoogle.map(c => ({ ...c, source: "google" })),
+//       ...saved.map(c => ({ ...c, source: "manual" }))
+//     ];
+
+//     // remove duplicates by phone
+//     const unique = merged.filter(
+//       (contact, index, self) =>
+//         contact.phone &&
+//         index === self.findIndex(c => c.phone === contact.phone)
+//     );
+
+//     res.json({ contacts: unique });
+//   } catch (err) {
+//     res.status(500).json({ message: "Error loading contacts" });
+//   }
+// };
+
+// export const getUserContacts = async (req, res) => {
+//   try {
+//   const user = await User.findOne({ email: req.user.email });
+
+//     // console.log("REQ.USER =", req.user);  // ← ADD THIS
+//     if (!user) return res.status(404).json({ message: "User not found" });
+
+//     // If Google contacts are empty — auto fetch them
+//     if (!user.googleContacts || user.googleContacts.length === 0) {
+//       console.log("Google contacts empty → Fetching now...");
+      
+//       // call Google API
+//       const googleUser = await GoogleUser.findOne({ email: user.email });
+
+//       if (googleUser && googleUser.access_token) {
+//         oAuth2Client.setCredentials({
+//           access_token: googleUser.access_token,
+//           refresh_token: googleUser.refresh_token,
+//           expiry_date: googleUser.expiry_date,
+//         });
+
+//         const people = google.people({ version: "v1", auth: oAuth2Client });
+//         const response = await people.people.connections.list({
+//           resourceName: "people/me",
+//           personFields: "names,emailAddresses,phoneNumbers",
+//           pageSize: 200,
+//         });
+
+//         const contacts = response.data.connections?.map((c) => ({
+//           name: c.names?.[0]?.displayName || "",
+//           email: c.emailAddresses?.[0]?.value || "",
+//           phone: c.phoneNumbers?.[0]?.value || "",
+//         })) || [];
+
+//         user.googleContacts = contacts;
+//         await user.save();
+
+//         return res.json({ contacts });
+//       }
+//     }
+
+//     // Otherwise return saved contacts
+//     const merged = [
+//       ...user.googleContacts.map(c => ({ ...c, source: "google" })),
+//       ...user.savedContacts.map(c => ({ ...c, source: "manual" }))
+//     ];
+
+//     const unique = merged.filter(
+//       (contact, index, self) =>
+//         contact.phone &&
+//         index === self.findIndex(c => c.phone === contact.phone)
+//     );
+
+//     res.json({ contacts: unique });
+
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Error loading contacts" });
+//   }
+// };
+
+export const getUserContacts = async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.user.email });
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const google = user.googleContacts || [];
+    const saved = user.savedContacts || [];
+
+    const merged = [
+      ...google.map(c => ({ ...c, source: "google" })),
+      ...saved.map(c => ({ ...c, source: "manual" }))
+    ];
+
+    const unique = merged.filter(
+      (c, idx, arr) =>
+        c.phone &&
+        idx === arr.findIndex(x => x.phone === c.phone)
+    );
+
+    res.json({ contacts: unique });
+  } catch (err) {
+    res.status(500).json({ message: "Error loading contacts" });
   }
 };
