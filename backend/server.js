@@ -131,9 +131,11 @@ import userRoutes from "./routes/userRoutes.js";
 import pollRoutes from "./routes/pollRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import linkedinRoutes from "./routes/linkedinRoutes.js";
+import telegramRoutes from "./routes/telegramROutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import googleRoutes from "./routes/googleRoutes.js";
-
+import whatsappRoutes from "./routes/whastsappRoutes.js";
+// import firebaseAuthRoutes from "./routes/firebaseAuthRoute.js";
 // --- Utility Imports ---
 import initScheduledJobs from "./utils/scheduler.js";
 import "./config/passport-setup.js";
@@ -160,7 +162,7 @@ const allowedOrigins = [
   "https://www.pyngl.com",
   "https://pyngl.com",
   "http://localhost:5173",
-  "https://localhost:5173",
+  "http://192.168.1.18:5173",
 ];
 
 // --- CORS Middleware ---
@@ -236,9 +238,10 @@ app.use("/api/users", userRoutes);
 app.use("/api/polls", pollRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/linkedin", linkedinRoutes);
+app.use("/api/telegram", telegramRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/auth", googleRoutes);
-
+app.use("/api/whatsapp", whatsappRoutes);
 // --- Health Check Root ---
 app.get("/", (req, res) => {
   res.send("<h1>✅ Pyngl API is Live at api.pyngl.com</h1>");

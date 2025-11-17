@@ -706,3 +706,25 @@ export const getUserStatus = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+export const saveUserContacts = async (req, res) => {
+  try {
+    const { contacts } = req.body;  // array of {name, phone}
+    const userId = req.user._id;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Replace or merge contacts
+    user.savedContacts = contacts;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Contacts saved successfully",
+      savedContacts: user.savedContacts
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: "Failed to save contacts", error });
+  }
+};

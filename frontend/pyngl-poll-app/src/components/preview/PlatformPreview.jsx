@@ -239,7 +239,7 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
   const platformDimensions = {
     instagram: { width: 1080, height: 1920, label: "Reels / Stories", aspect: 9 / 16 },
     twitter: { width: 1200, height: 628, label: "X / Twitter", aspect: 1200 / 628 },
-    linkedin: { width: 1200, height: 627, label: "LinkedIn", aspect: 1200 / 627 },
+    // linkedin: { width: 1200, height: 627, label: "LinkedIn", aspect: 1200 / 627 },
     facebook: { width: 1200, height: 630, label: "Facebook", aspect: 1200 / 630 },
     whatsapp: { width: 1200, height: 630, label: "WhatsApp", aspect: 1200 / 630 },
     youtube: { width: 1280, height: 720, label: "YouTube", aspect: 16 / 9 },

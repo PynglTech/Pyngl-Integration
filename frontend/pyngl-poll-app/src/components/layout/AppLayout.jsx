@@ -1667,7 +1667,7 @@ const AppLayout = () => {
     useEffect(() => {
         if (!userInfo) return;
         fetchNotifications();
-        const socket = io("https://192.168.1.7:5000", { transports: ["websocket"], rejectUnauthorized: false });
+        const socket = io(["http://192.168.1.18:5000",'http://localhost:5000' ], { transports: ["websocket"], rejectUnauthorized: false });
         socket.on("connect", () => {
             console.log("WebSocket connected:", socket.id);
             socket.emit("join", userInfo._id);

@@ -16,6 +16,7 @@ import {
   updateUserProfilePicture,
   saveUserLocation,
   getUserStatus,
+  saveUserContacts
 } from '../controllers/userController.js';
 import { upload } from '../config/cloudinary.js';
 
@@ -68,5 +69,6 @@ router.get(
     res.redirect(`${FRONTEND_URL}/dashboard`);
   }
 );
+router.post("/save-contacts", protect, saveUserContacts);
 
 export default router;

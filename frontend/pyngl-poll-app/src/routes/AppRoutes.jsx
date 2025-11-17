@@ -81,6 +81,7 @@ import HelpCenter from '../pages/HelpCenter';
 import Terms from '../pages/TermsPage';
 import PrivacyPolicy from '../pages/PrivacyPolicyPage';
 import NotificationsPage from '../pages/NotificationPage';
+import LinkedinShowPage from '../pages/LinkedinShowPage';
 import { 
     LockedTrendingPage, 
     LockedAnalyticsPage, 
@@ -137,7 +138,7 @@ const AppRoutes = () => {
                         <Route path="/create-segment/:pollId" element={<CreateSegment />} /> 
                         <Route path="/profile" element={<ProfilePage />} />
                         <Route path="/notifications" element={<NotificationsPage />} />
-                        <Route path="/share-linkedin" element={<LinkedInPublisher />} />
+                        <Route path="/share-linkedin" element={<LinkedinShowPage />} />
                         <Route path='/share' element={<GmailShare />} /> 
                         <Route path='/help-center' element={<HelpCenter />} />
                         <Route path='/terms-of-service' element={<Terms />} />
