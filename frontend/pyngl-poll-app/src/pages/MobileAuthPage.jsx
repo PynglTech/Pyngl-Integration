@@ -88,7 +88,7 @@ const MobileAuthPage = () => {
   useEffect(() => {
     const path = location.pathname;
     if (path === "/login") setActiveSheet("login");
-    else if (path === "/signup") setActiveSheet("register");
+    else if (path === "/signup") navigate("/signup");
     else if (path === "/forgot-password") setActiveSheet("forgot");
     else setActiveSheet(null);
 
@@ -123,9 +123,9 @@ const MobileAuthPage = () => {
       {activeSheet === "login" && (
         <LoginSheet openSheet={openSheet} closeSheet={closeSheet} />
       )}
-      {activeSheet === "register" && (
-        <RegisterSheet openSheet={openSheet} closeSheet={closeSheet} />
-      )}
+      {/* {activeSheet === "register" && (
+        <RegisterSheet/>
+      )} */}
       {activeSheet === "forgot" && (
         <ForgotPasswordSheet openSheet={openSheet} closeSheet={closeSheet} />
       )}

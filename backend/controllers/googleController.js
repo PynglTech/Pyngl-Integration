@@ -93,15 +93,21 @@ const getContacts = async (req, res) => {
     const people = google.people({ version: "v1", auth: oAuth2Client });
     const response = await people.people.connections.list({
       resourceName: "people/me",
-      personFields: "names,emailAddresses",
+      personFields: "names,emailAddresses,phoneNumbers",
       pageSize: 200,
     });
 
     const contacts =
-      response.data.connections?.map((c) => ({
-        name: c.names?.[0]?.displayName || "",
-        email: c.emailAddresses?.[0]?.value || "",
-      })) || [];
+      response.data.connections?.map((c) => {
+        return {
+          name: c.names?.[0]?.displayName || "",
+          email: c.emailAddresses?.[0]?.value || "",
+           phone: c.phoneNumbers?.[0]?.value || "",
+        };
+      }) || [];
+      console.log("🚀 ~ getContacts ~ response.data.connections:", response.data.connections)
+      console.log("🚀 ~ getContacts ~ response.data:", response.data)
+      console.log("🚀 ~ getContacts ~ contacts:", contacts)
 
     res.json({ contacts });
   } catch (err) {

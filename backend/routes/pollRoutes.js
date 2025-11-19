@@ -192,7 +192,7 @@ router.post('/generate-image', generateImage); // Kept as public assuming it mig
         ? `${req.protocol}://${req.get('host')}`
         : 'https://pyngl.com';
       
-      const pollUrl = `https://pyngl.com/poll/${poll._id}`;
+      const pollUrl = `https://pyngl.com/poll/${poll._id}?platform=Twitter`;
 
       // 2. Build Meta Tags Dynamically
       const metaTags = [

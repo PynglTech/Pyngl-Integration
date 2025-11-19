@@ -387,6 +387,7 @@ const formatUserResponse = (user) => {
         age: user.age,             // NEW: Include virtual age property
     };
 };
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 // @desc    Register a new user
 // @route   POST /api/users/register
@@ -438,21 +439,22 @@ export const registerUser = asyncHandler(async (req, res) => {
 // @route   POST /api/users/login
 // @access  Public
 export const loginUser = asyncHandler(async (req, res) => {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
 
-    if (user && (await user.matchPassword(password))) {
-        generateToken(res, user._id);
-        
-        // Record login for the nudge scheduler
-        await user.recordLogin();
+  if (user && (await user.matchPassword(password))) {
+    generateToken(res, user._id);
+    await user.recordLogin();
 
-        res.status(200).json(formatUserResponse(user));
-    } else {
-        res.status(401);
-        throw new Error('Invalid email or password');
-    }
+    return res.status(200).json({
+      user: formatUserResponse(user),   // <-- FIX HERE
+    });
+  }
+
+  res.status(401);
+  throw new Error("Invalid email or password");
 });
+;
 
 // @desc    Logout user / clear cookie
 // @route   POST /api/users/logout
@@ -696,7 +698,6 @@ export const saveUserLocation = async (req, res) => {
     res.status(500).json({ message: "Internal server error." });
   }
 };
-
 
 export const getUserStatus = async (req, res) => {
   try {

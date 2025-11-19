@@ -112,7 +112,7 @@
 // });
 
 
-
+import axios from "axios";
 import express from "express";
 import dotenv from "dotenv";
 import path from "path";
@@ -133,6 +133,7 @@ import notificationRoutes from "./routes/notificationRoutes.js";
 import linkedinRoutes from "./routes/linkedinRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import googleRoutes from "./routes/googleRoutes.js";
+// import appleRoutes from "./routes/appleRoutes.js";
 
 // --- Utility Imports ---
 import initScheduledJobs from "./utils/scheduler.js";
@@ -238,6 +239,61 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/linkedin", linkedinRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/auth", googleRoutes);
+
+
+
+  const KOMMO_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjRhODYyYWMwOWU3NzZhOWU5ZjI1MTQxOTE5MTc5YmFmZjBhMzhiNmNkY2ZlZTFmMjIxZjhlY2UxNDg0ZGFlZjgyNjk3MTUwOThiNGNkZmUwIn0.eyJhdWQiOiJmMjU0MDFlZS0zZDdkLTRlNjgtYjkyNy1hMTkyZWY1NDU4YjkiLCJqdGkiOiI0YTg2MmFjMDllNzc2YTllOWYyNTE0MTkxOTE3OWJhZmYwYTM4YjZjZGNmZWUxZjIyMWY4ZWNlMTQ4NGRhZWY4MjY5NzE1MDk4YjRjZGZlMCIsImlhdCI6MTc2MzQ1NjY4MywibmJmIjoxNzYzNDU2NjgzLCJleHAiOjE3NjM1MTA0MDAsInN1YiI6IjE0MjY2MDIzIiwiZ3JhbnRfdHlwZSI6IiIsImFjY291bnRfaWQiOjM1NTkxODM1LCJiYXNlX2RvbWFpbiI6ImtvbW1vLmNvbSIsInZlcnNpb24iOjIsInNjb3BlcyI6WyJjcm0iLCJmaWxlcyIsImZpbGVzX2RlbGV0ZSIsIm5vdGlmaWNhdGlvbnMiLCJwdXNoX25vdGlmaWNhdGlvbnMiXSwiaGFzaF91dWlkIjoiOWI0ZDU5OTgtMjYwYy00ZjM4LWIwY2MtNWM3ZWUzZmE2NTEyIiwidXNlcl9mbGFncyI6MCwiYXBpX2RvbWFpbiI6ImFwaS1jLmtvbW1vLmNvbSJ9.LjqqFAqmSTQJGT5Es3sVpWMkQYW_uSAnbnmQ5-GPytTBhQwA-LNxGUObpaSCEQ78GI4KXcjO3v5JxgeYa_FVuMo4WwRXtVkYbog69LPvGGAWK4QjUVNPxn-MooA7TfsD7fnhPMOrRfJ6uwdGZ9ZSK14inf1JABx75VyBhUAjmrS4DgjPCuEoCPsTxpXhdclYclEArdFg-YnvkGXcGVcSZL3Vg4XOKIUJPCOHXFuTXvQSwGOTE3lTBwADm1WV2mPp1zyjRVehWhCEJEPN4-xSnMUhNf6eMy38afukX-8BN0RjDVUOKLgV_1tVM7tcUbY6JZ7lwk9_IjoH8DYrPSF9rQ"; 
+  const DOMAIN = "sureshpyngl.kommo.com";        // Your Kommo domain
+
+  /**
+   * Send Apple Messages List Picker (Poll)
+   */
+  export async function sendApplePoll(leadId) {
+    try {
+      const url = `https://${DOMAIN}/api/v4/leads/${leadId}/notes`;
+
+      const payload = {
+        note_type: ["service_message"],
+        params: {
+          note_type: ["service_message"],
+          service: "apple_messages",
+          message: {
+            source: "app",     // ⬅ REQUIRED by Apple
+            type: "rich_link", // Apple requires a base rich message type
+            rich_text: {
+              type: "list_picker",
+              title: "Please choose an option",
+              sections: [
+                {
+                  title: "Poll Options",
+                  items: [
+                    { id: "opt1", title: "Option 1" },
+                    { id: "opt2", title: "Option 2" },
+                    { id: "opt3", title: "Option 3" }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      };
+
+      const res = await axios.post(url, payload, {
+        headers: {
+          Authorization: `Bearer ${KOMMO_TOKEN}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      console.log("Poll sent successfully:", res.data);
+
+    } catch (err) {
+      console.error("RES ERROR:", err.response?.data || err);
+    }
+  }
+
+  sendApplePoll(16100058);
+
 
 // --- Health Check Root ---
 app.get("/", (req, res) => {
