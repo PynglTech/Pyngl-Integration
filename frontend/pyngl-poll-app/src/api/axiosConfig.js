@@ -1,58 +1,86 @@
+// // import axios from 'axios';
+// // import useAuthStore from '../store/useAuthStore';
+
+// // // Create a new Axios instance
+// // const apiClient = axios.create({
+// //     baseURL: '', // The Vite proxy handles the full URL, so this can be empty
+// //     withCredentials: true, // This is the crucial part that sends cookies
+// // });
+
+// // // 🔥 BONUS: Add an interceptor for global 401 error handling
+// // apiClient.interceptors.response.use(
+// //     (response) => response, // Directly return a successful response
+// //     (error) => {
+// //         // Check if the error is a 401 Unauthorized
+// //         if (error.response && error.response.status === 401) {
+// //             // Use the global logout function from your Zustand store
+// //             // This prevents an infinite loop if the logout call itself fails
+// //             if (!error.config.url.includes('/logout')) {
+// //                 useAuthStore.getState().logout();
+// //                 window.location.href = '/'; // Redirect to the login page
+// //             }
+// //         }
+// //         // Return any other error so that individual components can handle it
+// //         return Promise.reject(error);
+// //     }
+// // );
+
+
+// // export default apiClient;
 // import axios from 'axios';
 // import useAuthStore from '../store/useAuthStore';
 
-// // Create a new Axios instance
-// const apiClient = axios.create({
-//     baseURL: '', // The Vite proxy handles the full URL, so this can be empty
-//     withCredentials: true, // This is the crucial part that sends cookies
-// });
+// // ✅ Dynamic API base URL
+// const baseURL =
+//   import.meta.env.MODE === 'development'
+//     ? 'http://localhost:5000' // your local dev backend
+//     : import.meta.env.VITE_API_URL; // Render backend for production
 
-// // 🔥 BONUS: Add an interceptor for global 401 error handling
+// // ✅ Create Axios instance
+// const apiClient = axios.create({
+//   baseURL: "http://localhost:5000",
+//   withCredentials: true   // ⬅ IMPORTANT
+// });
+// // ✅ Global interceptor for 401 Unauthorized
 // apiClient.interceptors.response.use(
-//     (response) => response, // Directly return a successful response
-//     (error) => {
-//         // Check if the error is a 401 Unauthorized
-//         if (error.response && error.response.status === 401) {
-//             // Use the global logout function from your Zustand store
-//             // This prevents an infinite loop if the logout call itself fails
-//             if (!error.config.url.includes('/logout')) {
-//                 useAuthStore.getState().logout();
-//                 window.location.href = '/'; // Redirect to the login page
-//             }
-//         }
-//         // Return any other error so that individual components can handle it
-//         return Promise.reject(error);
+//   (response) => response,
+//   (error) => {
+//     if (error.response && error.response.status === 401) {
+//       useAuthStore.getState().logout();
+//       window.location.href = '/';
 //     }
+//     return Promise.reject(error);
+//   }
 // );
 
-
 // export default apiClient;
+
+
 import axios from 'axios';
 import useAuthStore from '../store/useAuthStore';
 
-// ✅ Dynamic API base URL
+// Determine correct BASE URL
 const baseURL =
-  import.meta.env.MODE === 'development'
-    ? 'http://localhost:5000' // your local dev backend
-    : import.meta.env.VITE_API_URL; // Render backend for production
+  import.meta.env.MODE === "development"
+    ? "http://192.168.1.9:5000" // or localhost
+    : import.meta.env.VITE_API_URL;
 
-// ✅ Create Axios instance
+// Create API client
 const apiClient = axios.create({
-  baseURL: "http://localhost:5000",
-  withCredentials: true   // ⬅ IMPORTANT
+  baseURL,
+  withCredentials: true,
 });
-// ✅ Global interceptor for 401 Unauthorized
+
+// Global 401 handler
 apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response && error.response.status === 401) {
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401) {
       useAuthStore.getState().logout();
-      window.location.href = '/';
+      window.location.href = "/";
     }
-    return Promise.reject(error);
+    return Promise.reject(err);
   }
 );
 
 export default apiClient;
-
-

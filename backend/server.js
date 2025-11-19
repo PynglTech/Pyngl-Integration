@@ -121,7 +121,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import { Server } from "socket.io";
 import http from "http";
-import cookieParser from "cookie-parser";
+import cookieParser from "cookie-parser";  
 import session from "express-session";
 import passport from "passport";
 import compression from "compression";
@@ -135,6 +135,7 @@ import telegramRoutes from "./routes/telegramROutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import googleRoutes from "./routes/googleRoutes.js";
 import whatsappRoutes from "./routes/whastsappRoutes.js";
+import whatsappWebhookRoutes from "./routes/whatsappWebhookRoutes.js";
 // import firebaseAuthRoutes from "./routes/firebaseAuthRoute.js";
 // --- Utility Imports ---
 import initScheduledJobs from "./utils/scheduler.js";
@@ -162,7 +163,7 @@ const allowedOrigins = [
   "https://www.pyngl.com",
   "https://pyngl.com",
   "http://localhost:5173",
-  "http://192.168.1.18:5173",
+  "http://192.168.1.9:5173",
 ];
 
 // --- CORS Middleware ---
@@ -232,6 +233,24 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch((err) => console.error("❌ MongoDB Connection Error:", err));
+app.get("/webhook", (req, res) => {
+  const VERIFY_TOKEN ="pyngl_webhook_token"; // SAME AS FB DEVELOPER PORTAL
+
+  const mode = req.query["hub.mode"];
+  const token = req.query["hub.verify_token"];
+  const challenge = req.query["hub.challenge"];
+
+  if (mode && token && mode === "subscribe" && token === VERIFY_TOKEN) {
+    console.log("Webhook verified!");
+    res.status(200).send(challenge);
+  } else {
+    res.sendStatus(403);
+  }
+});
+app.post("/webhook", (req, res) => {
+  console.log("Incoming WhatsApp message:", JSON.stringify(req.body, null, 2));
+  res.sendStatus(200);
+});
 
 // --- API Routes ---
 app.use("/api/users", userRoutes);
@@ -242,6 +261,8 @@ app.use("/api/telegram", telegramRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/auth", googleRoutes);
 app.use("/api/whatsapp", whatsappRoutes);
+
+app.use("/webhook/whatsapp", whatsappWebhookRoutes);
 // --- Health Check Root ---
 app.get("/", (req, res) => {
   res.send("<h1>✅ Pyngl API is Live at api.pyngl.com</h1>");
@@ -260,3 +281,4 @@ initScheduledJobs(io);
 server.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
 });
+ 

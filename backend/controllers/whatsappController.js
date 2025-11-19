@@ -610,7 +610,16 @@ export const sendWhatsAppPoll = async (req, res) => {
     };
 
     const metaRes = await axios.post(url, payload, { headers });
+    const metaMessageId = metaRes.data.messages?.[0]?.id;
 
+    // ⭐ SAVE MESSAGE ID -----
+    poll.whatsappMessages.push({
+      msgId: metaMessageId,
+      phone: "+" + phone,
+      sentAt: new Date()
+    });
+
+    await poll.save();
     res.status(200).json({
       success: true,
       metaMessageId: metaRes.data.messages?.[0]?.id || null,
@@ -673,12 +682,12 @@ export const sendWhatsAppPollToAll = async (req, res) => {
       };
 
       const metaRes = await axios.post(url, payload, { headers });
-
-      results.push({
-        phone: contact.phone,
-        status: "sent",
-        id: metaRes.data.messages?.[0]?.id || null
-      });
+const metaMessageId = metaRes.data.messages?.[0]?.id;
+     poll.whatsappMessages.push({
+  msgId: metaMessageId,
+  phone: c.phone,
+  sentAt: new Date()
+});
     }
 
     res.status(200).json({
@@ -739,6 +748,158 @@ export const sendWhatsAppPollToAll = async (req, res) => {
 //     res.status(500).json({ error: "Failed to send selected", details: err });
 //   }
 // };
+// export const sendWhatsAppPollToSelected = async (req, res) => {
+//   try {
+//     const { pollId, contacts } = req.body;
+
+//     if (!contacts || contacts.length === 0) {
+//       return res.status(400).json({ error: "No contacts selected" });
+//     }
+
+//     const poll = await Poll.findById(pollId);
+
+//     if (!poll) {
+//       return res.status(404).json({ error: "Poll not found" });
+//     }
+
+//     const voteLink = `https://pyngl.com/poll/${poll._id}`;
+//     const url = `https://graph.facebook.com/v21.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
+
+//     const headers = {
+//       Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
+//       "Content-Type": "application/json",
+//     };
+
+//     let results = [];
+
+//     for (const c of contacts) {
+//       const payload = {
+//         messaging_product: "whatsapp",
+//         to: c.phone.replace("+", ""),
+//         type: "template",
+//         template: {
+//           name: process.env.WHATSAPP_TEMPLATE_NAME,
+//           language: { code: "en" },
+//           components: [
+//             {
+//               type: "body",
+//               parameters: [
+//                 { type: "text", text: poll.question },
+//                 { type: "text", text: poll.options?.[0]?.text || "-" },
+//                 { type: "text", text: poll.options?.[1]?.text || "-" },
+//                 { type: "text", text: poll.options?.[2]?.text || "-" },
+//                 { type: "text", text: poll.options?.[3]?.text || "-" },
+//                 { type: "text", text: poll.options?.[4]?.text || "-" },
+//                 { type: "text", text: poll.options?.[5]?.text || "-" },
+//                 { type: "text", text: voteLink }
+//               ]
+//             }
+//           ]
+//         }
+//       };
+
+//       const metaRes = await axios.post(url, payload, { headers });
+
+//       results.push({
+//         phone: c.phone,
+//         status: "sent",
+//         id: metaRes.data.messages?.[0]?.id || null
+//       });
+//     }
+
+//     res.json({
+//       success: true,
+//       sent: results
+//     });
+
+//   } catch (err) {
+//     console.error("Selected contacts error:", err.response?.data || err);
+//     res.status(500).json({ error: "Failed to send poll", details: err });
+//   }
+// };
+
+
+// export const sendWhatsAppPollToSelected = async (req, res) => {
+//   try {
+//     const { pollId, contacts } = req.body;
+
+//     if (!contacts || contacts.length === 0) {
+//       return res.status(400).json({ error: "No contacts selected" });
+//     }
+
+//     const poll = await Poll.findById(pollId);
+
+//     if (!poll) {
+//       return res.status(404).json({ error: "Poll not found" });
+//     }
+
+//     const voteLink = `https://pyngl.com/poll/${poll._id}`;
+//     const url = `https://graph.facebook.com/v21.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
+
+//     const headers = {
+//       Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
+//       "Content-Type": "application/json",
+//     };
+
+//     let results = [];
+
+//     for (const c of contacts) {
+//      const payload = {
+//   messaging_product: "whatsapp",
+//   to: c.phone.replace("+", ""),
+//   type: "template",
+//   template: {
+//     name: process.env.WHATSAPP_TEMPLATE_NAME,
+//     language: { code: "en" },
+//     components: [
+//       {
+//         type: "body",
+//         parameters: [
+//           { type: "text", text: poll.question },
+//           { type: "text", text: poll.options?.[0]?.text || "-" },
+//           { type: "text", text: poll.options?.[1]?.text || "-" },
+//           { type: "text", text: poll.options?.[2]?.text || "-" },
+//           { type: "text", text: poll.options?.[3]?.text || "-" },
+//           { type: "text", text: poll.options?.[4]?.text || "-" },
+//           { type: "text", text: poll.options?.[5]?.text || "-" },
+//           { type: "text", text: voteLink }
+//         ]
+//       }
+//     ]
+//   }
+// };
+
+
+//       const metaRes = await axios.post(url, payload, { headers });
+//       const metaMessageId = metaRes.data.messages?.[0]?.id;
+
+//       results.push({
+//         phone: c.phone,
+//         status: "sent",
+//         id: metaMessageId
+//       });
+
+      
+//       poll.whatsappMessages.push({
+//         msgId: metaMessageId,
+//         phone: c.phone,
+//         sentAt: new Date()
+//       });
+//     }
+
+//     // BE SURE TO SAVE THE POLL AFTER LOOP
+//     await poll.save();
+
+//     res.json({
+//       success: true,
+//       sent: results
+//     });
+
+//   } catch (err) {
+//     console.error("Selected contacts error:", err.response?.data || err);
+//     res.status(500).json({ error: "Failed to send poll", details: err });
+//   }
+// };
 export const sendWhatsAppPollToSelected = async (req, res) => {
   try {
     const { pollId, contacts } = req.body;
@@ -748,10 +909,7 @@ export const sendWhatsAppPollToSelected = async (req, res) => {
     }
 
     const poll = await Poll.findById(pollId);
-
-    if (!poll) {
-      return res.status(404).json({ error: "Poll not found" });
-    }
+    if (!poll) return res.status(404).json({ error: "Poll not found" });
 
     const voteLink = `https://pyngl.com/poll/${poll._id}`;
     const url = `https://graph.facebook.com/v21.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
@@ -764,9 +922,33 @@ export const sendWhatsAppPollToSelected = async (req, res) => {
     let results = [];
 
     for (const c of contacts) {
+      // ⭐ CLEAN PHONE NUMBER
+      let cleanPhone = (c.phone || "")
+        .toString()
+        .replace(/\s+/g, "")
+        .replace(/-/g, "")
+        .replace(/\(/g, "")
+        .replace(/\)/g, "");
+
+      // If 10 digit Indian number → add +91
+      if (/^\d{10}$/.test(cleanPhone)) {
+        cleanPhone = "+91" + cleanPhone;
+      }
+
+      // If starts with 91 and 12 digits → add +
+      if (/^\d{12}$/.test(cleanPhone) && !cleanPhone.startsWith("+")) {
+        cleanPhone = "+" + cleanPhone;
+      }
+
+      // Final validation
+      if (!cleanPhone.startsWith("+")) {
+        console.log("❌ Invalid phone format:", c.phone, cleanPhone);
+        continue;
+      }
+
       const payload = {
         messaging_product: "whatsapp",
-        to: c.phone.replace("+", ""),
+        to: cleanPhone,
         type: "template",
         template: {
           name: process.env.WHATSAPP_TEMPLATE_NAME,
@@ -790,18 +972,25 @@ export const sendWhatsAppPollToSelected = async (req, res) => {
       };
 
       const metaRes = await axios.post(url, payload, { headers });
+      const metaMessageId = metaRes.data.messages?.[0]?.id;
+
+      // Save message into poll db
+      poll.whatsappMessages.push({
+        msgId: metaMessageId,
+        phone: cleanPhone,
+        sentAt: new Date()
+      });
 
       results.push({
-        phone: c.phone,
+        phone: cleanPhone,
         status: "sent",
-        id: metaRes.data.messages?.[0]?.id || null
+        id: metaMessageId
       });
     }
 
-    res.json({
-      success: true,
-      sent: results
-    });
+    await poll.save();
+
+    res.json({ success: true, sent: results });
 
   } catch (err) {
     console.error("Selected contacts error:", err.response?.data || err);
