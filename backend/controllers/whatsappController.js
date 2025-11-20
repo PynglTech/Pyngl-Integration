@@ -900,6 +900,103 @@ const metaMessageId = metaRes.data.messages?.[0]?.id;
 //     res.status(500).json({ error: "Failed to send poll", details: err });
 //   }
 // };
+// export const sendWhatsAppPollToSelected = async (req, res) => {
+//   try {
+//     const { pollId, contacts } = req.body;
+
+//     if (!contacts || contacts.length === 0) {
+//       return res.status(400).json({ error: "No contacts selected" });
+//     }
+
+//     const poll = await Poll.findById(pollId);
+//     if (!poll) return res.status(404).json({ error: "Poll not found" });
+
+//     const voteLink = `https://pyngl.com/poll/${poll._id}`;
+//     const url = `https://graph.facebook.com/v21.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
+
+//     const headers = {
+//       Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
+//       "Content-Type": "application/json",
+//     };
+
+//     let results = [];
+
+//     for (const c of contacts) {
+//       // ⭐ CLEAN PHONE NUMBER
+//       let cleanPhone = (c.phone || "")
+//         .toString()
+//         .replace(/\s+/g, "")
+//         .replace(/-/g, "")
+//         .replace(/\(/g, "")
+//         .replace(/\)/g, "");
+
+//       // If 10 digit Indian number → add +91
+//       if (/^\d{10}$/.test(cleanPhone)) {
+//         cleanPhone = "+91" + cleanPhone;
+//       }
+
+//       // If starts with 91 and 12 digits → add +
+//       if (/^\d{12}$/.test(cleanPhone) && !cleanPhone.startsWith("+")) {
+//         cleanPhone = "+" + cleanPhone;
+//       }
+
+//       // Final validation
+//       if (!cleanPhone.startsWith("+")) {
+//         console.log("❌ Invalid phone format:", c.phone, cleanPhone);
+//         continue;
+//       }
+
+//       const payload = {
+//         messaging_product: "whatsapp",
+//         to: cleanPhone,
+//         type: "template",
+//         template: {
+//           name: process.env.WHATSAPP_TEMPLATE_NAME,
+//           language: { code: "en" },
+//           components: [
+//             {
+//               type: "body",
+//               parameters: [
+//                 { type: "text", text: poll.question },
+//                 { type: "text", text: poll.options?.[0]?.text || "-" },
+//                 { type: "text", text: poll.options?.[1]?.text || "-" },
+//                 { type: "text", text: poll.options?.[2]?.text || "-" },
+//                 { type: "text", text: poll.options?.[3]?.text || "-" },
+//                 { type: "text", text: poll.options?.[4]?.text || "-" },
+//                 { type: "text", text: poll.options?.[5]?.text || "-" },
+//                 { type: "text", text: voteLink }
+//               ]
+//             }
+//           ]
+//         }
+//       };
+
+//       const metaRes = await axios.post(url, payload, { headers });
+//       const metaMessageId = metaRes.data.messages?.[0]?.id;
+
+//       // Save message into poll db
+//       poll.whatsappMessages.push({
+//         msgId: metaMessageId,
+//         phone: cleanPhone,
+//         sentAt: new Date()
+//       });
+
+//       results.push({
+//         phone: cleanPhone,
+//         status: "sent",
+//         id: metaMessageId
+//       });
+//     }
+
+//     await poll.save();
+
+//     res.json({ success: true, sent: results });
+
+//   } catch (err) {
+//     console.error("Selected contacts error:", err.response?.data || err);
+//     res.status(500).json({ error: "Failed to send poll", details: err });
+//   }
+// };
 export const sendWhatsAppPollToSelected = async (req, res) => {
   try {
     const { pollId, contacts } = req.body;
@@ -911,7 +1008,40 @@ export const sendWhatsAppPollToSelected = async (req, res) => {
     const poll = await Poll.findById(pollId);
     if (!poll) return res.status(404).json({ error: "Poll not found" });
 
-    const voteLink = `https://pyngl.com/poll/${poll._id}`;
+    // Detect image yes/no
+    const hasImage = !!poll.imageUrl;
+
+    // Detect number of options
+    const optCount = poll.options.length;
+
+    // Auto-select correct template
+    let templateName = "";
+
+    if (hasImage) {
+      switch (optCount) {
+        case 2: templateName = "image_two_options"; break;
+        case 3: templateName = "image_three_options"; break;
+        case 4: templateName = "image_four_options"; break;
+        case 5: templateName = "image_five_options"; break;
+        case 6: templateName = "image_options_six"; break;
+      }
+    } else {
+      switch (optCount) {
+        case 2: templateName = "poll_option_two"; break;
+        case 3: templateName = "poll_options_three"; break;
+        case 4: templateName = "poll_option_four"; break;
+        case 5: templateName = "poll_option_five"; break;
+        case 6: templateName = "pyngl_pings"; break;
+      }
+    }
+
+    if (!templateName) {
+      return res.status(400).json({ error: "Invalid option count" });
+    }
+
+    console.log("📌 Using template:", templateName);
+
+    const voteLink = `http://192.168.1.9:5173/poll/${poll._id}`;
     const url = `https://graph.facebook.com/v21.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
 
     const headers = {
@@ -922,7 +1052,8 @@ export const sendWhatsAppPollToSelected = async (req, res) => {
     let results = [];
 
     for (const c of contacts) {
-      // ⭐ CLEAN PHONE NUMBER
+
+      // Clean phone number
       let cleanPhone = (c.phone || "")
         .toString()
         .replace(/\s+/g, "")
@@ -930,70 +1061,90 @@ export const sendWhatsAppPollToSelected = async (req, res) => {
         .replace(/\(/g, "")
         .replace(/\)/g, "");
 
-      // If 10 digit Indian number → add +91
-      if (/^\d{10}$/.test(cleanPhone)) {
-        cleanPhone = "+91" + cleanPhone;
-      }
-
-      // If starts with 91 and 12 digits → add +
+      if (/^\d{10}$/.test(cleanPhone)) cleanPhone = "+91" + cleanPhone;
       if (/^\d{12}$/.test(cleanPhone) && !cleanPhone.startsWith("+")) {
         cleanPhone = "+" + cleanPhone;
       }
-
-      // Final validation
       if (!cleanPhone.startsWith("+")) {
-        console.log("❌ Invalid phone format:", c.phone, cleanPhone);
+        console.log("❌ Invalid phone:", cleanPhone);
         continue;
       }
+
+      // Build parameters dynamically
+      let params = [{ type: "text", text: poll.question }];
+
+      poll.options.forEach(opt => {
+        params.push({ type: "text", text: opt.text || "-" });
+      });
+
+      // Add vote link as last param
+      params.push({ type: "text", text: voteLink });
+
+      // ⚠️ Very important → Trim parameters to EXACT count template expects
+      params = params.slice(0, optCount + 2); // Question + N options + link = N+2
 
       const payload = {
         messaging_product: "whatsapp",
         to: cleanPhone,
         type: "template",
         template: {
-          name: process.env.WHATSAPP_TEMPLATE_NAME,
+          name: templateName,
           language: { code: "en" },
           components: [
             {
               type: "body",
-              parameters: [
-                { type: "text", text: poll.question },
-                { type: "text", text: poll.options?.[0]?.text || "-" },
-                { type: "text", text: poll.options?.[1]?.text || "-" },
-                { type: "text", text: poll.options?.[2]?.text || "-" },
-                { type: "text", text: poll.options?.[3]?.text || "-" },
-                { type: "text", text: poll.options?.[4]?.text || "-" },
-                { type: "text", text: poll.options?.[5]?.text || "-" },
-                { type: "text", text: voteLink }
-              ]
-            }
-          ]
-        }
+              parameters: params,
+            },
+          ],
+        },
       };
+
+      // If template with image → add header
+     // If template with image → add header FIRST
+if (hasImage) {
+  payload.template.components.unshift({
+    type: "header",
+    parameters: [
+      {
+        type: "image",
+        image: {
+          link: poll.imageUrl // MUST be a public http/https image
+        }
+      }
+    ]
+  });
+}
+
 
       const metaRes = await axios.post(url, payload, { headers });
       const metaMessageId = metaRes.data.messages?.[0]?.id;
 
-      // Save message into poll db
+      // Save message info
       poll.whatsappMessages.push({
         msgId: metaMessageId,
         phone: cleanPhone,
-        sentAt: new Date()
+        sentAt: new Date(),
       });
 
       results.push({
         phone: cleanPhone,
+        template: templateName,
         status: "sent",
-        id: metaMessageId
+        id: metaMessageId,
       });
     }
 
     await poll.save();
 
-    res.json({ success: true, sent: results });
+    res.json({
+      success: true,
+      count: results.length,
+      sent: results,
+    });
 
   } catch (err) {
-    console.error("Selected contacts error:", err.response?.data || err);
+    console.error("❌ Selected contacts error:", err.response?.data || err);
     res.status(500).json({ error: "Failed to send poll", details: err });
   }
 };
+

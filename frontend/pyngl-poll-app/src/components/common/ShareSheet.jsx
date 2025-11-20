@@ -411,7 +411,7 @@ const handleConfirmShare = async (hostedPreviewImage) => {
     <button
       onClick={() => {
         toast.dismiss(t.id);
-      window.location.href = `http://localhost:5000/api/linkedin/auth?pollId=${poll._id}`;
+      window.location.href = `http://192.168.1.9:5000/api/linkedin/auth?pollId=${poll._id}`;
 
       }}
       className="px-5 py-2 rounded-full bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
