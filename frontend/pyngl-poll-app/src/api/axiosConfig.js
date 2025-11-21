@@ -62,7 +62,7 @@ import useAuthStore from '../store/useAuthStore';
 // Determine correct BASE URL
 const baseURL =
   import.meta.env.MODE === "development"
-    ? "http://192.168.1.9:5000" // or localhost
+    ? ["http://192.168.1.5:5000", 'http://localhost:5000'] // or localhost
     : import.meta.env.VITE_API_URL;
 
 // Create API client

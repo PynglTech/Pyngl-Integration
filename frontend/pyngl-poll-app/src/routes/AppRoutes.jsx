@@ -96,6 +96,7 @@ import ProAnalytics from '../components/analytics/ProAnalytics';
 import CompareLastPolls from '../components/analytics/comparePolls';
 import CreateSegment from '../components/analytics/CreateSegment';
 import EnterpriseAnalytics from '../components/analytics/EnterpriseAnalytics';
+import RegisterPage from "../pages/RegisterPage";
 const AppRoutes = () => {
       const { userInfo } = useAuthStore();
     return (
@@ -103,6 +104,12 @@ const AppRoutes = () => {
             <Routes>
                  <Route path="/" element={<PublicAuthPage />} />
                 <Route path="/login" element={<PublicAuthPage />} />
+                <Route path="/signup" element={<RegisterPage />} />
+<Route path="/signup/otp" element={<RegisterPage />} />
+<Route path="/signup/username" element={<RegisterPage />} />
+<Route path="/signup/dob" element={<RegisterPage />} />
+<Route path="/signup/set-password" element={<RegisterPage />} />
+<Route path="/signup/success" element={<RegisterPage />} />
                 <Route path="/signup" element={<PublicAuthPage />} />
                 <Route path='/forgot-password' element={<PublicAuthPage/>} />
                  {!userInfo && (
@@ -110,6 +117,8 @@ const AppRoutes = () => {
                         <Route path="/trending" element={<LockedTrendingPage />} />
                         <Route path="/analytics" element={<LockedAnalyticsPage />} />
                         <Route path="/polls" element={<LockedPollsActivityPage />} />
+                        <Route path='/terms-of-service' element={<Terms />} />
+                        <Route path='/privacy-policy' element={<PrivacyPolicy />} />
                     </>
                 )}
 
@@ -141,8 +150,7 @@ const AppRoutes = () => {
                         <Route path="/share-linkedin" element={<LinkedinShowPage />} />
                 
                         <Route path='/help-center' element={<HelpCenter />} />
-                        <Route path='/terms-of-service' element={<Terms />} />
-                        <Route path='/privacy-policy' element={<PrivacyPolicy />} />
+                        
                         <Route path='/polls' element={<PollActivityPage/>} />
                     </Route>
                 </Route>

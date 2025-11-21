@@ -151,11 +151,6 @@ googleContacts: [
       type: String, 
       required: true 
     },
-    phoneNumber: { 
-      type: String, 
-      unique: true,
-      required: process.env.NODE_ENV === 'production' // ✅ optional in dev
-    },
     profilePictureUrl: { 
       type: String, 
       default: '' 

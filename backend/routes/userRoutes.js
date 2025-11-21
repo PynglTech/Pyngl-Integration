@@ -17,17 +17,21 @@ import {
   saveUserLocation,
   getUserStatus,
   getUserContacts,
-  saveUserContacts
+  saveUserContacts,
+  checkUsernameAvailability,
+  sendOtpToEmail,
+  checkEmailAvailability,
+  verifyEmailOtp
 } from '../controllers/userController.js';
 import { upload } from '../config/cloudinary.js';
 import User from "../models/User.js";
 
 const router = express.Router();
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const FRONTEND_URL = process.env.FRONTEND_URL ||'http://localhost:5173' ||'http://192.168.1.5:5173';
 // router.get("/debug-contacts/:email", async (req, res) => {
 //   try {
 //     const user = await User.findOne({ email: req.params.email });
-
+  
 //     if (!user) return res.status(404).json({ message: "User not found" });
 
 //     res.json({
@@ -45,8 +49,11 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 router.post('/register', registerUser);
 router.post('/login', loginUser);
 router.post('/logout', logoutUser);
+router.post('/check-username', checkUsernameAvailability);
+router.post('/send-otp', sendOtpToEmail);
+router.post('/verify-otp', verifyEmailOtp);
 router.get('/status', checkAuth, getUserStatus);
-
+router.post('/check-email', checkEmailAvailability);
 // =============================
 // PASSWORD MANAGEMENT
 // =============================
@@ -58,6 +65,7 @@ router.put('/resetpassword', resetPassword);
 // =============================
 // USER PROFILE
 // =============================
+
 router.get('/profile-stats', protect, getUserProfileStats);
 router.get("/contacts", protect, getUserContacts);
 

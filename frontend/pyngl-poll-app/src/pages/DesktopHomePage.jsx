@@ -260,673 +260,894 @@
 // };
 
 // export default DesktopHomePage;
-import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+// import React, { useState, useEffect, useRef } from "react";
+// import { Link } from "react-router-dom";
+// import {
+//   Bell,
+//   User,
+//   Linkedin,
+//   Instagram,
+//   Facebook,
+//   CheckCircle2,
+//   PlayCircle,
+//   Star,
+//   CheckCheck,
+// } from "lucide-react";
+// import useNotificationStore from "../store/useNotificationStore";
+// import { motion, AnimatePresence, useAnimation } from "framer-motion";
+// import DesktopNav from "../components/layout/DesktopNav";
+
+// // ============================
+// // WELCOME ANIMATION
+// // ============================
+// const WelcomeAnimation = ({ onAnimationEnd }) => {
+//   const controls = useAnimation();
+
+//   useEffect(() => {
+//     controls.start("visible");
+//     const timer = setTimeout(() => {
+//       controls.start("exit");
+//       setTimeout(onAnimationEnd, 1500);
+//     }, 4000);
+//     return () => clearTimeout(timer);
+//   }, [controls, onAnimationEnd]);
+
+//   const container = {
+//     hidden: { opacity: 0, scale: 0.95 },
+//     visible: {
+//       opacity: 1,
+//       scale: 1,
+//       transition: {
+//         when: "beforeChildren",
+//         staggerChildren: 0.12,
+//         delayChildren: 0.3,
+//       },
+//     },
+//     exit: {
+//       opacity: 0,
+//       scale: 1.2,
+//       transition: { duration: 1.2, ease: "easeInOut" },
+//     },
+//   };
+
+//   const letter = {
+//     hidden: { opacity: 0, y: 80, rotateX: -90, scale: 0.7 },
+//     visible: (i) => ({
+//       opacity: 1,
+//       y: 0,
+//       rotateX: 0,
+//       scale: 1,
+//       transition: {
+//         delay: i * 0.08,
+//         type: "spring",
+//         stiffness: 120,
+//         damping: 12,
+//       },
+//     }),
+//   };
+
+//   const tagline = {
+//     hidden: { opacity: 0, y: 30 },
+//     visible: {
+//       opacity: 1,
+//       y: 0,
+//       transition: { delay: 1.8, duration: 1, ease: "easeOut" },
+//     },
+//   };
+
+//   return (
+//     <motion.div
+//       className="fixed inset-0 flex flex-col items-center justify-center bg-[#0A0118] overflow-hidden z-[9999]"
+//       variants={container}
+//       initial="hidden"
+//       animate={controls}
+//       style={{ perspective: 1000 }}
+//     >
+//       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,0,150,0.1),_transparent_60%)]"></div>
+
+//       <motion.div
+//         className="absolute w-[800px] h-[800px] rounded-full bg-gradient-to-tr from-pink-500/20 to-purple-600/10 blur-3xl"
+//         initial={{ scale: 0, opacity: 0.5 }}
+//         animate={{
+//           scale: [0, 1.4, 1],
+//           opacity: [0.5, 0.2, 0.1],
+//         }}
+//         transition={{ duration: 3, ease: "easeOut" }}
+//       />
+
+//       <motion.div
+//         className="flex text-7xl md:text-9xl font-extrabold tracking-widest text-white"
+//         style={{ transformStyle: "preserve-3d" }}
+//       >
+//         {"Pyngl".split("").map((char, i) => (
+//           <motion.span
+//             key={i}
+//             custom={i}
+//             variants={letter}
+//             style={{
+//               textShadow: "0 0 25px rgba(255, 100, 200, 0.7)",
+//               display: "inline-block",
+//             }}
+//           >
+//             {char}
+//           </motion.span>
+//         ))}
+//       </motion.div>
+
+//       <motion.p
+//         className="mt-6 text-xl text-gray-300 font-light tracking-wider"
+//         variants={tagline}
+//       >
+//         Poll smarter. Engage smarter.
+//       </motion.p>
+//     </motion.div> 
+//   );
+// };
+
+// // ============================
+// // MAIN DESKTOP HOME PAGE
+// // ============================
+// const DesktopHomePage = () => {
+//   const notificationsPanelRef = useRef(null);
+//   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+//   const { notifications } = useNotificationStore();
+//   const unreadCount = notifications.filter((n) => !n.read).length;
+//   const [showWelcome, setShowWelcome] = useState(false);
+
+//   useEffect(() => {
+//     const hasSeenAnimation = sessionStorage.getItem("hasSeenWelcomeAnimation");
+//     if (!hasSeenAnimation) {
+//       setShowWelcome(true);
+//       sessionStorage.setItem("hasSeenWelcomeAnimation", "true");
+//     }
+//   }, []);
+
+//   const handleAnimationEnd = () => setShowWelcome(false);
+
+//   const NotificationsPanel = ({ onClose }) => {
+//     const { notifications, unreadCount, markAllAsRead } =
+//       useNotificationStore();
+//     return (
+//       <div className="absolute top-14 right-0 w-80 md:w-96 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-fade-in-down">
+//         <div className="p-4 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
+//           <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100">
+//             Notifications
+//           </h3>
+//           {unreadCount > 0 && (
+//             <button
+//               onClick={markAllAsRead}
+//               className="text-sm text-pink-500 font-semibold hover:text-pink-400 flex items-center gap-1"
+//             >
+//               <CheckCheck size={16} /> Mark all as read
+//             </button>
+//           )}
+//         </div>
+//         <div className="max-h-96 overflow-y-auto">
+//           {notifications.length > 0 ? (
+//             notifications.map((notif) => (
+//               <div
+//                 key={notif._id}
+//                 className={`p-4 border-b border-gray-100 dark:border-gray-700 flex items-start gap-3 ${
+//                   !notif.isRead ? "bg-pink-50 dark:bg-pink-900/20" : ""
+//                 }`}
+//               >
+//                 <div
+//                   className="w-2 h-2 rounded-full bg-pink-500 mt-2 flex-shrink-0"
+//                   style={{ opacity: !notif.isRead ? 1 : 0 }}
+//                 ></div>
+//                 <div>
+//                   <p className="text-gray-800 dark:text-gray-100">
+//                     {notif.message}
+//                   </p>
+//                   <span className="text-xs text-gray-400">
+//                     {new Date(notif.createdAt).toLocaleString()}
+//                   </span>
+//                 </div>
+//               </div>
+//             ))
+//           ) : (
+//             <p className="p-8 text-center text-gray-500 dark:text-gray-400">
+//               You have no notifications.
+//             </p>
+//           )}
+//         </div>
+//       </div>
+//     );
+//   };
+
+//   const PricingCard = ({
+//     tag,
+//     planName,
+//     price,
+//     features,
+//     popular = false,
+//   }) => (
+//     <div
+//       className={`border ${
+//         popular
+//           ? "border-pink-400 shadow-pink-200/50 transform scale-105"
+//           : "border-gray-200 dark:border-gray-700"
+//       } rounded-2xl p-8 flex flex-col shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 bg-white dark:bg-gray-800`}
+//     >
+//       <div
+//         className={`text-xs font-bold py-1 px-3 rounded-full self-start ${
+//           popular
+//             ? "bg-cyan-100 text-cyan-600 dark:bg-cyan-900 dark:text-cyan-200"
+//             : "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-200"
+//         }`}
+//       >
+//         {tag}
+//       </div>
+//       <h3 className="text-2xl font-bold mt-4 text-gray-900 dark:text-white">
+//         {planName}
+//       </h3>
+//       <p className="text-gray-600 dark:text-gray-300 my-4 text-4xl font-extrabold">
+//         {price}
+//       </p>
+//       <ul className="space-y-3 text-left mb-8 text-gray-600 dark:text-gray-300">
+//         {features.map((feature, i) => (
+//           <li key={i} className="flex items-start">
+//             <CheckCircle2
+//               size={18}
+//               className="text-green-500 mr-3 mt-1 flex-shrink-0"
+//             />
+//             <span>{feature}</span>
+//           </li>
+//         ))}
+//       </ul>
+//       <button
+//         className={`w-full py-3 mt-auto rounded-lg font-bold transition-transform duration-300 ${
+//           popular
+//             ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:scale-105"
+//             : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600"
+//         }`}
+//       >
+//         {popular ? "Upgrade to Plus" : "Current plan"}
+//       </button>
+//     </div>
+//   );
+
+//   const FeatureSection = ({ imageUrl, title, description, reverse = false }) => (
+//     <div
+//       className={`flex items-center gap-12 flex-col lg:flex-row ${
+//         reverse ? "lg:flex-row-reverse" : ""
+//       }`}
+//     >
+//       <div className="lg:w-1/2">
+//         <img
+//           src={imageUrl}
+//           alt={title}
+//           className="w-full rounded-2xl shadow-xl transition-transform duration-500 hover:scale-105"
+//         />
+//       </div>
+//       <div className="lg:w-1/2">
+//         <h2 className="text-3xl font-bold mb-4 leading-tight text-gray-900 dark:text-white">
+//           {title}
+//         </h2>
+//         <p className="text-lg text-gray-600 dark:text-gray-300">
+//           {description}
+//         </p>
+//       </div>
+//     </div>
+//   );
+
+//   const TestimonialCard = ({ avatar, name, title, quote }) => (
+//     <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-gray-700">
+//       <div className="flex items-center mb-4">
+//         <img src={avatar} alt={name} className="w-16 h-16 rounded-full mr-4" />
+//         <div>
+//           <h4 className="font-bold text-lg text-gray-900 dark:text-white">
+//             {name}
+//           </h4>
+//           <p className="text-sm text-gray-500 dark:text-gray-400">{title}</p>
+//         </div>
+//       </div>
+//       <div className="flex mb-4">
+//         {[...Array(5)].map((_, i) => (
+//           <Star key={i} className="text-yellow-400" fill="currentColor" />
+//         ))}
+//       </div>
+//       <p className="text-gray-600 dark:text-gray-300 italic">"{quote}"</p>
+//     </div>
+//   );
+
+//   return (
+//     <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 
+//                  w-full overflow-x-hidden antialiased 
+//                  transition-colors duration-300 
+//                  pt-[72px]">
+//       <AnimatePresence>
+//         {showWelcome && <WelcomeAnimation onAnimationEnd={handleAnimationEnd} />}
+//       </AnimatePresence>
+
+//       {/* HEADER */}
+//       {/* <header className="sticky top-0 z-50 flex justify-between items-center px-6 lg:px-24 py-3 border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-[#0A0118]/80 backdrop-blur-md">
+//         <Link to="/">
+//           <img src="/pynglLogoImage.png" alt="Pyngl Logo" className="h-8" />
+//         </Link>
+//         <nav className="hidden lg:flex items-center gap-8">
+//           <Link to="/" className="font-semibold text-pink-500">
+//             Home
+//           </Link>
+//           <Link
+//             to="/trending"
+//             className="font-semibold text-gray-600 dark:text-gray-300 hover:text-pink-500 transition-colors"
+//           >
+//             Trending
+//           </Link>
+//           <Link
+//             to="/analytics"
+//             className="font-semibold text-gray-600 dark:text-gray-300 hover:text-pink-500 transition-colors"
+//           >
+//             Analytics
+//           </Link>
+//           <Link
+//             to="/polls"
+//             className="font-semibold text-gray-600 dark:text-gray-300 hover:text-pink-500 transition-colors"
+//           >
+//             Polls Activity
+//           </Link>
+//         </nav>
+//         <div className="hidden lg:flex items-center gap-4">
+//           <Link
+//             to="/login"
+//             className="font-bold text-gray-800 dark:text-gray-100 hover:text-pink-500 transition-colors"
+//           >
+//             Log In
+//           </Link>
+//           <Link
+//             to="/signup"
+//             className="bg-gray-800 dark:bg-pink-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-gray-700 dark:hover:bg-pink-500 transition-all duration-300 hover:scale-105"
+//           >
+//             Sign Up
+//           </Link>
+//           <div ref={notificationsPanelRef} className="relative">
+//             <button
+//               onClick={() => setIsNotificationsOpen((p) => !p)}
+//               title="Notifications"
+//               className="relative p-1"
+//             >
+//               <Bell className="w-6 h-6 text-gray-700 dark:text-gray-200" />
+//               {unreadCount > 0 && (
+//                 <span className="absolute top-0 right-0 flex h-3 w-3">
+//                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+//                   <span className="relative inline-flex rounded-full h-3 w-3 bg-pink-500"></span>
+//                 </span>
+//               )}
+//             </button>
+//             {isNotificationsOpen && (
+//               <NotificationsPanel onClose={() => setIsNotificationsOpen(false)} />
+//             )}
+//           </div>
+//           <Link
+//             to="/profile"
+//             className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+//           >
+//             <User size={20} className="text-gray-600 dark:text-gray-300" />
+//           </Link>
+//         </div>
+//       </header> */}
+//       <DesktopNav />
+
+//       {/* HERO */}
+//       <section className="relative flex justify-between items-center px-6 lg:px-24 py-20 lg:py-32">
+//         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,77,166,0.1),_transparent_40%)]"></div>
+//         <div className="lg:w-1/2 z-10">
+//           <h1 className="text-5xl lg:text-6xl font-extrabold mb-4 leading-tight">
+//             Poll smarter <br /> Engage smarter
+//           </h1>
+//           <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
+//             Transform text or images into interactive polls your audience loves.
+//           </p>
+//           <div className="flex gap-4">
+//             <Link
+//               to="/create-text-poll"
+//               className="bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold px-7 py-3 rounded-full hover:scale-105 shadow-lg transition-all"
+//             >
+//               Text to poll
+//             </Link>
+//             <Link
+//               to="/create-image-poll"
+//               className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-100 px-7 py-3 rounded-full font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 hover:scale-105 transition-all"
+//             >
+//               Image to poll
+//             </Link>
+//           </div>
+//         </div>
+//         <div className="hidden lg:flex w-1/2 justify-center z-10">
+//           <img src="/homePageImage1.png" alt="Hero" className="max-w-xl" />
+//         </div>
+//       </section>
+
+//       {/* FEATURES */}
+//       <section className="px-6 lg:px-24 py-20 space-y-24 bg-slate-50 dark:bg-[#12092A]">
+//         <FeatureSection
+//           imageUrl="/homePageImage2.png"
+//           title="Engage your audience in seconds"
+//           description="With Pyngl polls, you can capture attention instantly — in stories, chats, or live streams."
+//         />
+//         <FeatureSection
+//           imageUrl="/homePageImage3.png"
+//           title="See results live, track insights"
+//           description="Real-time analytics with Pyngl help you measure engagement — so you know what works."
+//           reverse
+//         />
+//         <FeatureSection
+//           imageUrl="/homePageImage4.png"
+//           title="Embed anywhere, share everywhere"
+//           description="Share polls across WhatsApp, iMessage, RCS, or embed directly into your product."
+//         />
+//       </section>
+
+//       {/* DEMO */}
+//       <section className="text-center py-20 px-6 lg:px-24">
+//         <h2 className="text-4xl font-bold mb-8">Watch the Demo</h2>
+//         <div className="max-w-4xl mx-auto rounded-2xl shadow-2xl overflow-hidden group">
+//           <div className="relative">
+//             <img
+//               src="https://placehold.co/1200x675/1a0c3f/ffffff?text=Pyngl+Demo"
+//               alt="Pyngl Demo"
+//               className="w-full"
+//             />
+//             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+//               <PlayCircle
+//                 size={80}
+//                 className="text-white opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all"
+//               />
+//             </div>
+//           </div>
+//         </div>
+//       </section>
+
+//            {/* TESTIMONIALS */}
+//       {/* <section className="px-6 lg:px-24 py-20 bg-slate-50 dark:bg-[#12092A]">
+//         <h2 className="text-4xl font-bold text-center mb-16">Loved by Creators and Brands</h2>
+//         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
+//           <TestimonialCard
+//             avatar="/user1.png"
+//             name="Aarav Sharma"
+//             title="Social Media Manager, Zynlo"
+//             quote="Pyngl helped us create instant engagement with polls that looked beautiful and loaded instantly. Our audience loved it!"
+//           />
+//           <TestimonialCard
+//             avatar="/user2.png"
+//             name="Sarah Williams"
+//             title="Content Creator"
+//             quote="This tool is a game changer — I’ve doubled my engagement rate since using Pyngl polls on Instagram and WhatsApp stories."
+//           />
+//           <TestimonialCard
+//             avatar="/user3.png"
+//             name="Rohit Patel"
+//             title="Startup Founder"
+//             quote="Creating audience polls has never been this smooth. Pyngl’s analytics dashboard gives us powerful insights instantly."
+//           />
+//         </div>
+//       </section> */}
+
+//       {/* PRICING */}
+//       <section className="px-6 lg:px-24 py-24">
+//         <h2 className="text-4xl font-bold text-center mb-16">Choose Your Plan</h2>
+//         <div className="grid lg:grid-cols-3 gap-10 max-w-6xl mx-auto">
+//           <PricingCard
+//             tag="Free"
+//             planName="Starter"
+//             price="$0/month"
+//             features={[
+//               "Create unlimited text polls",
+//               "Share polls via link or QR code",
+//               "Access to basic analytics",
+//             ]}
+//           />
+//           <PricingCard
+//             tag="Recommended"
+//             planName="Plus"
+//             price="$9.99/month"
+//             popular
+//             features={[
+//               "Everything in Starter",
+//               "Image-to-poll AI generator",
+//               "Priority support",
+//               "Advanced analytics dashboard",
+//             ]}
+//           />
+//           <PricingCard
+//             tag="Pro"
+//             planName="Business"
+//             price="$29.99/month"
+//             features={[
+//               "Unlimited polls with AI",
+//               "API & Embedding tools",
+//               "Team collaboration access",
+//               "Enterprise-level analytics",
+//             ]}
+//           />
+//         </div>
+//       </section>
+
+//       {/* CALL TO ACTION */}
+//       <section className="relative text-center py-24 px-6 lg:px-24 bg-gradient-to-br from-pink-600 via-purple-600 to-blue-700 text-white overflow-hidden rounded-t-3xl shadow-2xl">
+//         <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,_rgba(255,255,255,0.15),_transparent_60%)]"></div>
+//         <h2 className="text-5xl font-extrabold mb-6">Ready to create your first poll?</h2>
+//         <p className="text-lg mb-10 text-gray-200">
+//           Start engaging your audience in seconds with Pyngl’s simple AI-powered tools.
+//         </p>
+//         <Link
+//           to="/create-text-poll"
+//           className="bg-white text-pink-600 font-bold px-8 py-4 rounded-full shadow-xl hover:scale-105 hover:bg-gray-100 transition-all"
+//         >
+//           Get Started for Free
+//         </Link>
+//       </section>
+
+//       {/* FOOTER */}
+//     <footer className="bg-[#252547] text-gray-400 py-14 px-6 lg:px-24 border-t border-gray-800">
+//   <div className="max-w-7xl mx-auto">
+//     <div className="grid md:grid-cols-4 gap-10 mb-10">
+//       {/* Logo and Short Info */}
+//       <div>
+//         <img
+//           src="/assets/logo_dark.png"
+//           alt="Pyngl"
+//           className="h-8 mb-4"
+//         />
+//         <p className="text-sm leading-relaxed text-gray-400">
+//           Pyngl helps you create interactive, AI-powered polls that engage your
+//           audience instantly across platforms.
+//         </p>
+//       </div>
+
+//       {/* Company Links */}
+//       <div>
+//         <h4 className="font-semibold text-white mb-3 tracking-wide">Company</h4>
+//         <ul className="space-y-2 text-sm">
+//           <li>
+//             <Link
+//               to="/dashboard"
+//               className="hover:text-pink-400 transition-colors duration-200"
+//             >
+//               Home
+//             </Link>
+//           </li>
+//           <li>
+//             <Link
+//               to="/trending"
+//               className="hover:text-pink-400 transition-colors duration-200"
+//             >
+//               Trending
+//             </Link>
+//           </li>
+//           <li>
+//             <Link
+//               to="/analytics"
+//               className="hover:text-pink-400 transition-colors duration-200"
+//             >
+//               Analytics
+//             </Link>
+//           </li>
+//           <li>
+//             <Link
+//               to="/profile"
+//               className="hover:text-pink-400 transition-colors duration-200"
+//             >
+//               Profile
+//             </Link>
+//           </li>
+//         </ul>
+//       </div>
+
+//       {/* Help Links */}
+//       <div>
+//         <h4 className="font-semibold text-white mb-3 tracking-wide">Help</h4>
+//         <ul className="space-y-2 text-sm">
+//           <li>
+//             <Link
+//               to="/help-center"
+//               className="hover:text-pink-400 transition-colors duration-200"
+//             >
+//               Customer Support
+//             </Link>
+//           </li>
+//           <li>
+//             <Link
+//               to="/terms-of-service"
+//               className="hover:text-pink-400 transition-colors duration-200"
+//             >
+//               Terms & Conditions
+//             </Link>
+//           </li>
+//           <li>
+//             <Link
+//               to="/privacy-policy"
+//               className="hover:text-pink-400 transition-colors duration-200"
+//             >
+//               Privacy Policy
+//             </Link>
+//           </li>
+//         </ul>
+//       </div>
+
+//       {/* Contact & Socials */}
+//       <div>
+//         <h4 className="font-semibold text-white mb-3 tracking-wide">
+//           Follow us
+//         </h4>
+//         <div className="flex items-center gap-4 mb-6">
+//           <a
+//             href="https://www.linkedin.com"
+//             target="_blank"
+//             rel="noopener noreferrer"
+//             className="hover:text-pink-400"
+//           >
+//             <Linkedin size={20} />
+//           </a>
+//           <a
+//             href="https://www.instagram.com"
+//             target="_blank"
+//             rel="noopener noreferrer"
+//             className="hover:text-pink-400"
+//           >
+//             <Instagram size={20} />
+//           </a>
+//           <a
+//             href="https://www.facebook.com"
+//             target="_blank"
+//             rel="noopener noreferrer"
+//             className="hover:text-pink-400"
+//           >
+//             <Facebook size={20} />
+//           </a>
+//         </div>
+
+//         <div className="space-y-3 text-sm">
+//           {/* <div>
+//             <p className="uppercase text-xs text-gray-500 mb-1">Call Us</p>
+//             <p className="font-semibold text-white text-base">
+//               (+91) 456-4933555
+//             </p>
+//           </div> */}
+//           <div>
+//             <p className="uppercase text-xs text-gray-500 mb-1">Email Us</p>
+//             <p className="font-semibold text-white text-base">
+//               tech@pyngl.com
+//             </p>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+
+//     {/* Divider */}
+//     <div className="border-t border-gray-800 pt-6 text-center text-sm text-gray-500">
+//       © {new Date().getFullYear()} Pyngl. All Rights Reserved
+//     </div>
+//   </div>
+// </footer>
+
+//     </div>
+//   );
+// };
+
+// export default DesktopHomePage;
+
+
+
+
+
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginSchema, registerSchema } from "../utils/validationSchemas";
+import useAuthStore from "../store/useAuthStore";
+import { FormInput } from "../components/common/FormInput";
 import {
-  Bell,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
   User,
-  Linkedin,
-  Instagram,
-  Facebook,
-  CheckCircle2,
-  PlayCircle,
-  Star,
-  CheckCheck,
+  Phone,
+  Calendar,
+  AlertTriangle,
 } from "lucide-react";
-import useNotificationStore from "../store/useNotificationStore";
-import { motion, AnimatePresence, useAnimation } from "framer-motion";
-import DesktopNav from "../components/layout/DesktopNav";
+import SignupFlow from "../pages/RegisterPage";
 
-// ============================
-// WELCOME ANIMATION
-// ============================
-const WelcomeAnimation = ({ onAnimationEnd }) => {
-  const controls = useAnimation();
+// This is a dedicated login form component for the desktop page
+const LoginForm = ({ onSwitchToRegister }) => {
+  const { login, loading, error, clearError } = useAuthStore();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({ resolver: zodResolver(loginSchema) });
 
-  useEffect(() => {
-    controls.start("visible");
-    const timer = setTimeout(() => {
-      controls.start("exit");
-      setTimeout(onAnimationEnd, 1500);
-    }, 4000);
-    return () => clearTimeout(timer);
-  }, [controls, onAnimationEnd]);
+  const [showPassword, setShowPassword] = React.useState(false);
 
-  const container = {
-    hidden: { opacity: 0, scale: 0.95 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: {
-        when: "beforeChildren",
-        staggerChildren: 0.12,
-        delayChildren: 0.3,
-      },
-    },
-    exit: {
-      opacity: 0,
-      scale: 1.2,
-      transition: { duration: 1.2, ease: "easeInOut" },
-    },
+  const onSubmit = async (data) => {
+    await login(data.email, data.password).catch(() => {});
   };
 
-  const letter = {
-    hidden: { opacity: 0, y: 80, rotateX: -90, scale: 0.7 },
-    visible: (i) => ({
-      opacity: 1,
-      y: 0,
-      rotateX: 0,
-      scale: 1,
-      transition: {
-        delay: i * 0.08,
-        type: "spring",
-        stiffness: 120,
-        damping: 12,
-      },
-    }),
-  };
-
-  const tagline = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { delay: 1.8, duration: 1, ease: "easeOut" },
-    },
+  const handleSwitch = () => {
+    clearError();
+    onSwitchToRegister();
   };
 
   return (
-    <motion.div
-      className="fixed inset-0 flex flex-col items-center justify-center bg-[#0A0118] overflow-hidden z-[9999]"
-      variants={container}
-      initial="hidden"
-      animate={controls}
-      style={{ perspective: 1000 }}
-    >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,0,150,0.1),_transparent_60%)]"></div>
+    <div className="w-full">
+      {/* Title */}
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-[#F1F1F1]">LOGIN</h1>
+        <p className="text-gray-500 dark:text-[#cbd5e1] mt-1">Please enter your credentials.</p>
+      </div>
 
-      <motion.div
-        className="absolute w-[800px] h-[800px] rounded-full bg-gradient-to-tr from-pink-500/20 to-purple-600/10 blur-3xl"
-        initial={{ scale: 0, opacity: 0.5 }}
-        animate={{
-          scale: [0, 1.4, 1],
-          opacity: [0.5, 0.2, 0.1],
-        }}
-        transition={{ duration: 3, ease: "easeOut" }}
-      />
+      {/* Error Box */}
+      {error && (
+        <div className="flex items-center gap-x-3 p-3 mb-4 text-sm font-semibold text-red-800 bg-red-100 dark:bg-[rgba(255,0,0,0.06)] dark:text-[#ffb3c0] border border-transparent dark:border-[rgba(255,0,0,0.1)] rounded-lg transition-colors">
+          <AlertTriangle className="h-5 w-5" />
+          <span>{error}</span>
+        </div>
+      )}
 
-      <motion.div
-        className="flex text-7xl md:text-9xl font-extrabold tracking-widest text-white"
-        style={{ transformStyle: "preserve-3d" }}
-      >
-        {"Pyngl".split("").map((char, i) => (
-          <motion.span
-            key={i}
-            custom={i}
-            variants={letter}
-            style={{
-              textShadow: "0 0 25px rgba(255, 100, 200, 0.7)",
-              display: "inline-block",
-            }}
-          >
-            {char}
-          </motion.span>
-        ))}
-      </motion.div>
-
-      <motion.p
-        className="mt-6 text-xl text-gray-300 font-light tracking-wider"
-        variants={tagline}
-      >
-        Poll smarter. Engage smarter.
-      </motion.p>
-    </motion.div> 
-  );
-};
-
-// ============================
-// MAIN DESKTOP HOME PAGE
-// ============================
-const DesktopHomePage = () => {
-  const notificationsPanelRef = useRef(null);
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const { notifications } = useNotificationStore();
-  const unreadCount = notifications.filter((n) => !n.read).length;
-  const [showWelcome, setShowWelcome] = useState(false);
-
-  useEffect(() => {
-    const hasSeenAnimation = sessionStorage.getItem("hasSeenWelcomeAnimation");
-    if (!hasSeenAnimation) {
-      setShowWelcome(true);
-      sessionStorage.setItem("hasSeenWelcomeAnimation", "true");
-    }
-  }, []);
-
-  const handleAnimationEnd = () => setShowWelcome(false);
-
-  const NotificationsPanel = ({ onClose }) => {
-    const { notifications, unreadCount, markAllAsRead } =
-      useNotificationStore();
-    return (
-      <div className="absolute top-14 right-0 w-80 md:w-96 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-fade-in-down">
-        <div className="p-4 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
-          <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100">
-            Notifications
-          </h3>
-          {unreadCount > 0 && (
-            <button
-              onClick={markAllAsRead}
-              className="text-sm text-pink-500 font-semibold hover:text-pink-400 flex items-center gap-1"
-            >
-              <CheckCheck size={16} /> Mark all as read
-            </button>
+      {/* FORM */}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* Email Field */}
+        <div className="relative">
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-[#9aa4b2]" />
+          <input
+            type="text"
+            placeholder="Email"
+            {...register("email")}
+            disabled={loading}
+            className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pyngl-pink dark:bg-[#1B1F33] text-gray-900 dark:text-[#F1F1F1] placeholder-gray-400 dark:placeholder-[#7b8393] transition-colors duration-150 ${
+              errors.email ? "border-red-500 dark:border-red-400" : "border-gray-300 dark:border-[#2D3148]"
+            }`}
+          />
+          {errors.email && (
+            <p className="text-red-500 dark:text-[#ffb3c0] text-xs mt-1">{errors.email.message}</p>
           )}
         </div>
-        <div className="max-h-96 overflow-y-auto">
-          {notifications.length > 0 ? (
-            notifications.map((notif) => (
-              <div
-                key={notif._id}
-                className={`p-4 border-b border-gray-100 dark:border-gray-700 flex items-start gap-3 ${
-                  !notif.isRead ? "bg-pink-50 dark:bg-pink-900/20" : ""
-                }`}
-              >
-                <div
-                  className="w-2 h-2 rounded-full bg-pink-500 mt-2 flex-shrink-0"
-                  style={{ opacity: !notif.isRead ? 1 : 0 }}
-                ></div>
-                <div>
-                  <p className="text-gray-800 dark:text-gray-100">
-                    {notif.message}
-                  </p>
-                  <span className="text-xs text-gray-400">
-                    {new Date(notif.createdAt).toLocaleString()}
-                  </span>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="p-8 text-center text-gray-500 dark:text-gray-400">
-              You have no notifications.
+
+        {/* Password Field */}
+        <div className="relative">
+          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-[#9aa4b2]" />
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            disabled={loading}
+            {...register("password")}
+            className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pyngl-pink bg-white dark:bg-[#1B1F33] text-gray-900 dark:text-[#F1F1F1] placeholder-gray-400 dark:placeholder-[#7b8393] transition-colors duration-150 ${
+              errors.password   ? "border-red-500 dark:border-red-400"
+                : "border-gray-300 dark:border-[#2D3148]"
+            }`}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#9aa4b2] hover:text-gray-600 dark:hover:text-gray-300 p-1"
+          >
+            {showPassword ? (
+              <EyeOff className="h-5 w-5" />
+            ) : (
+              <Eye className="h-5 w-5" />
+            )}
+          </button>
+
+          {errors.password && (
+            <p className="text-red-500 dark:text-[#ffb3c0] text-xs mt-1">
+              {errors.password.message}
             </p>
           )}
         </div>
-      </div>
-    );
-  };
 
-  const PricingCard = ({
-    tag,
-    planName,
-    price,
-    features,
-    popular = false,
-  }) => (
-    <div
-      className={`border ${
-        popular
-          ? "border-pink-400 shadow-pink-200/50 transform scale-105"
-          : "border-gray-200 dark:border-gray-700"
-      } rounded-2xl p-8 flex flex-col shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 bg-white dark:bg-gray-800`}
-    >
-      <div
-        className={`text-xs font-bold py-1 px-3 rounded-full self-start ${
-          popular
-            ? "bg-cyan-100 text-cyan-600 dark:bg-cyan-900 dark:text-cyan-200"
-            : "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-200"
-        }`}
-      >
-        {tag}
-      </div>
-      <h3 className="text-2xl font-bold mt-4 text-gray-900 dark:text-white">
-        {planName}
-      </h3>
-      <p className="text-gray-600 dark:text-gray-300 my-4 text-4xl font-extrabold">
-        {price}
-      </p>
-      <ul className="space-y-3 text-left mb-8 text-gray-600 dark:text-gray-300">
-        {features.map((feature, i) => (
-          <li key={i} className="flex items-start">
-            <CheckCircle2
-              size={18}
-              className="text-green-500 mr-3 mt-1 flex-shrink-0"
-            />
-            <span>{feature}</span>
-          </li>
-        ))}
-      </ul>
-      <button
-        className={`w-full py-3 mt-auto rounded-lg font-bold transition-transform duration-300 ${
-          popular
-            ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:scale-105"
-            : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600"
-        }`}
-      >
-        {popular ? "Upgrade to Plus" : "Current plan"}
-      </button>
-    </div>
-  );
-
-  const FeatureSection = ({ imageUrl, title, description, reverse = false }) => (
-    <div
-      className={`flex items-center gap-12 flex-col lg:flex-row ${
-        reverse ? "lg:flex-row-reverse" : ""
-      }`}
-    >
-      <div className="lg:w-1/2">
-        <img
-          src={imageUrl}
-          alt={title}
-          className="w-full rounded-2xl shadow-xl transition-transform duration-500 hover:scale-105"
-        />
-      </div>
-      <div className="lg:w-1/2">
-        <h2 className="text-3xl font-bold mb-4 leading-tight text-gray-900 dark:text-white">
-          {title}
-        </h2>
-        <p className="text-lg text-gray-600 dark:text-gray-300">
-          {description}
-        </p>
-      </div>
-    </div>
-  );
-
-  const TestimonialCard = ({ avatar, name, title, quote }) => (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-gray-700">
-      <div className="flex items-center mb-4">
-        <img src={avatar} alt={name} className="w-16 h-16 rounded-full mr-4" />
-        <div>
-          <h4 className="font-bold text-lg text-gray-900 dark:text-white">
-            {name}
-          </h4>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{title}</p>
-        </div>
-      </div>
-      <div className="flex mb-4">
-        {[...Array(5)].map((_, i) => (
-          <Star key={i} className="text-yellow-400" fill="currentColor" />
-        ))}
-      </div>
-      <p className="text-gray-600 dark:text-gray-300 italic">"{quote}"</p>
-    </div>
-  );
-
-  return (
-    <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 
-                 w-full overflow-x-hidden antialiased 
-                 transition-colors duration-300 
-                 pt-[72px]">
-      <AnimatePresence>
-        {showWelcome && <WelcomeAnimation onAnimationEnd={handleAnimationEnd} />}
-      </AnimatePresence>
-
-      {/* HEADER */}
-      {/* <header className="sticky top-0 z-50 flex justify-between items-center px-6 lg:px-24 py-3 border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-[#0A0118]/80 backdrop-blur-md">
-        <Link to="/">
-          <img src="/pynglLogoImage.png" alt="Pyngl Logo" className="h-8" />
-        </Link>
-        <nav className="hidden lg:flex items-center gap-8">
-          <Link to="/" className="font-semibold text-pink-500">
-            Home
-          </Link>
-          <Link
-            to="/trending"
-            className="font-semibold text-gray-600 dark:text-gray-300 hover:text-pink-500 transition-colors"
+        {/* Forgot / Switch */}
+        <div className="flex justify-between text-sm mt-2">
+          <a
+            href="/forgot-password"
+            className="font-medium text-gray-600 dark:text-[#cbd5e1] hover:text-gray-900 dark:hover:text-white transition-colors"
           >
-            Trending
-          </Link>
-          <Link
-            to="/analytics"
-            className="font-semibold text-gray-600 dark:text-gray-300 hover:text-pink-500 transition-colors"
-          >
-            Analytics
-          </Link>
-          <Link
-            to="/polls"
-            className="font-semibold text-gray-600 dark:text-gray-300 hover:text-pink-500 transition-colors"
-          >
-            Polls Activity
-          </Link>
-        </nav>
-        <div className="hidden lg:flex items-center gap-4">
-          <Link
-            to="/login"
-            className="font-bold text-gray-800 dark:text-gray-100 hover:text-pink-500 transition-colors"
-          >
-            Log In
-          </Link>
-          <Link
-            to="/signup"
-            className="bg-gray-800 dark:bg-pink-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-gray-700 dark:hover:bg-pink-500 transition-all duration-300 hover:scale-105"
+            Forgot password?
+          </a>
+          <button
+            type="button"
+            onClick={handleSwitch}
+            className="font-medium text-blue-600 dark:text-[#5467FE] hover:text-blue-700 dark:hover:text-[#7b8aff] transition-colors"
           >
             Sign Up
-          </Link>
-          <div ref={notificationsPanelRef} className="relative">
-            <button
-              onClick={() => setIsNotificationsOpen((p) => !p)}
-              title="Notifications"
-              className="relative p-1"
-            >
-              <Bell className="w-6 h-6 text-gray-700 dark:text-gray-200" />
-              {unreadCount > 0 && (
-                <span className="absolute top-0 right-0 flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-pink-500"></span>
-                </span>
-              )}
-            </button>
-            {isNotificationsOpen && (
-              <NotificationsPanel onClose={() => setIsNotificationsOpen(false)} />
-            )}
-          </div>
-          <Link
-            to="/profile"
-            className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            <User size={20} className="text-gray-600 dark:text-gray-300" />
-          </Link>
+          </button>
         </div>
-      </header> */}
-      <DesktopNav />
 
-      {/* HERO */}
-      <section className="relative flex justify-between items-center px-6 lg:px-24 py-20 lg:py-32">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,77,166,0.1),_transparent_40%)]"></div>
-        <div className="lg:w-1/2 z-10">
-          <h1 className="text-5xl lg:text-6xl font-extrabold mb-4 leading-tight">
-            Poll smarter <br /> Engage smarter
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
-            Transform text or images into interactive polls your audience loves.
-          </p>
-          <div className="flex gap-4">
-            <Link
-              to="/create-text-poll"
-              className="bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold px-7 py-3 rounded-full hover:scale-105 shadow-lg transition-all"
-            >
-              Text to poll
-            </Link>
-            <Link
-              to="/create-image-poll"
-              className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-100 px-7 py-3 rounded-full font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 hover:scale-105 transition-all"
-            >
-              Image to poll
-            </Link>
-          </div>
-        </div>
-        <div className="hidden lg:flex w-1/2 justify-center z-10">
-          <img src="/homePageImage1.png" alt="Hero" className="max-w-xl" />
-        </div>
-      </section>
-
-      {/* FEATURES */}
-      <section className="px-6 lg:px-24 py-20 space-y-24 bg-slate-50 dark:bg-[#12092A]">
-        <FeatureSection
-          imageUrl="/homePageImage2.png"
-          title="Engage your audience in seconds"
-          description="With Pyngl polls, you can capture attention instantly — in stories, chats, or live streams."
-        />
-        <FeatureSection
-          imageUrl="/homePageImage3.png"
-          title="See results live, track insights"
-          description="Real-time analytics with Pyngl help you measure engagement — so you know what works."
-          reverse
-        />
-        <FeatureSection
-          imageUrl="/homePageImage4.png"
-          title="Embed anywhere, share everywhere"
-          description="Share polls across WhatsApp, iMessage, RCS, or embed directly into your product."
-        />
-      </section>
-
-      {/* DEMO */}
-      <section className="text-center py-20 px-6 lg:px-24">
-        <h2 className="text-4xl font-bold mb-8">Watch the Demo</h2>
-        <div className="max-w-4xl mx-auto rounded-2xl shadow-2xl overflow-hidden group">
-          <div className="relative">
-            <img
-              src="https://placehold.co/1200x675/1a0c3f/ffffff?text=Pyngl+Demo"
-              alt="Pyngl Demo"
-              className="w-full"
-            />
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-              <PlayCircle
-                size={80}
-                className="text-white opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-           {/* TESTIMONIALS */}
-      {/* <section className="px-6 lg:px-24 py-20 bg-slate-50 dark:bg-[#12092A]">
-        <h2 className="text-4xl font-bold text-center mb-16">Loved by Creators and Brands</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
-          <TestimonialCard
-            avatar="/user1.png"
-            name="Aarav Sharma"
-            title="Social Media Manager, Zynlo"
-            quote="Pyngl helped us create instant engagement with polls that looked beautiful and loaded instantly. Our audience loved it!"
-          />
-          <TestimonialCard
-            avatar="/user2.png"
-            name="Sarah Williams"
-            title="Content Creator"
-            quote="This tool is a game changer — I’ve doubled my engagement rate since using Pyngl polls on Instagram and WhatsApp stories."
-          />
-          <TestimonialCard
-            avatar="/user3.png"
-            name="Rohit Patel"
-            title="Startup Founder"
-            quote="Creating audience polls has never been this smooth. Pyngl’s analytics dashboard gives us powerful insights instantly."
-          />
-        </div>
-      </section> */}
-
-      {/* PRICING */}
-      <section className="px-6 lg:px-24 py-24">
-        <h2 className="text-4xl font-bold text-center mb-16">Choose Your Plan</h2>
-        <div className="grid lg:grid-cols-3 gap-10 max-w-6xl mx-auto">
-          <PricingCard
-            tag="Free"
-            planName="Starter"
-            price="$0/month"
-            features={[
-              "Create unlimited text polls",
-              "Share polls via link or QR code",
-              "Access to basic analytics",
-            ]}
-          />
-          <PricingCard
-            tag="Recommended"
-            planName="Plus"
-            price="$9.99/month"
-            popular
-            features={[
-              "Everything in Starter",
-              "Image-to-poll AI generator",
-              "Priority support",
-              "Advanced analytics dashboard",
-            ]}
-          />
-          <PricingCard
-            tag="Pro"
-            planName="Business"
-            price="$29.99/month"
-            features={[
-              "Unlimited polls with AI",
-              "API & Embedding tools",
-              "Team collaboration access",
-              "Enterprise-level analytics",
-            ]}
-          />
-        </div>
-      </section>
-
-      {/* CALL TO ACTION */}
-      <section className="relative text-center py-24 px-6 lg:px-24 bg-gradient-to-br from-pink-600 via-purple-600 to-blue-700 text-white overflow-hidden rounded-t-3xl shadow-2xl">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,_rgba(255,255,255,0.15),_transparent_60%)]"></div>
-        <h2 className="text-5xl font-extrabold mb-6">Ready to create your first poll?</h2>
-        <p className="text-lg mb-10 text-gray-200">
-          Start engaging your audience in seconds with Pyngl’s simple AI-powered tools.
-        </p>
-        <Link
-          to="/create-text-poll"
-          className="bg-white text-pink-600 font-bold px-8 py-4 rounded-full shadow-xl hover:scale-105 hover:bg-gray-100 transition-all"
+        {/* Login Button */}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full mt-4 py-3.5 px-4 bg-pyngl-pink hover:bg-pyngl-pink-dark text-white font-semibold rounded-full shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all"
         >
-          Get Started for Free
-        </Link>
-      </section>
+          {loading ? "Logging in..." : "Login"}
+        </button>
 
-      {/* FOOTER */}
-    <footer className="bg-[#252547] text-gray-400 py-14 px-6 lg:px-24 border-t border-gray-800">
-  <div className="max-w-7xl mx-auto">
-    <div className="grid md:grid-cols-4 gap-10 mb-10">
-      {/* Logo and Short Info */}
-      <div>
-        <img
-          src="/assets/logo_dark.png"
-          alt="Pyngl"
-          className="h-8 mb-4"
-        />
-        <p className="text-sm leading-relaxed text-gray-400">
-          Pyngl helps you create interactive, AI-powered polls that engage your
-          audience instantly across platforms.
-        </p>
-      </div>
-
-      {/* Company Links */}
-      <div>
-        <h4 className="font-semibold text-white mb-3 tracking-wide">Company</h4>
-        <ul className="space-y-2 text-sm">
-          <li>
-            <Link
-              to="/dashboard"
-              className="hover:text-pink-400 transition-colors duration-200"
-            >
-              Home
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/trending"
-              className="hover:text-pink-400 transition-colors duration-200"
-            >
-              Trending
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/analytics"
-              className="hover:text-pink-400 transition-colors duration-200"
-            >
-              Analytics
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/profile"
-              className="hover:text-pink-400 transition-colors duration-200"
-            >
-              Profile
-            </Link>
-          </li>
-        </ul>
-      </div>
-
-      {/* Help Links */}
-      <div>
-        <h4 className="font-semibold text-white mb-3 tracking-wide">Help</h4>
-        <ul className="space-y-2 text-sm">
-          <li>
-            <Link
-              to="/help-center"
-              className="hover:text-pink-400 transition-colors duration-200"
-            >
-              Customer Support
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/terms-of-service"
-              className="hover:text-pink-400 transition-colors duration-200"
-            >
-              Terms & Conditions
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/privacy-policy"
-              className="hover:text-pink-400 transition-colors duration-200"
-            >
-              Privacy Policy
-            </Link>
-          </li>
-        </ul>
-      </div>
-
-      {/* Contact & Socials */}
-      <div>
-        <h4 className="font-semibold text-white mb-3 tracking-wide">
-          Follow us
-        </h4>
-        <div className="flex items-center gap-4 mb-6">
-          <a
-            href="https://www.linkedin.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-pink-400"
-          >
-            <Linkedin size={20} />
-          </a>
-          <a
-            href="https://www.instagram.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-pink-400"
-          >
-            <Instagram size={20} />
-          </a>
-          <a
-            href="https://www.facebook.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-pink-400"
-          >
-            <Facebook size={20} />
-          </a>
-        </div>
-
-        <div className="space-y-3 text-sm">
-          {/* <div>
-            <p className="uppercase text-xs text-gray-500 mb-1">Call Us</p>
-            <p className="font-semibold text-white text-base">
-              (+91) 456-4933555
-            </p>
-          </div> */}
-          <div>
-            <p className="uppercase text-xs text-gray-500 mb-1">Email Us</p>
-            <p className="font-semibold text-white text-base">
-              tech@pyngl.com
-            </p>
+        {/* Divider */}
+        <div className="relative py-4">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300 dark:border-[#2D3148]"></div>
+          </div>
+          <div className="relative flex justify-center">
+            <span className="bg-white dark:bg-[#131526] px-4 text-sm text-[#5467FE] transition-colors duration-200">OR</span>
           </div>
         </div>
-      </div>
-    </div>
 
-    {/* Divider */}
-    <div className="border-t border-gray-800 pt-6 text-center text-sm text-gray-500">
-      © {new Date().getFullYear()} Pyngl. All Rights Reserved
-    </div>
-  </div>
-</footer>
+        {/* Social Login */}
+        <p className="text-center text-sm text-gray-500 dark:text-[#cbd5e1] mb-4">Continue with</p>
+        <div className="flex justify-center gap-6 mt-6">
+          {/* Google */}
+          <button
+            type="button"
+            className="border border-gray-300 dark:border-[#2D3148] rounded-3xl hover:bg-gray-50 dark:hover:bg-[rgba(255,255,255,0.02)] transition"
+          >
+            <img
+              src="/icons/google-icon.svg"
+              alt="Google Login"
+              className="h-16 w-16"
+            />
+          </button>
 
+          {/* Apple */}
+          <button
+            type="button"
+            className="border border-gray-300 dark:border-[#2D3148] rounded-2xl hover:bg-gray-50 dark:hover:bg-[rgba(255,255,255,0.02)] transition bg-black"
+          >
+            <img
+              src="/icons/apple-icon.svg"
+              alt="Apple Login"
+              className="h-16 w-16"
+            />
+          </button>
+        </div>
+      </form>
     </div>
   );
 };
 
-export default DesktopHomePage;
 
+// The main desktop component with the two-column layout
+const DesktopAuthPage = () => {
+  const [activeForm, setActiveForm] = useState("login"); // can be 'login' or 'register'
+//    const location = useLocation();
+  const navigate = useNavigate();
+  const switchToRegister = () => navigate("/signup", { replace: true });
 
+  return (
+    <div className="w-full min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white dark:bg-[#131526]">
+      {/* Left Side: Image / Branding */}
+      <div className="hidden lg:flex flex-col items-center justify-center bg-gray-50dark:bg-[#131526] p-12 transition-colors duration-200">
+        <img
+          src="/assets/pynglLogoImage.png"
+          alt="Pyngl Logo"
+          className="h-12 mb-8"
+        />
+        <img
+          src="/homePageImage1.png"
+          alt="Poll smarter"
+          className="max-w-md"
+        />
+        <h2 className="text-3xl font-bold mt-8">
+          Poll smarter, Engage smarter.
+        </h2>
+        <p className="text-gray-500 mt-2">
+          The best way to interact with your audience.
+        </p>
+      </div>
 
+      {/* Right Side: Form */}
+      <div className="flex items-center justify-center p-8 lg:p-12 bg-white dark:bg-[#131526] transition-colors duration-200">
+        <div className="max-w-md w-full">
+          {activeForm === "login" ? (
+            <LoginForm onSwitchToRegister={switchToRegister} />
+          ) : (
+            <SignupFlow />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DesktopAuthPage;

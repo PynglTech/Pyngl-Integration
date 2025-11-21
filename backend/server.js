@@ -163,7 +163,7 @@ const allowedOrigins = [
   "https://www.pyngl.com",
   "https://pyngl.com",
   "http://localhost:5173",
-  "http://192.168.1.9:5173",
+  "http://192.168.1.5:5173",
 ];
 
 // --- CORS Middleware ---
