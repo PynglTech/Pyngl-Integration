@@ -27,7 +27,7 @@ import { upload } from '../config/cloudinary.js';
 import User from "../models/User.js";
 
 const router = express.Router();
-const FRONTEND_URL = process.env.FRONTEND_URL ||'http://localhost:5173' ||'http://192.168.1.5:5173';
+const FRONTEND_URL = process.env.FRONTEND_URL ||'http://localhost:5173' ||'http://192.168.1.8:5173';
 // router.get("/debug-contacts/:email", async (req, res) => {
 //   try {
 //     const user = await User.findOne({ email: req.params.email });

@@ -423,7 +423,7 @@ const getContacts = async (req, res) => {
   { new: true }
 );
 
-    res.json({ contacts });
+    // res.json({ contacts });
 
   } catch (err) {
     console.error("Error fetching contacts:", err);
