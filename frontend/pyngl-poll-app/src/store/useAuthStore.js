@@ -468,7 +468,8 @@ const useAuthStore = create((set, get) => ({
     throw new Error(message);
   }
 },
-  //Register
+
+  // ✅ Register
   register: async (userData) => {
     const { loading } = get();
     if (loading) return;
