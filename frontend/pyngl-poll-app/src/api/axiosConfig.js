@@ -62,22 +62,33 @@ import useAuthStore from '../store/useAuthStore';
 // Determine correct BASE URL
 const baseURL =
   import.meta.env.MODE === "development"
-    ? ["http://192.168.1.5:5000", 'http://localhost:5000'] // or localhost
+    ? ["http://192.168.1.8:5000", 'http://localhost:5000'] // or localhost
     : import.meta.env.VITE_API_URL;
 
 // Create API client
 const apiClient = axios.create({
-  baseURL,
-  withCredentials: true,
+  baseURL: "http://192.168.1.8:5000",   // or your backend URL
+  withCredentials: true
 });
 
 // Global 401 handler
+// apiClient.interceptors.response.use(
+//   (res) => res,
+//   (err) => {
+//     if (err.response?.status === 401) {
+//       useAuthStore.getState().logout();
+//       window.location.href = "/";
+//     }
+//     return Promise.reject(err);
+//   }
+// );
+
 apiClient.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
+      // DO NOT REDIRECT ON LOGIN FAILURE
       useAuthStore.getState().logout();
-      window.location.href = "/";
     }
     return Promise.reject(err);
   }

@@ -428,7 +428,7 @@
 
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import axios from "axios"; // ✅ Switched to direct axios import for stability
+import apiClient from "../../api/axiosConfig";
 
 const UsernameForm = ({ onSuccess, onBack }) => {
   const [loading, setLoading] = useState(false);
@@ -464,7 +464,7 @@ const UsernameForm = ({ onSuccess, onBack }) => {
     const timer = setTimeout(async () => {
       try {
         // ✅ Using full path '/api/users/check-username' to match backend routes
-        const { data } = await axios.post('/api/users/check-username', { 
+        const { data } = await apiClient.post('/api/users/check-username', { 
             username: usernameTrimmed 
         });
 

@@ -135,25 +135,105 @@ export const registerUser = asyncHandler(async (req, res) => {
 //         throw new Error('Invalid email or password');
 //     }
 // });
-export const loginUser = asyncHandler(async (req, res) => {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
+// export const loginUser = asyncHandler(async (req, res) => {
+//     const { email, password } = req.body;
+//    const user = await User.findOne({
+//   $or: [
+//     { email: identifier.toLowerCase() },
+//     { username: identifier.toLowerCase() }
+//   ]
+// });
 
-    if (user && (await user.matchPassword(password))) {
-        generateToken(res, user._id);
+
+//     if (user && (await user.matchPassword(password))) {
+//         generateToken(res, user._id);
         
-        await user.recordLogin();
+//         await user.recordLogin();
 
-        // Frontend 'login' store expects 'response.data.user'
-        // So we MUST wrap this in { user: ... }
-        res.status(200).json({ 
-            user: formatUserResponse(user) 
-        });
-    } else {
-        res.status(401);
-        throw new Error('Invalid email or password');
+//         // Frontend 'login' store expects 'response.data.user'
+//         // So we MUST wrap this in { user: ... }
+//         res.status(200).json({ 
+//             user: formatUserResponse(user) 
+//         });
+//     } else {
+//         res.status(401);
+//         throw new Error('Invalid email or password');
+//     }
+// });
+// export const loginUser = asyncHandler(async (req, res) => {
+//     const { identifier, password } = req.body;
+
+//     if (!identifier) {
+//         res.status(400);
+//         throw new Error("Identifier is required");
+//     }
+
+//     const normalized = identifier.toLowerCase();
+
+//     const user = await User.findOne({
+//         $or: [
+//             { email: normalized },
+//             { username: normalized }
+//         ]
+//     });
+
+//     if (user && (await user.matchPassword(password))) {
+//         generateToken(res, user._id);
+        
+//         await user.recordLogin();
+
+//         return res.status(200).json({
+//             user: formatUserResponse(user)
+//         });
+//     }
+
+//     res.status(401);
+//     throw new Error("Invalid email or password");
+// });
+export const loginUser = asyncHandler(async (req, res) => {
+    console.log("🟦 Login Request Body:", req.body);
+
+    const { identifier, password } = req.body;
+
+    console.log("🟩 Raw Identifier:", identifier);
+    console.log("🟩 Raw Password:", password);
+
+    const normalized = identifier?.toString().trim().toLowerCase();
+    console.log("🟧 Normalized:", normalized);
+
+    const user = await User.findOne({
+        $or: [
+            { email: normalized },
+            { username: normalized }
+        ]
+    });
+
+    console.log("🟥 DB User Found:", user);
+
+    if (user) {
+        const passMatch = await user.matchPassword(password);
+        console.log("🟪 Password match:", passMatch);
     }
+
+    if (!user) {
+        res.status(401);
+        throw new Error("Invalid email or password (User not found)");
+    }
+
+    if (!(await user.matchPassword(password))) {
+        res.status(401);
+        throw new Error("Invalid email or password (Wrong password)");
+    }
+
+    generateToken(res, user._id);
+    await user.recordLogin();
+
+    res.status(200).json({
+        user: formatUserResponse(user)
+    });
 });
+
+
 
 // @desc    Logout user / clear cookie
 // @route   POST /api/users/logout

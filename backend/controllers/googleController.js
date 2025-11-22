@@ -232,7 +232,59 @@ const login = (req, res) => {
   res.redirect(url);
 };
 
-// --- Step 2: Callback ---
+// --1- Step 2: Callback ---working code completly
+// const oauth2callback = async (req, res) => {
+//   try {
+//     const { code, state } = req.query;
+//     const pollId = state;
+
+//     const { tokens } = await oAuth2Client.getToken(code);
+//     oAuth2Client.setCredentials(tokens);
+
+//     const oauth2 = google.oauth2({ version: "v2", auth: oAuth2Client });
+//     const { data } = await oauth2.userinfo.get();
+
+//     let user = await GoogleUser.findOne({ email: data.email });
+
+//     if (!user) {
+//       user = new GoogleUser({
+//         email: data.email,
+//         googleId: data.id,
+//         access_token: tokens.access_token,
+//         refresh_token: tokens.refresh_token,
+//         expiry_date: tokens.expiry_date,
+//       });
+//     } else {
+//       // Update tokens if user already exists
+//       user.access_token = tokens.access_token;
+//       if (tokens.refresh_token) user.refresh_token = tokens.refresh_token;
+//       user.expiry_date = tokens.expiry_date;
+//     }
+
+//     await user.save();
+
+//     // ✅ FIXED: Determine Redirect Destination
+//     // Use environment variable for frontend URL or fallback to localhost
+//     const CLIENT_URL = process.env.CLIENT_URL || "http://192.168.1.8:5173";
+
+//     if (pollId && pollId !== "undefined" && pollId !== "null") {
+//       // Flow A: Poll Sharing (Redirect to Share Page)
+//       res.redirect(
+//         `${CLIENT_URL}/share?connectedEmail=${encodeURIComponent(data.email)}&pollId=${pollId}`
+//       );
+//     } else {
+//       // Flow B: Signup/Login (Redirect to Username Step)
+//       // We pass the email so the frontend can hydrate the state
+//       res.redirect(
+//         `${CLIENT_URL}/signup/username?email=${encodeURIComponent(data.email)}&authType=google`
+//       );
+//     }
+
+//   } catch (err) {
+//     console.error("OAuth error:", err);
+//     res.status(500).send("Authentication failed");
+//   }
+// };
 const oauth2callback = async (req, res) => {
   try {
     const { code, state } = req.query;
@@ -245,6 +297,8 @@ const oauth2callback = async (req, res) => {
     const { data } = await oauth2.userinfo.get();
 
     let user = await GoogleUser.findOne({ email: data.email });
+
+    const isExistingUser = Boolean(user);  // ❗ this decides redirect
 
     if (!user) {
       user = new GoogleUser({
@@ -263,26 +317,35 @@ const oauth2callback = async (req, res) => {
 
     await user.save();
 
-    // ✅ FIXED: Determine Redirect Destination
-    // Use environment variable for frontend URL or fallback to localhost
-    const CLIENT_URL = process.env.CLIENT_URL || "http://192.168.1.5:5173";
+    // frontend URL
+    const CLIENT_URL = process.env.CLIENT_URL || "http://192.168.1.8:5173";
 
+    // A: Poll sharing flow
     if (pollId && pollId !== "undefined" && pollId !== "null") {
-      // Flow A: Poll Sharing (Redirect to Share Page)
-      res.redirect(
-        `${CLIENT_URL}/share?connectedEmail=${encodeURIComponent(data.email)}&pollId=${pollId}`
-      );
-    } else {
-      // Flow B: Signup/Login (Redirect to Username Step)
-      // We pass the email so the frontend can hydrate the state
-      res.redirect(
-        `${CLIENT_URL}/signup/username?email=${encodeURIComponent(data.email)}&authType=google`
+      return res.redirect(
+        `${CLIENT_URL}/share?connectedEmail=${encodeURIComponent(
+          data.email
+        )}&pollId=${pollId}`
       );
     }
 
+    // B: EXISTING GOOGLE USER → redirect to dashboard
+    if (isExistingUser) {
+      return res.redirect(
+        `${CLIENT_URL}/dashboard?email=${encodeURIComponent(data.email)}&auth=google`
+      );
+    }
+
+    // C: NEW GOOGLE USER → username setup
+    return res.redirect(
+      `${CLIENT_URL}/signup/username?email=${encodeURIComponent(
+        data.email
+      )}&authType=google`
+    );
+
   } catch (err) {
     console.error("OAuth error:", err);
-    res.status(500).send("Authentication failed");
+    return res.status(500).send("Authentication failed");
   }
 };
 

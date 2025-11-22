@@ -60,9 +60,10 @@
 import * as z from 'zod';
 
 export const loginSchema = z.object({
-    email: z.string().email({ message: "Invalid email address" }),
-    password: z.string().min(1, { message: "Password is required" }),
+  identifier: z.string().min(1, "Required"),
+  password: z.string().min(6, "Password too short"),
 });
+
 
 export const registerSchema = z.object({
     username: z.string().min(3, 'Username must be at least 3 characters'),

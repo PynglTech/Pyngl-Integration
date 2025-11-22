@@ -404,42 +404,71 @@ const useAuthStore = create((set, get) => ({
   clearError: () => set({ error: null }),
 
   // ✅ Login
-  login: async (email, password) => {
-    const { loading } = get();
-    if (loading) return;
+  // login: async (email, password) => {
+  //   const { loading } = get();
+  //   if (loading) return;
 
-    set({ loading: true, error: null });
+  //   set({ loading: true, error: null });
 
-    try {
-      const response = await apiClient.post(
-        `${API_URL}/login`,
-        { email, password },
-        { withCredentials: true }
-      );
+  //   try {
+  //     const response = await apiClient.post(
+  //       `${API_URL}/login`,
+  //       { email, password },
+  //       { withCredentials: true }
+  //     );
 
-      // FIX: unwrap ONLY the actual user
-      const userData = response?.data?.user;
-      console.log("🚀 ~ userData:", userData)
-      if (!userData) {
-        throw new Error("Invalid email or password");
-      }
+  //     // FIX: unwrap ONLY the actual user
+  //     const userData = response?.data?.user;
+  //     console.log("🚀 ~ userData:", userData)
+  //     if (!userData) {
+  //       throw new Error("Invalid email or password");
+  //     }
 
-      localStorage.setItem("userInfo", JSON.stringify(userData));
-      set({ userInfo: userData, loading: false, error: null });
+  //     localStorage.setItem("userInfo", JSON.stringify(userData));
+  //     set({ userInfo: userData, loading: false, error: null });
 
-      return userData;
-    } catch (error) {
-      const message =
-        error.response?.data?.error ||
-        error.response?.data?.message ||
-        "Invalid email or password";
+  //     return userData;
+  //   } catch (error) {
+  //     const message =
+  //       error.response?.data?.error ||
+  //       error.response?.data?.message ||
+  //       "Invalid email or password";
 
-      set({ error: message, loading: false });
-      throw new Error(message);
-    }
-  },
+  //     set({ error: message, loading: false });
+  //     throw new Error(message);
+  //   }
+  // },
+  login: async (identifier, password) => {
+  const { loading } = get();
+  if (loading) return;
 
-  // ✅ Register
+  set({ loading: true, error: null });
+
+  try {
+    const response = await apiClient.post(
+      `${API_URL}/login`,
+      { identifier, password },  
+      { withCredentials: true }
+    );
+
+    const userData = response?.data?.user;
+    if (!userData) throw new Error("Invalid email or password");
+
+    localStorage.setItem("userInfo", JSON.stringify(userData));
+    set({ userInfo: userData, loading: false });
+
+    return userData;
+  } catch (error) {
+    const message =
+      error.response?.data?.error ||
+      error.response?.data?.message ||
+      "Invalid email or password";
+
+    set({ error: message, loading: false });
+    throw new Error(message);
+  }
+},
+  //Register
   register: async (userData) => {
     const { loading } = get();
     if (loading) return;
