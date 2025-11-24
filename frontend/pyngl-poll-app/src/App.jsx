@@ -36,7 +36,9 @@ import AppRoutes from './routes/AppRoutes';
 import LoadingScreen from './components/common/LoadingScreen';
 import { useThemeEffect } from './hooks/useThemeEffect';
 import './App.css';
-
+const isGoogleReturn = () => {
+  return window.location.search.includes("auth=google");
+};
 export default function App() {
   const { isInitialized, userInfo, loading, checkUserStatus } = useAuthStore();
   const { theme } = useThemeStore();
@@ -46,8 +48,16 @@ export default function App() {
 
   // ✅ Verify session or initialize local user
 useEffect(() => {
-  checkUserStatus();   // always check on app load
+  // Always check session on app load
+  checkUserStatus();
+
+  // 🔥 EXTRA: If user returns from Google, check again (cookie arrives slightly late)
+  if (isGoogleReturn()) {
+    setTimeout(() => checkUserStatus(), 500);
+    setTimeout(() => checkUserStatus(), 1200);
+  }
 }, []);
+
 
 
   // ✅ Sync theme globally

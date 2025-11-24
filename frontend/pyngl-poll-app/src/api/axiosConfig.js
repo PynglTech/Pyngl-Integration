@@ -67,7 +67,7 @@ const baseURL =
 
 // Create API client
 const apiClient = axios.create({
-  baseURL: "http://192.168.1.23:5000",   // or your backend URL
+  baseURL: "http://localhost:5000",   // or your backend URL
   withCredentials: true
 });
 

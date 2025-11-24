@@ -265,7 +265,7 @@ const login = (req, res) => {
 
 //     // ✅ FIXED: Determine Redirect Destination
 //     // Use environment variable for frontend URL or fallback to localhost
-//     const CLIENT_URL = process.env.CLIENT_URL || "http://192.168.1.23:5173";
+//     const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
 //     if (pollId && pollId !== "undefined" && pollId !== "null") {
 //       // Flow A: Poll Sharing (Redirect to Share Page)
@@ -318,7 +318,7 @@ const login = (req, res) => {
 //     await user.save();
 
 //     // frontend URL
-//     const CLIENT_URL = process.env.CLIENT_URL || "http://192.168.1.23:5173";
+//     const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
 //     // A: Poll sharing flow
 //     if (pollId && pollId !== "undefined" && pollId !== "null") {
@@ -383,7 +383,7 @@ const login = (req, res) => {
 
 //     await googleUser.save();
 
-//     const CLIENT_URL = process.env.CLIENT_URL || "http://192.168.1.23:5173";
+//     const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
 //     // A. Poll share flow
 //     if (pollId && pollId !== "undefined" && pollId !== "null") {
@@ -415,6 +415,94 @@ const login = (req, res) => {
 //     return res.status(500).send("Authentication failed");
 //   }
 // };
+// const oauth2callback = async (req, res) => {
+//   try {
+//     const { code, state } = req.query;
+//     const pollId = state;
+
+//     // 1. Get Google tokens
+//     const { tokens } = await oAuth2Client.getToken(code);
+//     oAuth2Client.setCredentials(tokens);
+
+//     // 2. Get Google profile
+//     const oauth2 = google.oauth2({ version: "v2", auth: oAuth2Client });
+//     const { data } = await oauth2.userinfo.get();
+
+//     const email = data.email;
+
+//     // 3. Check both collections
+//     let googleUser = await GoogleUser.findOne({ email });
+//     let mainUser = await User.findOne({ email });
+
+//     const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+
+//     // ==============
+//     // POLL SHARE FLOW
+//     // ==============
+//     if (pollId && pollId !== "undefined" && pollId !== "null") {
+//       return res.redirect(
+//         `${CLIENT_URL}/share?connectedEmail=${encodeURIComponent(email)}&pollId=${pollId}`
+//       );
+//     }
+
+//     // ==============================================
+//     // CASE 1: MAIN USER ALREADY EXISTS → LOGIN + DASH
+//     // ==============================================
+//     if (mainUser) {
+//       // save/update google tokens
+//       if (!googleUser) {
+//         googleUser = new GoogleUser({
+//           email,
+//           googleId: data.id,
+//           access_token: tokens.access_token,
+//           refresh_token: tokens.refresh_token,
+//           expiry_date: tokens.expiry_date,
+//         });
+//       } else {
+//         googleUser.access_token = tokens.access_token;
+//         if (tokens.refresh_token) googleUser.refresh_token = tokens.refresh_token;
+//         googleUser.expiry_date = tokens.expiry_date;
+//       }
+
+//       await googleUser.save();
+
+//       // 🔥 SET LOGIN COOKIE 🔥
+//       generateToken(req, res, mainUser._id);
+
+//       return res.redirect(
+//         `${CLIENT_URL}/dashboard?auth=google`
+//       );
+//     }
+
+//     // =====================================================
+//     // CASE 2: No main user → go to username setup (SIGN UP)
+//     // =====================================================
+//     if (!googleUser) {
+//       googleUser = new GoogleUser({
+//         email,
+//         googleId: data.id,
+//         access_token: tokens.access_token,
+//         refresh_token: tokens.refresh_token,
+//         expiry_date: tokens.expiry_date,
+//       });
+//     } else {
+//       googleUser.access_token = tokens.access_token;
+//       if (tokens.refresh_token) googleUser.refresh_token = tokens.refresh_token;
+//       googleUser.expiry_date = tokens.expiry_date;
+//     }
+
+//     await googleUser.save();
+
+//     // redirect to username step
+//     return res.redirect(
+//       `${CLIENT_URL}/signup/username?email=${encodeURIComponent(email)}&authType=google`
+//     );
+
+//   } catch (err) {
+//     console.error("OAuth error:", err);
+//     return res.status(500).send("Authentication failed");
+//   }
+// };
 const oauth2callback = async (req, res) => {
   try {
     const { code, state } = req.query;
@@ -434,7 +522,7 @@ const oauth2callback = async (req, res) => {
     let googleUser = await GoogleUser.findOne({ email });
     let mainUser = await User.findOne({ email });
 
-    const CLIENT_URL = process.env.CLIENT_URL || "http://192.168.1.23:5173";
+    const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
     // ==============
     // POLL SHARE FLOW
@@ -448,31 +536,55 @@ const oauth2callback = async (req, res) => {
     // ==============================================
     // CASE 1: MAIN USER ALREADY EXISTS → LOGIN + DASH
     // ==============================================
+    // if (mainUser) {
+    //   // save/update google tokens
+    //   if (!googleUser) {
+    //     googleUser = new GoogleUser({
+    //       email,
+    //       googleId: data.id,
+    //       access_token: tokens.access_token,
+    //       refresh_token: tokens.refresh_token,
+    //       expiry_date: tokens.expiry_date,
+    //     });
+    //   } else {
+    //     googleUser.access_token = tokens.access_token;
+    //     if (tokens.refresh_token) googleUser.refresh_token = tokens.refresh_token;
+    //     googleUser.expiry_date = tokens.expiry_date;
+    //   }
+
+    //   await googleUser.save();
+
+    //   // 🔥 FIXED: Removed 'req' from arguments 🔥
+    //   generateToken(res, mainUser._id);
+
+    //   return res.redirect(
+    //     `${CLIENT_URL}/dashboard?auth=google`
+    //   );
+    // }
     if (mainUser) {
-      // save/update google tokens
-      if (!googleUser) {
-        googleUser = new GoogleUser({
-          email,
-          googleId: data.id,
-          access_token: tokens.access_token,
-          refresh_token: tokens.refresh_token,
-          expiry_date: tokens.expiry_date,
-        });
-      } else {
-        googleUser.access_token = tokens.access_token;
-        if (tokens.refresh_token) googleUser.refresh_token = tokens.refresh_token;
-        googleUser.expiry_date = tokens.expiry_date;
-      }
+  // update google info
+  if (!googleUser) {
+    googleUser = new GoogleUser({
+      email,
+      googleId: data.id,
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      expiry_date: tokens.expiry_date,
+    });
+  } else {
+    googleUser.access_token = tokens.access_token;
+    if (tokens.refresh_token) googleUser.refresh_token = tokens.refresh_token;
+    googleUser.expiry_date = tokens.expiry_date;
+  }
 
-      await googleUser.save();
+  await googleUser.save();
 
-      // 🔥 SET LOGIN COOKIE 🔥
-     // 🔥 SET LOGIN COOKIE CORRECTLY 🔥
-generateToken(res, mainUser._id);
+  // 🔥 Correct token generation
+  generateToken(res, mainUser._id);
 
-return res.redirect(`${CLIENT_URL}/dashboard?auth=google`);
+  return res.redirect(`${CLIENT_URL}/dashboard?auth=google`);
+}
 
-    }
 
     // =====================================================
     // CASE 2: No main user → go to username setup (SIGN UP)
@@ -503,7 +615,6 @@ return res.redirect(`${CLIENT_URL}/dashboard?auth=google`);
     return res.status(500).send("Authentication failed");
   }
 };
-
 
 //     const people = google.people({ version: "v1", auth: oAuth2Client });
 //     const response = await people.people.connections.list({
