@@ -45,11 +45,10 @@ export default function App() {
   useThemeEffect();
 
   // ✅ Verify session or initialize local user
-  useEffect(() => {
-    if (!isInitialized) {
-      checkUserStatus(); // must exist in store
-    }
-  }, [isInitialized, checkUserStatus]);
+useEffect(() => {
+  checkUserStatus();   // always check on app load
+}, []);
+
 
   // ✅ Sync theme globally
   useEffect(() => {

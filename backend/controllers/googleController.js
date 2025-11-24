@@ -205,7 +205,7 @@
 import { google } from "googleapis";
 import GoogleUser from "../models/GoogleUser.js";
 import User from "../models/User.js";
-
+import generateToken from "../utils/generateToken.js";
 const oAuth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
@@ -265,7 +265,7 @@ const login = (req, res) => {
 
 //     // ✅ FIXED: Determine Redirect Destination
 //     // Use environment variable for frontend URL or fallback to localhost
-//     const CLIENT_URL = process.env.CLIENT_URL || "http://192.168.1.8:5173";
+//     const CLIENT_URL = process.env.CLIENT_URL || "http://192.168.1.23:5173";
 
 //     if (pollId && pollId !== "undefined" && pollId !== "null") {
 //       // Flow A: Poll Sharing (Redirect to Share Page)
@@ -285,62 +285,217 @@ const login = (req, res) => {
 //     res.status(500).send("Authentication failed");
 //   }
 // };
+// const oauth2callback = async (req, res) => {
+//   try {
+//     const { code, state } = req.query;
+//     const pollId = state;
+
+//     const { tokens } = await oAuth2Client.getToken(code);
+//     oAuth2Client.setCredentials(tokens);
+
+//     const oauth2 = google.oauth2({ version: "v2", auth: oAuth2Client });
+//     const { data } = await oauth2.userinfo.get();
+
+//     let user = await GoogleUser.findOne({ email: data.email });
+
+//     const isExistingUser = Boolean(user);  // ❗ this decides redirect
+
+//     if (!user) {
+//       user = new GoogleUser({
+//         email: data.email,
+//         googleId: data.id,
+//         access_token: tokens.access_token,
+//         refresh_token: tokens.refresh_token,
+//         expiry_date: tokens.expiry_date,
+//       });
+//     } else {
+//       // Update tokens if user already exists
+//       user.access_token = tokens.access_token;
+//       if (tokens.refresh_token) user.refresh_token = tokens.refresh_token;
+//       user.expiry_date = tokens.expiry_date;
+//     }
+
+//     await user.save();
+
+//     // frontend URL
+//     const CLIENT_URL = process.env.CLIENT_URL || "http://192.168.1.23:5173";
+
+//     // A: Poll sharing flow
+//     if (pollId && pollId !== "undefined" && pollId !== "null") {
+//       return res.redirect(
+//         `${CLIENT_URL}/share?connectedEmail=${encodeURIComponent(
+//           data.email
+//         )}&pollId=${pollId}`
+//       );
+//     }
+
+//     // B: EXISTING GOOGLE USER → redirect to dashboard
+//     if (isExistingUser) {
+//       return res.redirect(
+//         `${CLIENT_URL}/dashboard?email=${encodeURIComponent(data.email)}&auth=google`
+//       );
+//     }
+
+//     // C: NEW GOOGLE USER → username setup
+//     return res.redirect(
+//       `${CLIENT_URL}/signup/username?email=${encodeURIComponent(
+//         data.email
+//       )}&authType=google`
+//     );
+
+//   } catch (err) {
+//     console.error("OAuth error:", err);
+//     return res.status(500).send("Authentication failed");
+//   }
+// };
+// const oauth2callback = async (req, res) => {
+//   try {
+//     const { code, state } = req.query;
+//     const pollId = state;
+
+//     const { tokens } = await oAuth2Client.getToken(code);
+//     oAuth2Client.setCredentials(tokens);
+
+//     const oauth2 = google.oauth2({ version: "v2", auth: oAuth2Client });
+//     const { data } = await oauth2.userinfo.get();
+
+//     // Check in BOTH collections
+//     let googleUser = await GoogleUser.findOne({ email: data.email });
+//     let mainUser = await User.findOne({ email: data.email });
+
+//     // Decide where to redirect
+//     const isExistingUser = Boolean(googleUser || mainUser);
+
+//     // --- save/update googleUser record ---
+//     if (!googleUser) {
+//       googleUser = new GoogleUser({
+//         email: data.email,
+//         googleId: data.id,
+//         access_token: tokens.access_token,
+//         refresh_token: tokens.refresh_token,
+//         expiry_date: tokens.expiry_date,
+//       });
+//     } else {
+//       googleUser.access_token = tokens.access_token;
+//       if (tokens.refresh_token) googleUser.refresh_token = tokens.refresh_token;
+//       googleUser.expiry_date = tokens.expiry_date;
+//     }
+
+//     await googleUser.save();
+
+//     const CLIENT_URL = process.env.CLIENT_URL || "http://192.168.1.23:5173";
+
+//     // A. Poll share flow
+//     if (pollId && pollId !== "undefined" && pollId !== "null") {
+//       return res.redirect(
+//         `${CLIENT_URL}/share?connectedEmail=${encodeURIComponent(
+//           data.email
+//         )}&pollId=${pollId}`
+//       );
+//     }
+
+//     // B. EXISTING USER → send to dashboard
+//     if (isExistingUser) {
+//       return res.redirect(
+//         `${CLIENT_URL}/dashboard?email=${encodeURIComponent(
+//           data.email
+//         )}&auth=google`
+//       );
+//     }
+
+//     // C. NEW GOOGLE USER → create username
+//     return res.redirect(
+//       `${CLIENT_URL}/signup/username?email=${encodeURIComponent(
+//         data.email
+//       )}&authType=google`
+//     );
+
+//   } catch (err) {
+//     console.error("OAuth error:", err);
+//     return res.status(500).send("Authentication failed");
+//   }
+// };
 const oauth2callback = async (req, res) => {
   try {
     const { code, state } = req.query;
     const pollId = state;
 
+    // 1. Get Google tokens
     const { tokens } = await oAuth2Client.getToken(code);
     oAuth2Client.setCredentials(tokens);
 
+    // 2. Get Google profile
     const oauth2 = google.oauth2({ version: "v2", auth: oAuth2Client });
     const { data } = await oauth2.userinfo.get();
 
-    let user = await GoogleUser.findOne({ email: data.email });
+    const email = data.email;
 
-    const isExistingUser = Boolean(user);  // ❗ this decides redirect
+    // 3. Check both collections
+    let googleUser = await GoogleUser.findOne({ email });
+    let mainUser = await User.findOne({ email });
 
-    if (!user) {
-      user = new GoogleUser({
-        email: data.email,
+    const CLIENT_URL = process.env.CLIENT_URL || "http://192.168.1.23:5173";
+
+    // ==============
+    // POLL SHARE FLOW
+    // ==============
+    if (pollId && pollId !== "undefined" && pollId !== "null") {
+      return res.redirect(
+        `${CLIENT_URL}/share?connectedEmail=${encodeURIComponent(email)}&pollId=${pollId}`
+      );
+    }
+
+    // ==============================================
+    // CASE 1: MAIN USER ALREADY EXISTS → LOGIN + DASH
+    // ==============================================
+    if (mainUser) {
+      // save/update google tokens
+      if (!googleUser) {
+        googleUser = new GoogleUser({
+          email,
+          googleId: data.id,
+          access_token: tokens.access_token,
+          refresh_token: tokens.refresh_token,
+          expiry_date: tokens.expiry_date,
+        });
+      } else {
+        googleUser.access_token = tokens.access_token;
+        if (tokens.refresh_token) googleUser.refresh_token = tokens.refresh_token;
+        googleUser.expiry_date = tokens.expiry_date;
+      }
+
+      await googleUser.save();
+
+      // 🔥 SET LOGIN COOKIE 🔥
+     // 🔥 SET LOGIN COOKIE CORRECTLY 🔥
+generateToken(res, mainUser._id);
+
+return res.redirect(`${CLIENT_URL}/dashboard?auth=google`);
+
+    }
+
+    // =====================================================
+    // CASE 2: No main user → go to username setup (SIGN UP)
+    // =====================================================
+    if (!googleUser) {
+      googleUser = new GoogleUser({
+        email,
         googleId: data.id,
         access_token: tokens.access_token,
         refresh_token: tokens.refresh_token,
         expiry_date: tokens.expiry_date,
       });
     } else {
-      // Update tokens if user already exists
-      user.access_token = tokens.access_token;
-      if (tokens.refresh_token) user.refresh_token = tokens.refresh_token;
-      user.expiry_date = tokens.expiry_date;
+      googleUser.access_token = tokens.access_token;
+      if (tokens.refresh_token) googleUser.refresh_token = tokens.refresh_token;
+      googleUser.expiry_date = tokens.expiry_date;
     }
 
-    await user.save();
+    await googleUser.save();
 
-    // frontend URL
-    const CLIENT_URL = process.env.CLIENT_URL || "http://192.168.1.8:5173";
-
-    // A: Poll sharing flow
-    if (pollId && pollId !== "undefined" && pollId !== "null") {
-      return res.redirect(
-        `${CLIENT_URL}/share?connectedEmail=${encodeURIComponent(
-          data.email
-        )}&pollId=${pollId}`
-      );
-    }
-
-    // B: EXISTING GOOGLE USER → redirect to dashboard
-    if (isExistingUser) {
-      return res.redirect(
-        `${CLIENT_URL}/dashboard?email=${encodeURIComponent(data.email)}&auth=google`
-      );
-    }
-
-    // C: NEW GOOGLE USER → username setup
+    // redirect to username step
     return res.redirect(
-      `${CLIENT_URL}/signup/username?email=${encodeURIComponent(
-        data.email
-      )}&authType=google`
+      `${CLIENT_URL}/signup/username?email=${encodeURIComponent(email)}&authType=google`
     );
 
   } catch (err) {
@@ -348,6 +503,7 @@ const oauth2callback = async (req, res) => {
     return res.status(500).send("Authentication failed");
   }
 };
+
 
 //     const people = google.people({ version: "v1", auth: oAuth2Client });
 //     const response = await people.people.connections.list({
@@ -423,7 +579,7 @@ const getContacts = async (req, res) => {
   { new: true }
 );
 
-    // res.json({ contacts });
+    res.json({ contacts });
 
   } catch (err) {
     console.error("Error fetching contacts:", err);

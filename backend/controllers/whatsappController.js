@@ -1041,7 +1041,7 @@ export const sendWhatsAppPollToSelected = async (req, res) => {
 
     console.log("📌 Using template:", templateName);
 
-    const voteLink = `http://192.168.1.8:5173/poll/${poll._id}`;
+    const voteLink = `http://192.168.1.23:5173/poll/${poll._id}`;
     const url = `https://graph.facebook.com/v21.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
 
     const headers = {

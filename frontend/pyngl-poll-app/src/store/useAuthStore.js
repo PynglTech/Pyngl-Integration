@@ -355,50 +355,81 @@ const useAuthStore = create((set, get) => ({
   error: null,
 
   // ✅ Check current session (local + cookie)
+  // checkUserStatus: async () => {
+  //   try {
+  //     // ✅ CRITICAL FIX: Stop if we have already checked status once.
+  //     // This prevents the infinite loop/blinking.
+  //     const { isInitialized, userInfo } = get();
+  //     if (isInitialized) return; 
+
+  //     // 🔹 Check localStorage first
+  //     const storedUser = localStorage.getItem("userInfo");
+  //     if (storedUser) {
+  //       try {
+  //         const parsed = JSON.parse(storedUser);
+  //         set({ userInfo: parsed, isInitialized: true });
+  //         return;
+  //       } catch {
+  //         localStorage.removeItem("userInfo");
+  //       }
+  //     }
+
+  //     // 🔹 Check backend (cookie session)
+  //     // We wrap this in a try/catch specifically for the request to ensure isInitialized is always set
+  //     try {
+  //       const { data } = await apiClient.get(`${API_URL}/status`, {
+  //         withCredentials: true,
+  //       });
+
+  //       if (data?.user) {
+  //         localStorage.setItem("userInfo", JSON.stringify(data.user));
+  //         set({ userInfo: data.user, isInitialized: true });
+  //       } else {
+  //         set({ userInfo: null, isInitialized: true });
+  //       }
+  //     } catch (apiError) {
+  //       // If the backend fails or returns 401, we still mark initialization as done
+  //       console.warn("Session check failed or no active session");
+  //       set({ userInfo: null, isInitialized: true });
+  //     }
+
+  //   } catch (error) {
+  //     console.error("❌ User status check failed:", error);
+  //     // Even on fatal error, mark initialized to stop infinite loops
+  //     set({ userInfo: null, isInitialized: true });
+  //   }
+  // },
+
   checkUserStatus: async () => {
-    try {
-      // ✅ CRITICAL FIX: Stop if we have already checked status once.
-      // This prevents the infinite loop/blinking.
-      const { isInitialized, userInfo } = get();
-      if (isInitialized) return; 
+  try {
+    set({ loading: true });
 
-      // 🔹 Check localStorage first
-      const storedUser = localStorage.getItem("userInfo");
-      if (storedUser) {
-        try {
-          const parsed = JSON.parse(storedUser);
-          set({ userInfo: parsed, isInitialized: true });
-          return;
-        } catch {
-          localStorage.removeItem("userInfo");
-        }
-      }
-
-      // 🔹 Check backend (cookie session)
-      // We wrap this in a try/catch specifically for the request to ensure isInitialized is always set
+    // 1. Check localStorage
+    const storedUser = localStorage.getItem("userInfo");
+    if (storedUser) {
       try {
-        const { data } = await apiClient.get(`${API_URL}/status`, {
-          withCredentials: true,
-        });
-
-        if (data?.user) {
-          localStorage.setItem("userInfo", JSON.stringify(data.user));
-          set({ userInfo: data.user, isInitialized: true });
-        } else {
-          set({ userInfo: null, isInitialized: true });
-        }
-      } catch (apiError) {
-        // If the backend fails or returns 401, we still mark initialization as done
-        console.warn("Session check failed or no active session");
-        set({ userInfo: null, isInitialized: true });
+        const parsed = JSON.parse(storedUser);
+        set({ userInfo: parsed, loading: false, isInitialized: true });
+      } catch {
+        localStorage.removeItem("userInfo");
       }
-
-    } catch (error) {
-      console.error("❌ User status check failed:", error);
-      // Even on fatal error, mark initialized to stop infinite loops
-      set({ userInfo: null, isInitialized: true });
     }
-  },
+
+    // 2. Check backend cookie session
+    const { data } = await apiClient.get(`${API_URL}/status`, {
+      withCredentials: true,
+    });
+
+    if (data?.user) {
+      localStorage.setItem("userInfo", JSON.stringify(data.user));
+      set({ userInfo: data.user, loading: false, isInitialized: true });
+    } else {
+      set({ userInfo: null, loading: false, isInitialized: true });
+    }
+  } catch (error) {
+    set({ userInfo: null, loading: false, isInitialized: true });
+  }
+},
 
   finishLoading: () => set({ loading: false }),
   clearError: () => set({ error: null }),

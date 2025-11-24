@@ -62,12 +62,12 @@ import useAuthStore from '../store/useAuthStore';
 // Determine correct BASE URL
 const baseURL =
   import.meta.env.MODE === "development"
-    ? ["http://192.168.1.8:5000", 'http://localhost:5000'] // or localhost
+    ? ["http://192.168.1.23:5000", 'http://localhost:5000'] // or localhost
     : import.meta.env.VITE_API_URL;
 
 // Create API client
 const apiClient = axios.create({
-  baseURL: "http://192.168.1.8:5000",   // or your backend URL
+  baseURL: "http://192.168.1.23:5000",   // or your backend URL
   withCredentials: true
 });
 

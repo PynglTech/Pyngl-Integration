@@ -226,22 +226,41 @@ const SuccessMessage = () => {
   
   const [isLoading, setIsLoading] = useState(false);
 
-  const goToDashboard = async () => {
-    setIsLoading(true);
-    try {
-      // ✅ UNCOMMENT the line below in your local project to fetch the user before redirecting
-      await checkUserStatus();
-      
-      // Now navigate
-      navigate("/"); 
-    } catch (error) {
-      console.error("Failed to sync session:", error);
-      // Fallback: If sync fails, send to login manually
-      navigate("/login");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+//   const goToDashboard = async () => {
+//     setIsLoading(true);
+//     try {
+//       // ✅ UNCOMMENT the line below in your local project to fetch the user before redirecting
+//     setTimeout(() => {
+//   navigate("/dashboard");
+// }, 300); // 300ms delay so browser writes cookie
+
+//     } catch (error) {
+//       console.error("Failed to sync session:", error);
+//       // Fallback: If sync fails, send to login manually
+//       navigate("/login");
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+const goToDashboard = async () => {
+  setIsLoading(true);
+
+  try {
+    // Wait 2 seconds so browser fully writes cookie
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Re-check session (important)
+    await checkUserStatus();
+
+    navigate("/dashboard", { replace: true });
+
+  } catch (error) {
+    console.error("Failed redirect:", error);
+    navigate("/login");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="flex flex-col h-full w-full bg-white dark:bg-[#131526] items-center justify-center text-center p-8 transition-colors duration-200">

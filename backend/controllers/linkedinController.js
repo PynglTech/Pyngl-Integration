@@ -283,7 +283,7 @@ import Poll from '../models/Poll.js'; // Make sure this path is correct
 const LINKEDIN_CLIENT_ID = process.env.LINKEDIN_CLIENT_ID;
 const LINKEDIN_CLIENT_SECRET = process.env.LINKEDIN_CLIENT_SECRET;
 // IMPORTANT: This URI must match what's in your LinkedIn Dev App settings
-const LINKEDIN_REDIRECT_URI = 'http://192.168.1.8:5000/api/linkedin/auth/callback';
+const LINKEDIN_REDIRECT_URI = 'http://192.168.1.23:5000/api/linkedin/auth/callback';
 
 
 async function getAuthorUrn(accessToken) {
@@ -293,7 +293,7 @@ async function getAuthorUrn(accessToken) {
 
 function generateTrackableLink(pollId) {
     const params = new URLSearchParams({ utm_source: 'linkedin', utm_medium: 'native_poll' });
-    return `http://192.168.1.8:5173/poll/${pollId}?${params.toString()}`;
+    return `http://192.168.1.23:5173/poll/${pollId}?${params.toString()}`;
 }
 
 // --- AUTHENTICATION CONTROLLERS ---
@@ -396,7 +396,7 @@ export const handleLinkedInCallback = async (req, res) => {
     const pollId = req.session.pollId;
 
     if (!code) {
-      return res.redirect('http://192.168.1.8/share-linkedin?auth_linkedin=failed');
+      return res.redirect('http://192.168.1.23/share-linkedin?auth_linkedin=failed');
     }
 
     // 1️⃣ EXCHANGE CODE FOR ACCESS TOKEN
