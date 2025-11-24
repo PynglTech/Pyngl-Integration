@@ -112,190 +112,149 @@
 // });
 
 
-import axios from "axios";
-import express from "express";
-import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
-import cors from "cors";
-import mongoose from "mongoose";
-import { Server } from "socket.io";
-import http from "http";
-import cookieParser from "cookie-parser";
-import session from "express-session";
-import passport from "passport";
-import compression from "compression";
+  import axios from "axios";
+  import express from "express";
+  import dotenv from "dotenv";
+  import path from "path";
+  import { fileURLToPath } from "url";
+  import cors from "cors";
+  import mongoose from "mongoose";
+  import { Server } from "socket.io";
+  import http from "http";
+  import cookieParser from "cookie-parser";
+  import session from "express-session";
+  import passport from "passport";
+  import compression from "compression";
 
-// --- Route Imports ---
-import userRoutes from "./routes/userRoutes.js";
-import pollRoutes from "./routes/pollRoutes.js";
-import notificationRoutes from "./routes/notificationRoutes.js";
-import linkedinRoutes from "./routes/linkedinRoutes.js";
-import uploadRoutes from "./routes/uploadRoutes.js";
-import googleRoutes from "./routes/googleRoutes.js";
-// import appleRoutes from "./routes/appleRoutes.js";
+  // --- Route Imports ---
+  import userRoutes from "./routes/userRoutes.js";
+  import pollRoutes from "./routes/pollRoutes.js";
+  import notificationRoutes from "./routes/notificationRoutes.js";
+  import linkedinRoutes from "./routes/linkedinRoutes.js";
+  import uploadRoutes from "./routes/uploadRoutes.js";
+  import googleRoutes from "./routes/googleRoutes.js";
+  import appleRoutes from "./routes/appleRoutes.js";
 
-// --- Utility Imports ---
-import initScheduledJobs from "./utils/scheduler.js";
-import "./config/passport-setup.js";
-import { schedulePollNotifications } from "./jobs/pollScheduler.js";
+  // --- Utility Imports ---
+  import initScheduledJobs from "./utils/scheduler.js";
+  import "./config/passport-setup.js";
+  import { schedulePollNotifications } from "./jobs/pollScheduler.js";
 
-// --- Environment Setup ---
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.resolve(__dirname, "./.env") });
+  // --- Environment Setup ---
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  dotenv.config({ path: path.resolve(__dirname, "./.env") });
 
-const app = express();
-const server = http.createServer(app);
-const PORT = process.env.PORT || 5000;
+  const app = express();
+  const server = http.createServer(app);
+  const PORT = process.env.PORT || 5000;
 
-// --- ⚙️ Trust Proxy (critical for HTTPS cookies on Render) ---
-app.set("trust proxy", 1);
+  // --- ⚙️ Trust Proxy (critical for HTTPS cookies on Render) ---
+  app.set("trust proxy", 1);
 
-// --- Compression ---
-app.use(compression());
+  // --- Compression ---
+  app.use(compression());
 
-// --- Allowed Origins ---
-const allowedOrigins = [
-  process.env.FRONTEND_URL, // from .env (e.g. https://www.pyngl.com)
-  "https://www.pyngl.com",
-  "https://pyngl.com",
-  "http://localhost:5173",
-  "https://localhost:5173",
-];
+  // --- Allowed Origins ---
+  const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    "https://www.pyngl.com",
+    "https://pyngl.com",
+    "http://localhost:5173",
+    "https://localhost:5173",
 
-// --- CORS Middleware ---
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.warn("❌ CORS Blocked Origin:", origin);
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-  })
-);
+    // ⭐ Allow ANY direct IP with optional port
+    "https://192.168.1.12:5173",
+  ];
 
-// --- Preflight for all routes ---
-app.options(/.*/, cors());
+  // --- CORS Middleware ---
+  app.use(
+    cors({
+      origin: function (origin, callback) {
+        if (!origin) return callback(null, true);
 
-// --- Body Parsing & Cookies ---
-app.use(cookieParser());
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ limit: "50mb", extended: true }));
+        const isAllowed = allowedOrigins.some((allowed) => {
+          if (allowed instanceof RegExp) return allowed.test(origin);
+          return allowed === origin;
+        });
 
-// --- Session Config (used by Passport & OAuth) ---
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "default_secret_key",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === "production", // ✅ required for HTTPS cookies
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // ✅ allows cross-origin cookies
-      httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    },
-  })
-);
-
-// --- Passport Setup ---
-app.use(passport.initialize());
-app.use(passport.session());
-
-// --- Socket.io Setup ---
-const io = new Server(server, {
-  cors: {
-    origin: allowedOrigins,
-    credentials: true,
-  },
-});
-app.set("io", io);
-
-io.on("connection", (socket) => {
-  console.log("✅ User connected:", socket.id);
-  socket.on("join", (userId) => {
-    console.log(`📨 User ${userId} joined notifications room.`);
-    socket.join(userId);
-  });
-  socket.on("disconnect", () => {
-    console.log("❌ User disconnected:", socket.id);
-  });
-});
-
-// --- MongoDB Connection ---
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ Connected to MongoDB"))
-  .catch((err) => console.error("❌ MongoDB Connection Error:", err));
-
-// --- API Routes ---
-app.use("/api/users", userRoutes);
-app.use("/api/polls", pollRoutes);
-app.use("/api/notifications", notificationRoutes);
-app.use("/api/linkedin", linkedinRoutes);
-app.use("/api/upload", uploadRoutes);
-app.use("/auth", googleRoutes);
-
-
-
-  const KOMMO_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjRhODYyYWMwOWU3NzZhOWU5ZjI1MTQxOTE5MTc5YmFmZjBhMzhiNmNkY2ZlZTFmMjIxZjhlY2UxNDg0ZGFlZjgyNjk3MTUwOThiNGNkZmUwIn0.eyJhdWQiOiJmMjU0MDFlZS0zZDdkLTRlNjgtYjkyNy1hMTkyZWY1NDU4YjkiLCJqdGkiOiI0YTg2MmFjMDllNzc2YTllOWYyNTE0MTkxOTE3OWJhZmYwYTM4YjZjZGNmZWUxZjIyMWY4ZWNlMTQ4NGRhZWY4MjY5NzE1MDk4YjRjZGZlMCIsImlhdCI6MTc2MzQ1NjY4MywibmJmIjoxNzYzNDU2NjgzLCJleHAiOjE3NjM1MTA0MDAsInN1YiI6IjE0MjY2MDIzIiwiZ3JhbnRfdHlwZSI6IiIsImFjY291bnRfaWQiOjM1NTkxODM1LCJiYXNlX2RvbWFpbiI6ImtvbW1vLmNvbSIsInZlcnNpb24iOjIsInNjb3BlcyI6WyJjcm0iLCJmaWxlcyIsImZpbGVzX2RlbGV0ZSIsIm5vdGlmaWNhdGlvbnMiLCJwdXNoX25vdGlmaWNhdGlvbnMiXSwiaGFzaF91dWlkIjoiOWI0ZDU5OTgtMjYwYy00ZjM4LWIwY2MtNWM3ZWUzZmE2NTEyIiwidXNlcl9mbGFncyI6MCwiYXBpX2RvbWFpbiI6ImFwaS1jLmtvbW1vLmNvbSJ9.LjqqFAqmSTQJGT5Es3sVpWMkQYW_uSAnbnmQ5-GPytTBhQwA-LNxGUObpaSCEQ78GI4KXcjO3v5JxgeYa_FVuMo4WwRXtVkYbog69LPvGGAWK4QjUVNPxn-MooA7TfsD7fnhPMOrRfJ6uwdGZ9ZSK14inf1JABx75VyBhUAjmrS4DgjPCuEoCPsTxpXhdclYclEArdFg-YnvkGXcGVcSZL3Vg4XOKIUJPCOHXFuTXvQSwGOTE3lTBwADm1WV2mPp1zyjRVehWhCEJEPN4-xSnMUhNf6eMy38afukX-8BN0RjDVUOKLgV_1tVM7tcUbY6JZ7lwk9_IjoH8DYrPSF9rQ"; 
-  const DOMAIN = "sureshpyngl.kommo.com";        // Your Kommo domain
-
-  /**
-   * Send Apple Messages List Picker (Poll)
-   */
-  export async function sendApplePoll(leadId) {
-    try {
-      const url = `https://${DOMAIN}/api/v4/leads/${leadId}/notes`;
-
-      const payload = {
-        note_type: ["service_message"],
-        params: {
-          note_type: ["service_message"],
-          service: "apple_messages",
-          message: {
-            source: "app",     // ⬅ REQUIRED by Apple
-            type: "rich_link", // Apple requires a base rich message type
-            rich_text: {
-              type: "list_picker",
-              title: "Please choose an option",
-              sections: [
-                {
-                  title: "Poll Options",
-                  items: [
-                    { id: "opt1", title: "Option 1" },
-                    { id: "opt2", title: "Option 2" },
-                    { id: "opt3", title: "Option 3" }
-                  ]
-                }
-              ]
-            }
-          }
+        if (isAllowed) {
+          callback(null, true);
+        } else {
+          console.warn("❌ CORS Blocked Origin:", origin);
+          callback(new Error("Not allowed by CORS"));
         }
-      };
+      },
+      credentials: true,
+    })
+  );
 
-      const res = await axios.post(url, payload, {
-        headers: {
-          Authorization: `Bearer ${KOMMO_TOKEN}`,
-          "Content-Type": "application/json"
-        }
-      });
+  // --- Preflight for all routes ---
+  app.options(/.*/, cors());
 
-      console.log("Poll sent successfully:", res.data);
+  // --- Body Parsing & Cookies ---
+  app.use(cookieParser());
+  app.use(express.json({ limit: "50mb" }));
+  app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-    } catch (err) {
-      console.error("RES ERROR:", err.response?.data || err);
-    }
-  }
+  // --- Session Config (used by Passport & OAuth) ---
+  app.use(
+    session({
+      secret: process.env.SESSION_SECRET || "default_secret_key",
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        secure: process.env.NODE_ENV === "production", // ✅ required for HTTPS cookies
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // ✅ allows cross-origin cookies
+        httpOnly: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      },
+    })
+  );
 
-  sendApplePoll(16100058);
+  // --- Passport Setup ---
+  app.use(passport.initialize());
+  app.use(passport.session());
+
+  // --- Socket.io Setup ---
+  const io = new Server(server, {
+    cors: {
+      origin: allowedOrigins,
+      credentials: true,
+    },
+  });
+  app.set("io", io);
+
+  io.on("connection", (socket) => {
+    console.log("✅ User connected:", socket.id);
+    socket.on("join", (userId) => {
+      console.log(`📨 User ${userId} joined notifications room.`);
+      socket.join(userId);
+    });
+    socket.on("disconnect", () => {
+      console.log("❌ User disconnected:", socket.id);
+    });
+  });
+
+  // --- MongoDB Connection ---
+  mongoose
+    .connect(process.env.MONGO_URI)
+    .then(() => console.log("✅ Connected to MongoDB"))
+    .catch((err) => console.error("❌ MongoDB Connection Error:", err));
+
+  // --- API Routes ---
+  app.use("/api/users", userRoutes);
+  app.use("/api/polls", pollRoutes);
+  app.use("/api/notifications", notificationRoutes);
+  app.use("/api/linkedin", linkedinRoutes);
+  app.use("/api/upload", uploadRoutes);
+  app.use("/auth", googleRoutes);
+  app.use("/apple", appleRoutes);
 
 
-// --- Health Check Root ---
+
+
+  // --- Health Check Root ---
 app.get("/", (req, res) => {
   res.send("<h1>✅ Pyngl API is Live at api.pyngl.com</h1>");
 });

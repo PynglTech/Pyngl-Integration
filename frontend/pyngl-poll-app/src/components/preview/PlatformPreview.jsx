@@ -244,12 +244,20 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
     whatsapp: { width: 1200, height: 630, label: "WhatsApp", aspect: 1200 / 630 },
     youtube: { width: 1280, height: 720, label: "YouTube", aspect: 16 / 9 },
     gmail: { width: 1200, height: 600, label: "Email Banner", aspect: 2 },
+
+    // NEW PLATFORM
+    imessages: { width: 1200, height: 600, label: "Apple iMessage", aspect: 2 },
   };
 
-  const [imageDimensions, setImageDimensions] = useState(platformDimensions[platform] || { width: 400, height: 300 });
+  const [imageDimensions, setImageDimensions] = useState(
+    platformDimensions[platform] || { width: 400, height: 300 }
+  );
+
   const [isEditing, setIsEditing] = useState(false);
   const [dbImage, setDbImage] = useState(poll.imageUrl || null);
-  const [previewImage, setPreviewImage] = useState(poll.previewImages?.[platform] || poll.imageUrl || null);
+  const [previewImage, setPreviewImage] = useState(
+    poll.previewImages?.[platform] || poll.imageUrl || null
+  );
   const [editedOnce, setEditedOnce] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -258,6 +266,16 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
 
   const POLL_PAGE_DOMAIN = "https://api.pyngl.com";
   const POLL_PREVIEW_BASE = `${POLL_PAGE_DOMAIN}/api/polls/`;
+
+  // -----------------------------------------------------
+  // 📌 Apple Business Chat iMessage URL
+  // -----------------------------------------------------
+  const APPLE_BUSINESS_ID = "urn:biz:539765e3-16f4-4441-95f5-9b984f5617e5"; // REPLACE THIS
+  const IMESSAGE_TRIGGER_TEXT = `Start Poll #${poll._id}`;
+  const iMessageUrl = `https://bcrw.apple.com/${APPLE_BUSINESS_ID}?body=${encodeURIComponent(
+    IMESSAGE_TRIGGER_TEXT
+  )}`;
+  console.log("🚀 ~ PlatformPreview ~ iMessageUrl:", iMessageUrl)
 
   const handleRestore = () => {
     setImageDimensions(platformDimensions[platform]);
@@ -268,7 +286,7 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
     if (sheetRef.current && !sheetRef.current.contains(e.target)) onClose();
   };
 
-  // Upload preview image to backend and save in DB
+  // Upload preview image to backend
   const uploadPreviewImage = async (blob) => {
     try {
       const formData = new FormData();
@@ -289,6 +307,9 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
     }
   };
 
+  // -----------------------------------------------------
+  // 📌 Main Share Function
+  // -----------------------------------------------------
   const handleShare = async () => {
     if (isLoading) return;
     setIsLoading(true);
@@ -296,11 +317,11 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
     try {
       if (!pollRef.current) throw new Error("Poll reference missing.");
 
-      // --- Hide Edit/Restore buttons before capture ---
+      // Hide edit buttons in screenshot
       const editButtons = pollRef.current.querySelectorAll(".edit-button, .restore-button");
       editButtons.forEach((btn) => (btn.style.display = "none"));
 
-      // --- Ensure all images are loaded and inlined ---
+      // Inline ALL images before capturing
       const imgs = pollRef.current.querySelectorAll("img");
       await Promise.all(
         Array.from(imgs).map(async (img) => {
@@ -330,10 +351,9 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
         })
       );
 
-      // --- Small delay to stabilize rendering ---
       await new Promise((r) => setTimeout(r, 150));
 
-      // --- Capture DOM to image ---
+      // Convert DOM to image
       const dataUrl = await htmlToImage.toPng(pollRef.current, {
         cacheBust: true,
         backgroundColor: getComputedStyle(document.body).backgroundColor || "#ffffff",
@@ -341,12 +361,49 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
       });
 
       const blob = await (await fetch(dataUrl)).blob();
-      editButtons.forEach((btn) => (btn.style.display = "")); // restore buttons
+      editButtons.forEach((btn) => (btn.style.display = ""));
 
       const hostedPreviewImage = await uploadPreviewImage(blob);
       if (!hostedPreviewImage) throw new Error("Image upload failed.");
 
-      // --- Twitter share link ---
+      // -----------------------------------------------------
+      // 📌 iMessage Sharing
+      // -----------------------------------------------------
+     if (platform === "imessages") {
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: "Vote on my Poll!",
+        text: `Hey! I created a poll: "${poll.question}"`,
+        url: iMessageUrl,
+      });
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(iMessageUrl);
+      alert("iMessage link copied! Paste it in Messages app.");
+    } else {
+      // Safari / iOS fallback
+      const input = document.createElement("input");
+      input.value = iMessageUrl;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand("copy");
+      document.body.removeChild(input);
+
+      alert("iMessage link copied! (Safari fallback)");
+    }
+  } catch (err) {
+    console.error("iMessage share failed:", err);
+  }
+
+  if (typeof onConfirm === "function") onConfirm(hostedPreviewImage);
+  setIsLoading(false);
+  return;
+}
+
+
+      // -----------------------------------------------------
+      // Twitter Share
+      // -----------------------------------------------------
       if (platform === "twitter") {
         const previewUrl = `${POLL_PREVIEW_BASE}${poll._id}/preview?platform=twitter`;
         const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
@@ -354,41 +411,40 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
         )}&url=${encodeURIComponent(previewUrl)}`;
         window.open(twitterShareUrl, "_blank");
       }
-      // --- Instagram native share ---
+
+      // Instagram
       else if (platform === "instagram") {
         const file = new File([blob], "poll.png", { type: blob.type });
         if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
           await navigator.share({
             files: [file],
             title: "Check out my poll!",
-            text: "Vote on this poll",
+            text: "Vote here:",
           });
         } else {
           alert("Instagram sharing not supported on this browser.");
         }
       }
-      // --- Default fallback ---
+
+      // Default Flow
       else {
         const file = new File([blob], "poll.png", { type: blob.type });
         if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
           await navigator.share({
             files: [file],
             title: "Check out my poll!",
-            text: "Vote on this poll",
+            text: "Vote here:",
           });
         } else {
           const a = document.createElement("a");
           a.href = URL.createObjectURL(blob);
           a.download = "poll.png";
           a.click();
-          alert("Sharing not supported on this browser — image downloaded instead.");
+          alert("Sharing not supported — image downloaded.");
         }
       }
 
-      // Notify parent (ShareSheet)
-      if (typeof onConfirm === "function") {
-        onConfirm(hostedPreviewImage);
-      }
+      if (typeof onConfirm === "function") onConfirm(hostedPreviewImage);
     } catch (error) {
       console.error(`${platform} sharing failed:`, error);
       if (!error.message.includes("Image upload failed.")) {
@@ -471,6 +527,8 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
                   <Loader size={20} className="animate-spin mr-2" />
                   Preparing Share...
                 </>
+              ) : platform === "imessages" ? (
+                "Share on iMessage"
               ) : (
                 `Share on ${platform.charAt(0).toUpperCase() + platform.slice(1)}`
               )}
@@ -496,4 +554,5 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
     </>
   );
 }
+
 

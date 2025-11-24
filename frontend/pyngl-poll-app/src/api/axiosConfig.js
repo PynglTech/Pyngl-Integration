@@ -30,25 +30,37 @@
 import axios from 'axios';
 import useAuthStore from '../store/useAuthStore';
 
-// ✅ Dynamic API base URL
-const baseURL =
-  import.meta.env.MODE === 'development'
-    ? 'http://localhost:5000' // your local dev backend
-    : import.meta.env.VITE_API_URL; // Render backend for production
+// Detect host (works for mobile + desktop)
+const host = window.location.hostname;
 
-// ✅ Create Axios instance
+let baseURL;
+
+// Development mode
+if (import.meta.env.MODE === "development") {
+  if (host === "localhost") {
+    baseURL = "http://localhost:5000";            // Desktop
+  } else {
+    baseURL = `http://${host}:5000`;              // Mobile on same WiFi
+  }
+}
+// Production (Render)
+else {
+  baseURL = import.meta.env.VITE_API_URL;
+}
+
+// Create Axios instance
 const apiClient = axios.create({
   baseURL,
   withCredentials: true,
 });
 
-// ✅ Global interceptor for 401 Unauthorized
+// Global interceptor for 401
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
       useAuthStore.getState().logout();
-      window.location.href = '/';
+      window.location.href = "/";
     }
     return Promise.reject(error);
   }
