@@ -201,6 +201,7 @@ const AppRoutes = () => {
                 {/* PUBLIC ROUTES */}
                 <Route path="/" element={<PublicAuthPage />} />
                 <Route path="/login" element={<PublicAuthPage />} />
+                
                 <Route path="/forgot-password" element={<PublicAuthPage />} />
 
                 {/* Signup flow */}
@@ -257,4 +258,3 @@ const AppRoutes = () => {
 };
 
 export default AppRoutes;
-    

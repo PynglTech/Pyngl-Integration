@@ -106,6 +106,7 @@ const ForgotPasswordSheet = ({ openSheet, closeSheet }) => {
     console.error(e);
   }
 };
+const isMobile = window.innerWidth < 768;
 
 
     const resetForm = useForm({ resolver: zodResolver(resetPasswordSchema) });
@@ -233,8 +234,12 @@ const ForgotPasswordSheet = ({ openSheet, closeSheet }) => {
                     <p className="text-gray-600 dark:text-[#9aa4b2] mb-8">
                         Your password has been successfully reset. You can now log in with your new password.
                     </p>
-                    <button 
-                        onClick={() => openSheet('login')} 
+                   <button 
+    type="button" 
+    onClick={() => {
+        if (isMobile) openSheet('login');
+        else navigate("/login");  // desktop
+    }}
                         className="w-full py-3.5 px-4 bg-pyngl-pink hover:bg-pyngl-pink-dark text-white font-bold rounded-full shadow-lg shadow-pyngl-pink/20 transition-all"
                     >
                         Back to Login

@@ -5,17 +5,64 @@ import { loginSchema } from "../../utils/validationSchemas";
 import useAuthStore from "../../store/useAuthStore";
 import BottomSheet from "../common/BottomSheet";
 import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
+const ValidationMessage = ({ text }) => (
+  <div className="bg-pink-50 dark:bg-[rgba(255,77,116,0.06)] text-pink-600 dark:text-[#ffb3c0] 
+    border border-pink-100 dark:border-[rgba(255,77,116,0.12)]
+    p-3 rounded-lg flex items-start mt-2">
+    <span className="mr-2 text-lg leading-tight">😒</span>
+    <span className="text-sm font-medium">{text}</span>
+  </div>
+);
 
 const LoginSheet = ({ openSheet, closeSheet }) => {
   const { login, loading, error } = useAuthStore();
 
+  // SINGLE useForm — watch is extracted HERE
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(loginSchema),
   });
+
+  // Local validation states
+  const [identifierError, setIdentifierError] = React.useState("");
+  const [passwordLocalError, setPasswordLocalError] = React.useState("");
+
+  // Live Identifier Validation
+  React.useEffect(() => {
+    const v = (watch("identifier") || "").trim();
+
+    if (!v) {
+      setIdentifierError("Please enter your email or username.");
+    } else if (!v.includes("@") && v.length < 3) {
+      setIdentifierError("Username must be at least 3 characters.");
+    } else if (v.includes("@")) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(v)) {
+        setIdentifierError("Please enter a valid email address.");
+      } else {
+        setIdentifierError("");
+      }
+    } else {
+      setIdentifierError("");
+    }
+  }, [watch("identifier")]);
+
+  // Live Password Validation
+  React.useEffect(() => {
+    const p = watch("password") || "";
+
+    if (!p) {
+      setPasswordLocalError("Password is required.");
+    } else if (p.length < 6) {
+      setPasswordLocalError("Password must be at least 6 characters.");
+    } else {
+      setPasswordLocalError("");
+    }
+  }, [watch("password")]);
 const getBackendURL = () => {
   try {
     if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
@@ -31,6 +78,7 @@ const getBackendURL = () => {
     console.log("FORM DATA:", data);
     await login(data.identifier, data.password).catch((e) => console.error(e));
   };
+  
 const handleGoogleLogin = () => {
     const backendUrl = getBackendURL();
     window.location.href = `${backendUrl}/auth/google`;
@@ -51,55 +99,46 @@ const handleGoogleLogin = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-5">
 
           {/* Email Field */}
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-[#9aa4b2]" />
-            <input
-              type="text"
-              placeholder="Email or Username"
-              {...register("identifier")}
-              disabled={loading}
-              className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pyngl-pink bg-white dark:bg-[#1B1F33] text-gray-900 dark:text-[#F1F1F1] placeholder-gray-400 dark:placeholder-[#7b8393] transition-colors duration-150 ${
-                errors.identifier
-                  ? "border-red-500 dark:border-red-400"
-                  : "border-gray-300 dark:border-[#2D3148]"
-              }`}
-            />
-            {errors.identifier && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.identifier.message}
-              </p>
-            )}
-          </div>
+        <div className="space-y-2">
+  <div className="relative">
+    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+    <input
+      type="text"
+      placeholder="Email or Username"
+      {...register("identifier")}
+      disabled={loading}
+      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none transition-colors
+        ${identifierError ? "border-red-500" : "border-gray-300"}`}
+    />
+  </div>
 
-          {/* Password Field */}
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-[#9aa4b2]" />
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Password"
-              {...register("password")}
-              disabled={loading}
-              className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pyngl-pink bg-white dark:bg-[#1B1F33] text-gray-900 dark:text-[#F1F1F1] placeholder-gray-400 dark:placeholder-[#7b8393] transition-colors duration-150 ${
-                errors.password
-                  ? "border-red-500 dark:border-red-400"
-                  : "border-gray-300 dark:border-[#2D3148]"
-              }`}
-            />
+  {identifierError && <ValidationMessage text={identifierError} />}
+</div>
 
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#9aa4b2] hover:text-gray-600 dark:hover:text-gray-300 p-1"
-            >
-              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-            </button>
+        <div className="space-y-2">
+  <div className="relative">
+    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
 
-            {errors.password && (
-              <p className="text-red-500 dark:text-[#ffb3c0] text-xs mt-1">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
+    <input
+      type={showPassword ? "text" : "password"}
+      placeholder="Password"
+      {...register("password")}
+      disabled={loading}
+      className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none transition-colors
+        ${passwordLocalError ? "border-red-500" : "border-gray-300"}`}
+    />
+
+    <button
+      type="button"
+      onClick={() => setShowPassword(!showPassword)}
+      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 p-1"
+    >
+      {showPassword ? <EyeOff /> : <Eye />}
+    </button>
+  </div>
+
+  {passwordLocalError && <ValidationMessage text={passwordLocalError} />}
+</div>
 
           {/* Error from store */}
           {error && (

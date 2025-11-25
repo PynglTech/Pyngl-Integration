@@ -141,7 +141,7 @@ import whatsappWebhookRoutes from "./routes/whatsappWebhookRoutes.js";
 import initScheduledJobs from "./utils/scheduler.js";
 import "./config/passport-setup.js";
 import { schedulePollNotifications } from "./jobs/pollScheduler.js";
-
+import rcsRoutes from "./routes/rcsRoutes.js";
 // --- Environment Setup ---
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -163,7 +163,7 @@ const allowedOrigins = [
   "https://www.pyngl.com",
   "https://pyngl.com",
   "http://localhost:5173",
-  "http://192.168.1.23:5173",
+  "http://localhost:5173",
 ];
 
 // --- CORS Middleware ---
@@ -261,7 +261,7 @@ app.use("/api/telegram", telegramRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/auth", googleRoutes);
 app.use("/api/whatsapp", whatsappRoutes);
-
+app.use("/api/rcs", rcsRoutes);
 app.use("/webhook/whatsapp", whatsappWebhookRoutes);
 // --- Health Check Root ---
 app.get("/", (req, res) => {
