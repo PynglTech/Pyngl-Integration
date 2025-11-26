@@ -51,7 +51,7 @@ export default function LinkedInShowPage() {
   // -----------------------------
   const connectLinkedIn = () => {
     window.location.href =
-      `https://localhost:5000/api/linkedin/auth/linkedin/login?pollId=${pollIdFromQuery}`;
+      `http://localhost:5000/api/linkedin/auth/linkedin/login?pollId=${pollIdFromQuery}`;
   };
 
   // -----------------------------

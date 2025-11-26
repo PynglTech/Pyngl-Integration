@@ -641,17 +641,86 @@ const oauth2callback = async (req, res) => {
 //     res.status(500).send("Failed to fetch contacts");
 //   }
 // };
+// const getContacts = async (req, res) => {
+//   try {
+//     const user = await GoogleUser.findOne({ email: req.query.email });
+//     if (!user || !user.access_token) return res.status(401).send("Unauthorized");
+
+//     oAuth2Client.setCredentials({
+//       access_token: user.access_token,
+//       refresh_token: user.refresh_token,
+//       expiry_date: user.expiry_date,
+//     });
+
+//     if (Date.now() > user.expiry_date) {
+//       const newToken = await oAuth2Client.refreshAccessToken();
+//       await GoogleUser.findOneAndUpdate(
+//         { email: user.email },
+//         {
+//           access_token: newToken.credentials.access_token,
+//           expiry_date: newToken.credentials.expiry_date,
+//         }
+//       );
+//       oAuth2Client.setCredentials(newToken.credentials);
+//     }
+
+//     const people = google.people({ version: "v1", auth: oAuth2Client });
+//     const response = await people.people.connections.list({
+//       resourceName: "people/me",
+//       personFields: "names,emailAddresses,phoneNumbers",
+//       pageSize: 200,
+//     });
+
+//     const contacts =
+//       response.data.connections?.map((c) => ({
+//         name: c.names?.[0]?.displayName || "",
+//         email: c.emailAddresses?.[0]?.value || "",
+//         phone: c.phoneNumbers?.[0]?.value || "",
+//       })) || [];
+
+//     // ⭐ SAFE UPDATE — NO VERSION CONFLICTS
+//     await GoogleUser.findOneAndUpdate(
+//       { email: user.email },
+//       { contacts },
+//       { new: true }
+//     );
+//     await User.findOneAndUpdate(
+//   { email: user.email },
+//   { googleContacts: contacts },
+//   { new: true }
+// );
+
+//     res.json({ contacts });
+
+//   } catch (err) {
+//     console.error("Error fetching contacts:", err);
+//     res.status(500).send("Failed to fetch contacts");
+//   }
+// };
 const getContacts = async (req, res) => {
   try {
-    const user = await GoogleUser.findOne({ email: req.query.email });
-    if (!user || !user.access_token) return res.status(401).send("Unauthorized");
+    const email = req.query.email;
 
+    if (!email) {
+      return res.status(200).json({ contacts: [] });  
+    }
+
+    const user = await GoogleUser.findOne({ email });
+
+    // TEMP FIX: If user NOT connected with Google → return empty contacts
+    if (!user || !user.access_token) {
+      console.log("⚠ User not connected with Google → returning empty contacts.");
+      return res.status(200).json({ contacts: [] });
+    }
+
+    // Set credentials
     oAuth2Client.setCredentials({
       access_token: user.access_token,
       refresh_token: user.refresh_token,
       expiry_date: user.expiry_date,
     });
 
+    // Refresh token if expired
     if (Date.now() > user.expiry_date) {
       const newToken = await oAuth2Client.refreshAccessToken();
       await GoogleUser.findOneAndUpdate(
@@ -678,23 +747,25 @@ const getContacts = async (req, res) => {
         phone: c.phoneNumbers?.[0]?.value || "",
       })) || [];
 
-    // ⭐ SAFE UPDATE — NO VERSION CONFLICTS
+    // Save to DB
     await GoogleUser.findOneAndUpdate(
       { email: user.email },
       { contacts },
       { new: true }
     );
-    await User.findOneAndUpdate(
-  { email: user.email },
-  { googleContacts: contacts },
-  { new: true }
-);
 
-    res.json({ contacts });
+    await User.findOneAndUpdate(
+      { email: user.email },
+      { googleContacts: contacts },
+      { new: true }
+    );
+
+    return res.status(200).json({ contacts });
 
   } catch (err) {
     console.error("Error fetching contacts:", err);
-    res.status(500).send("Failed to fetch contacts");
+    // DO NOT RETURN 401 HERE
+    return res.status(200).json({ contacts: [] });
   }
 };
 

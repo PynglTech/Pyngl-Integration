@@ -238,6 +238,8 @@
 //         </div>
 //     );
 // }
+
+
 import React, { useState, useEffect, useRef } from "react";
 import useAuthStore from "../../store/useAuthStore";
 
@@ -269,8 +271,9 @@ const shareLinks = {
     linkedin: (previewUrl, text) => `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(previewUrl)}`,
     twitter: (previewUrl, text) => `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(previewUrl)}`,
     facebook: (previewUrl, text) => `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(previewUrl)}`,
-    messages: (previewUrl, text) => `sms:?body=${encodeURIComponent(text + "\n" + previewUrl)}`,
-    sms: (previewUrl, text) => `sms:?body=${encodeURIComponent(text + "\n" + previewUrl)}`,
+   messages: (previewUrl, text) => ``, 
+    
+    sms: (previewUrl, text) => `sms:?body=${encodeURIComponent(text + "\n" + previewUrl)}`,
     telegram: (previewUrl, text) => `https://t.me/share/url?url=${encodeURIComponent(previewUrl)}&text=${encodeURIComponent(text)}`,
 };
 
@@ -322,14 +325,26 @@ export default function ShareSheet({
     const [showGmailPopup, setShowGmailPopup] = useState(false);
     const [showContactSelector, setShowContactSelector] = useState(false);
   const [availableContacts, setAvailableContacts] = useState([]);
-
+// Add this line with your other state variables
+const [contactSharePlatform, setContactSharePlatform] = useState(null); // 'whatsapp' or 'rcs'
     const lastShared = useRef(null);
     // get logged-in user info (and phone)
 const { userInfo } = useAuthStore.getState();
 const userPhoneNumber = userInfo?.phoneNumber || null;
 
     const pollText = poll.question;
-    const platforms = ['instagram', 'youtube', 'whatsapp', 'gmail', 'linkedin', 'twitter', 'facebook', 'messages', 'sms', 'telegram', 'copy'];
+//     const platforms = ['instagram', 'youtube', 'whatsapp', 'gmail', 'linkedin', 'twitter', 'facebook', 'messages', 'sms', 'telegram', 'copy'];
+const WHATSAPP_ONLY_MODE = true;
+
+const allPlatforms = [
+  'instagram', 'youtube', 'whatsapp', 'gmail',
+  'linkedin', 'twitter', 'facebook', 'messages',
+  'sms', 'telegram', 'copy'
+];
+
+const platforms = WHATSAPP_ONLY_MODE 
+  ? ['whatsapp']
+  : allPlatforms;
 
     const handleCopyLink = () => {
         const pollUrl = `${window.location.origin}/poll/${poll._id}`;
@@ -532,12 +547,43 @@ else if (platform === "telegram") {
 //   }
 // }
 }
+// else if (platform === "whatsapp") {
+//   try {
+//     const user = useAuthStore.getState().userInfo;
+
+//     if (!user?.email) {
+//       toast.error("User not logged in");
+//       return;
+//     }
+
+//     console.log("Loading Google contacts...");
+//     const { data } = await apiClient.get(
+//       `/auth/contacts?email=${user.email}`,
+//       { withCredentials: true }
+//     );
+
+//     console.log("Loaded contacts:", data.contacts);
+
+//     setAvailableContacts(data.contacts || []);
+//     setShowContactSelector(true);
+
+//     return;
+//   } catch (err) {
+//     console.error("WhatsApp error:", err?.response?.data || err);
+//     toast.error("Failed to load WhatsApp contacts");
+//   }
+// }
 else if (platform === "whatsapp") {
   try {
     const user = useAuthStore.getState().userInfo;
 
+    // TEMP FIX:
+    // If user is NOT logged into Google → skip fetching contacts and open empty ContactSelectorModal
     if (!user?.email) {
-      toast.error("User not logged in");
+      console.log("User not logged with Google → showing empty contacts list");
+
+      setAvailableContacts([]);  
+      setShowContactSelector(true);
       return;
     }
 
@@ -554,15 +600,56 @@ else if (platform === "whatsapp") {
 
     return;
   } catch (err) {
-    console.error("WhatsApp error:", err?.response?.data || err);
-    toast.error("Failed to load WhatsApp contacts");
+    console.log("WhatsApp contact fetch failed → fallback to empty list");
+
+    // TEMP FALLBACK → still show modal
+    setAvailableContacts([]);
+    setShowContactSelector(true);
+
+    return;
   }
 }
 
-
-
-
-
+// else if (platform === "messages") {
+//                 try {
+//                     const user = useAuthStore.getState().userInfo;
+//                     if (!user?.email) {
+//                         toast.error("User not logged in");
+//                         return;
+//                     }
+//                     // Fetch contacts (same as WhatsApp)
+//                     const { data } = await apiClient.get(`/auth/contacts?email=${user.email}`, { withCredentials: true });
+//                     setAvailableContacts(data.contacts || []);
+//                     setContactSharePlatform('rcs'); // MARK PLATFORM AS RCS
+//                     setShowContactSelector(true);
+//                     return;
+//                 } catch (err) {
+//                     console.error("Contact fetch error:", err);
+//                     toast.error("Failed to load contacts for RCS");
+//                 }
+//             }
+// Inside handleConfirmShare...
+else if (platform === "messages") {
+    try {
+        const user = useAuthStore.getState().userInfo;
+        if (!user?.email) {
+            toast.error("User not logged in");
+            return;
+        }
+        
+        // Fetch contacts
+        const { data } = await apiClient.get(`/auth/contacts?email=${user.email}`, { withCredentials: true });
+        
+        setAvailableContacts(data.contacts || []);
+        
+        setContactSharePlatform('rcs'); // 👈 THIS IS CRITICAL
+        setShowContactSelector(true);
+        
+        return; 
+    } catch (err) {
+        toast.error("Failed to load contacts");
+    }
+}
 else if (platform !== 'instagram') {
   // For all other platforms
   const shareUrl = shareLinks[platform](previewUrl, pollText);
@@ -571,7 +658,10 @@ else if (platform !== 'instagram') {
             }
         }
         // Log share attempt
-        await apiClient.post(`/api/polls/${poll._id}/share`, { platform });
+       await apiClient.post("/api/rcs/send", {
+  phoneNumber: selectedContacts[0].phone
+});
+
     } catch (err) {
         toast.error("Error while sharing.");
         console.error("LinkedIn or share error:", err);
@@ -651,6 +741,7 @@ setTimeout(() => {
       setShowContactSelector(false);
       setCurrentPlatform(null);
     }}
+
   />
 )}
 

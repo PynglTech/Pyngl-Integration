@@ -136,12 +136,13 @@ import uploadRoutes from "./routes/uploadRoutes.js";
 import googleRoutes from "./routes/googleRoutes.js";
 import whatsappRoutes from "./routes/whastsappRoutes.js";
 import whatsappWebhookRoutes from "./routes/whatsappWebhookRoutes.js";
+import rcsRoutes from "./routes/rcsRoutes.js";
 // import firebaseAuthRoutes from "./routes/firebaseAuthRoute.js";
 // --- Utility Imports ---
 import initScheduledJobs from "./utils/scheduler.js";
 import "./config/passport-setup.js";
 import { schedulePollNotifications } from "./jobs/pollScheduler.js";
-import rcsRoutes from "./routes/rcsRoutes.js";
+
 // --- Environment Setup ---
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
