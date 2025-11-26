@@ -11,7 +11,7 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const BOT_USERNAME = "PynglPollsBot";
 
 // ✅ Bot Instance (shared)
-const bot = new TelegramBot(process.env.TELEGRAM_TOKEN, {
+const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {
   polling: process.env.NODE_ENV !== "production"
 });
 
