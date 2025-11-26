@@ -131,7 +131,7 @@ import userRoutes from "./routes/userRoutes.js";
 import pollRoutes from "./routes/pollRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import linkedinRoutes from "./routes/linkedinRoutes.js";
-import telegramRoutes from "./routes/telegramROutes.js";
+import telegramRoutes from "./routes/telegramRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import googleRoutes from "./routes/googleRoutes.js";
 import whatsappRoutes from "./routes/whastsappRoutes.js";
