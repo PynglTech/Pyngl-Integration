@@ -59,8 +59,7 @@
 
 //     // Redirect with pollId
 //     res.redirect(
-//       `pyngl-whatsapp-integrations.vercel.app
-/share?connectedEmail=${encodeURIComponent(
+//       `http://localhost:5173/share?connectedEmail=${encodeURIComponent(
 //         data.email
 //       )}&pollId=${pollId}`
 //     );
@@ -173,8 +172,7 @@
 
 //     // Redirect with pollId
 //     res.redirect(
-//       `pyngl-whatsapp-integrations.vercel.app
-/share?connectedEmail=${encodeURIComponent(
+//       `http://localhost:5173/share?connectedEmail=${encodeURIComponent(
 //         data.email
 //       )}&pollId=${pollId}`
 //     );
@@ -267,8 +265,7 @@ const login = (req, res) => {
 
 //     // ✅ FIXED: Determine Redirect Destination
 //     // Use environment variable for frontend URL or fallback to localhost
-//     const CLIENT_URL = process.env.CLIENT_URL || "pyngl-whatsapp-integrations.vercel.app
-";
+//     const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
 //     if (pollId && pollId !== "undefined" && pollId !== "null") {
 //       // Flow A: Poll Sharing (Redirect to Share Page)
@@ -321,8 +318,7 @@ const login = (req, res) => {
 //     await user.save();
 
 //     // frontend URL
-//     const CLIENT_URL = process.env.CLIENT_URL || "pyngl-whatsapp-integrations.vercel.app
-";
+//     const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
 //     // A: Poll sharing flow
 //     if (pollId && pollId !== "undefined" && pollId !== "null") {
@@ -387,8 +383,7 @@ const login = (req, res) => {
 
 //     await googleUser.save();
 
-//     const CLIENT_URL = process.env.CLIENT_URL || "pyngl-whatsapp-integrations.vercel.app
-";
+//     const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
 //     // A. Poll share flow
 //     if (pollId && pollId !== "undefined" && pollId !== "null") {
@@ -439,8 +434,7 @@ const login = (req, res) => {
 //     let googleUser = await GoogleUser.findOne({ email });
 //     let mainUser = await User.findOne({ email });
 
-//     const CLIENT_URL = process.env.CLIENT_URL || "pyngl-whatsapp-integrations.vercel.app
-";
+//     const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
 //     // ==============
 //     // POLL SHARE FLOW
@@ -528,8 +522,7 @@ const oauth2callback = async (req, res) => {
     let googleUser = await GoogleUser.findOne({ email });
     let mainUser = await User.findOne({ email });
 
-    const CLIENT_URL = process.env.CLIENT_URL || "pyngl-whatsapp-integrations.vercel.app
-";
+    const CLIENT_URL = process.env.CLIENT_URL || "https://pyngl-whatsapp-integrations.vercel.app";
 
     // ==============
     // POLL SHARE FLOW

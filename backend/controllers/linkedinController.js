@@ -5,7 +5,7 @@
 // const LINKEDIN_CLIENT_ID = process.env.LINKEDIN_CLIENT_ID;
 // const LINKEDIN_CLIENT_SECRET = process.env.LINKEDIN_CLIENT_SECRET;
 // // IMPORTANT: This URI must match what's in your LinkedIn Dev App settings
-// const LINKEDIN_REDIRECT_URI = 'https://pyngl-integration-backend.onrender.com/api/linkedin/auth/callback';
+// const LINKEDIN_REDIRECT_URI = 'http://localhost:5000/api/linkedin/auth/callback';
 
 // async function getAuthorUrn(accessToken) {
 //     const response = await axios.get("https://api.linkedin.com/v2/userinfo", { headers: { Authorization: `Bearer ${accessToken}` }});
@@ -282,6 +282,7 @@ import Poll from '../models/Poll.js'; // Make sure this path is correct
 
 const LINKEDIN_CLIENT_ID = process.env.LINKEDIN_CLIENT_ID;
 const LINKEDIN_CLIENT_SECRET = process.env.LINKEDIN_CLIENT_SECRET;
+
 // IMPORTANT: This URI must match what's in your LinkedIn Dev App settings
 const LINKEDIN_REDIRECT_URI = 'https://pyngl-integration-backend.onrender.com/api/linkedin/auth/callback';
 
@@ -293,8 +294,7 @@ async function getAuthorUrn(accessToken) {
 
 function generateTrackableLink(pollId) {
     const params = new URLSearchParams({ utm_source: 'linkedin', utm_medium: 'native_poll' });
-    return `pyngl-whatsapp-integrations.vercel.app
-/poll/${pollId}?${params.toString()}`;
+    return `https://pyngl-whatsapp-integrations.vercel.app/poll/${pollId}?${params.toString()}`;
 }
 
 // --- AUTHENTICATION CONTROLLERS ---
@@ -321,8 +321,7 @@ export const redirectToLinkedInAuth = (req, res) => {
 //     const pollId = req.session.pollId;
 
 //     if (!code) {
-//       return res.redirect('pyngl-whatsapp-integrations.vercel.app
-/share-linkedin?auth_linkedin=failed');
+//       return res.redirect('http://localhost:5173/share-linkedin?auth_linkedin=failed');
 //     }
 
 //     // Exchange code for access token
@@ -382,16 +381,13 @@ export const redirectToLinkedInAuth = (req, res) => {
 
 //     // ✅ Redirect back to frontend with success
 //     const redirectUrl = pollId
-//       ? `pyngl-whatsapp-integrations.vercel.app
-/share-linkedin?auth_linkedin=success&pollId=${pollId}`
-//       : `pyngl-whatsapp-integrations.vercel.app
-/share-linkedin?auth_linkedin=success`;
+//       ? `http://localhost:5173/share-linkedin?auth_linkedin=success&pollId=${pollId}`
+//       : `http://localhost:5173/share-linkedin?auth_linkedin=success`;
 
 //     res.redirect(redirectUrl);
 //   } catch (error) {
 //     console.error("LinkedIn Auth Error:", error.response?.data || error.message);
-//     res.redirect("pyngl-whatsapp-integrations.vercel.app
-/share-linkedin?auth_linkedin=failed");
+//     res.redirect("http://localhost:5173/share-linkedin?auth_linkedin=failed");
 //   }
 // };
 
@@ -401,7 +397,7 @@ export const handleLinkedInCallback = async (req, res) => {
     const pollId = req.session.pollId;
 
     if (!code) {
-      return res.redirect('http://localhost/share-linkedin?auth_linkedin=failed');
+      return res.redirect('https://pyngl-whatsapp-integrations.vercel.app/share-linkedin?auth_linkedin=failed');
     }
 
     // 1️⃣ EXCHANGE CODE FOR ACCESS TOKEN
@@ -467,16 +463,13 @@ export const handleLinkedInCallback = async (req, res) => {
 
     // 5️⃣ REDIRECT BACK TO FRONTEND
     const redirectUrl = pollId
-      ? `pyngl-whatsapp-integrations.vercel.app
-/share-linkedin?auth_linkedin=success&pollId=${pollId}`
-      : `pyngl-whatsapp-integrations.vercel.app
-/share-linkedin?auth_linkedin=success`;
+      ? `https://pyngl-whatsapp-integrations.vercel.app/share-linkedin?auth_linkedin=success&pollId=${pollId}`
+      : `https://pyngl-whatsapp-integrations.vercel.app/share-linkedin?auth_linkedin=success`;
 
     res.redirect(redirectUrl);
   } catch (error) {
     console.error("LinkedIn Auth Error:", error.response?.data || error.message);
-    res.redirect("pyngl-whatsapp-integrations.vercel.app
-/share-linkedin?auth_linkedin=failed");
+    res.redirect("https://pyngl-whatsapp-integrations.vercel.app/share-linkedin?auth_linkedin=failed");
   }
 };
 
