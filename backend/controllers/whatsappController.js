@@ -1041,7 +1041,8 @@ export const sendWhatsAppPollToSelected = async (req, res) => {
 
     console.log("📌 Using template:", templateName);
 
-    const voteLink = `pyngl-whatsapp-integrations-mlixleuha-pyngls-projects.vercel.app/poll/${poll._id}`;
+    const voteLink = `pyngl-whatsapp-integrations.vercel.app
+/poll/${poll._id}`;
     const url = `https://graph.facebook.com/v21.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
 
     const headers = {

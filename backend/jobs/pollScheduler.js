@@ -23,7 +23,8 @@ const schedulePollNotifications = () => {
         const payload = {
           title: 'Your poll is ending soon!',
           body: `"${poll.question}" will close in less than an hour.`,
-          url: `pyngl-whatsapp-integrations-mlixleuha-pyngls-projects.vercel.app/analytics/${poll._id}`|| `https://192.168.1.12:5173/analytics/${poll._id}` || `https://pyngl.com/analytics/${poll.id}` // Adjust URL as needed
+          url: `pyngl-whatsapp-integrations.vercel.app
+/analytics/${poll._id}`|| `https://192.168.1.12:5173/analytics/${poll._id}` || `https://pyngl.com/analytics/${poll.id}` // Adjust URL as needed
         };
 
         for (const sub of user.pushSubscriptions) {
