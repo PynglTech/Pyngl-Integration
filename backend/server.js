@@ -160,29 +160,19 @@ app.use(compression());
 
 // --- Allowed Origins ---
 const allowedOrigins = [
-  process.env.FRONTEND_URL, // from .env (e.g. https://www.pyngl.com)
-  "https://www.pyngl.com",
-  "https://pyngl.com",
-  "https://pyngl-whatsapp-integrations.vercel.app",
   "http://localhost:5173",
-  
+  "https://pyngl-whatsapp-integrations.vercel.app"
 ];
 
-// --- CORS Middleware ---
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.warn("❌ CORS Blocked Origin:", origin);
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: allowedOrigins,
     credentials: true,
   })
 );
 
+// Required for cookies on cross-domain
+app.set("trust proxy", 1);
 // --- Preflight for all routes ---
 app.options(/.*/, cors());
 
