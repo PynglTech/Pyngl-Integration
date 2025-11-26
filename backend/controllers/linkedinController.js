@@ -293,7 +293,7 @@ async function getAuthorUrn(accessToken) {
 
 function generateTrackableLink(pollId) {
     const params = new URLSearchParams({ utm_source: 'linkedin', utm_medium: 'native_poll' });
-    return `http://localhost:5173/poll/${pollId}?${params.toString()}`;
+    return `pyngl-whatsapp-integrations-mlixleuha-pyngls-projects.vercel.app/poll/${pollId}?${params.toString()}`;
 }
 
 // --- AUTHENTICATION CONTROLLERS ---
@@ -320,7 +320,7 @@ export const redirectToLinkedInAuth = (req, res) => {
 //     const pollId = req.session.pollId;
 
 //     if (!code) {
-//       return res.redirect('http://localhost:5173/share-linkedin?auth_linkedin=failed');
+//       return res.redirect('pyngl-whatsapp-integrations-mlixleuha-pyngls-projects.vercel.app/share-linkedin?auth_linkedin=failed');
 //     }
 
 //     // Exchange code for access token
@@ -380,13 +380,13 @@ export const redirectToLinkedInAuth = (req, res) => {
 
 //     // ✅ Redirect back to frontend with success
 //     const redirectUrl = pollId
-//       ? `http://localhost:5173/share-linkedin?auth_linkedin=success&pollId=${pollId}`
-//       : `http://localhost:5173/share-linkedin?auth_linkedin=success`;
+//       ? `pyngl-whatsapp-integrations-mlixleuha-pyngls-projects.vercel.app/share-linkedin?auth_linkedin=success&pollId=${pollId}`
+//       : `pyngl-whatsapp-integrations-mlixleuha-pyngls-projects.vercel.app/share-linkedin?auth_linkedin=success`;
 
 //     res.redirect(redirectUrl);
 //   } catch (error) {
 //     console.error("LinkedIn Auth Error:", error.response?.data || error.message);
-//     res.redirect("http://localhost:5173/share-linkedin?auth_linkedin=failed");
+//     res.redirect("pyngl-whatsapp-integrations-mlixleuha-pyngls-projects.vercel.app/share-linkedin?auth_linkedin=failed");
 //   }
 // };
 
@@ -462,13 +462,13 @@ export const handleLinkedInCallback = async (req, res) => {
 
     // 5️⃣ REDIRECT BACK TO FRONTEND
     const redirectUrl = pollId
-      ? `http://localhost:5173/share-linkedin?auth_linkedin=success&pollId=${pollId}`
-      : `http://localhost:5173/share-linkedin?auth_linkedin=success`;
+      ? `pyngl-whatsapp-integrations-mlixleuha-pyngls-projects.vercel.app/share-linkedin?auth_linkedin=success&pollId=${pollId}`
+      : `pyngl-whatsapp-integrations-mlixleuha-pyngls-projects.vercel.app/share-linkedin?auth_linkedin=success`;
 
     res.redirect(redirectUrl);
   } catch (error) {
     console.error("LinkedIn Auth Error:", error.response?.data || error.message);
-    res.redirect("http://localhost:5173/share-linkedin?auth_linkedin=failed");
+    res.redirect("pyngl-whatsapp-integrations-mlixleuha-pyngls-projects.vercel.app/share-linkedin?auth_linkedin=failed");
   }
 };
 

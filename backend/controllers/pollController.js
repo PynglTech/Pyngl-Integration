@@ -776,7 +776,7 @@ export const generateShareableImage = async (req, res) => {
     res.status(500).json({ error: "Failed to generate shareable image." });
   }
 };
-const SOURCE_ORIGIN = process.env.FRONTEND_URL || "http://localhost:5173";
+const SOURCE_ORIGIN = process.env.FRONTEND_URL || "pyngl-whatsapp-integrations-mlixleuha-pyngls-projects.vercel.app";
 
 // export const sendGmailPoll = async (req, res) => {
 //   try {

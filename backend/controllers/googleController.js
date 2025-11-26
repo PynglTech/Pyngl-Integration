@@ -59,7 +59,7 @@
 
 //     // Redirect with pollId
 //     res.redirect(
-//       `http://localhost:5173/share?connectedEmail=${encodeURIComponent(
+//       `pyngl-whatsapp-integrations-mlixleuha-pyngls-projects.vercel.app/share?connectedEmail=${encodeURIComponent(
 //         data.email
 //       )}&pollId=${pollId}`
 //     );
@@ -172,7 +172,7 @@
 
 //     // Redirect with pollId
 //     res.redirect(
-//       `http://localhost:5173/share?connectedEmail=${encodeURIComponent(
+//       `pyngl-whatsapp-integrations-mlixleuha-pyngls-projects.vercel.app/share?connectedEmail=${encodeURIComponent(
 //         data.email
 //       )}&pollId=${pollId}`
 //     );
@@ -265,7 +265,7 @@ const login = (req, res) => {
 
 //     // ✅ FIXED: Determine Redirect Destination
 //     // Use environment variable for frontend URL or fallback to localhost
-//     const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+//     const CLIENT_URL = process.env.CLIENT_URL || "pyngl-whatsapp-integrations-mlixleuha-pyngls-projects.vercel.app";
 
 //     if (pollId && pollId !== "undefined" && pollId !== "null") {
 //       // Flow A: Poll Sharing (Redirect to Share Page)
@@ -318,7 +318,7 @@ const login = (req, res) => {
 //     await user.save();
 
 //     // frontend URL
-//     const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+//     const CLIENT_URL = process.env.CLIENT_URL || "pyngl-whatsapp-integrations-mlixleuha-pyngls-projects.vercel.app";
 
 //     // A: Poll sharing flow
 //     if (pollId && pollId !== "undefined" && pollId !== "null") {
@@ -383,7 +383,7 @@ const login = (req, res) => {
 
 //     await googleUser.save();
 
-//     const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+//     const CLIENT_URL = process.env.CLIENT_URL || "pyngl-whatsapp-integrations-mlixleuha-pyngls-projects.vercel.app";
 
 //     // A. Poll share flow
 //     if (pollId && pollId !== "undefined" && pollId !== "null") {
@@ -434,7 +434,7 @@ const login = (req, res) => {
 //     let googleUser = await GoogleUser.findOne({ email });
 //     let mainUser = await User.findOne({ email });
 
-//     const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+//     const CLIENT_URL = process.env.CLIENT_URL || "pyngl-whatsapp-integrations-mlixleuha-pyngls-projects.vercel.app";
 
 //     // ==============
 //     // POLL SHARE FLOW
@@ -522,7 +522,7 @@ const oauth2callback = async (req, res) => {
     let googleUser = await GoogleUser.findOne({ email });
     let mainUser = await User.findOne({ email });
 
-    const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+    const CLIENT_URL = process.env.CLIENT_URL || "pyngl-whatsapp-integrations-mlixleuha-pyngls-projects.vercel.app";
 
     // ==============
     // POLL SHARE FLOW
