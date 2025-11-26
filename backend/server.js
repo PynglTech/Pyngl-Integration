@@ -163,10 +163,9 @@ const allowedOrigins = [
   process.env.FRONTEND_URL, // from .env (e.g. https://www.pyngl.com)
   "https://www.pyngl.com",
   "https://pyngl.com",
-  "pyngl-whatsapp-integrations.vercel.app
-",
-  "pyngl-whatsapp-integrations.vercel.app
-",
+  "pyngl-whatsapp-integrations.vercel.app",
+  "http://localhost:5173",
+  
 ];
 
 // --- CORS Middleware ---
