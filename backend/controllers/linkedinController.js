@@ -5,7 +5,7 @@
 // const LINKEDIN_CLIENT_ID = process.env.LINKEDIN_CLIENT_ID;
 // const LINKEDIN_CLIENT_SECRET = process.env.LINKEDIN_CLIENT_SECRET;
 // // IMPORTANT: This URI must match what's in your LinkedIn Dev App settings
-// const LINKEDIN_REDIRECT_URI = 'http://localhost:5000/api/linkedin/auth/callback';
+// const LINKEDIN_REDIRECT_URI = 'https://pyngl-integration-backend.onrender.com/api/linkedin/auth/callback';
 
 // async function getAuthorUrn(accessToken) {
 //     const response = await axios.get("https://api.linkedin.com/v2/userinfo", { headers: { Authorization: `Bearer ${accessToken}` }});
@@ -283,7 +283,7 @@ import Poll from '../models/Poll.js'; // Make sure this path is correct
 const LINKEDIN_CLIENT_ID = process.env.LINKEDIN_CLIENT_ID;
 const LINKEDIN_CLIENT_SECRET = process.env.LINKEDIN_CLIENT_SECRET;
 // IMPORTANT: This URI must match what's in your LinkedIn Dev App settings
-const LINKEDIN_REDIRECT_URI = 'http://localhost:5000/api/linkedin/auth/callback';
+const LINKEDIN_REDIRECT_URI = 'https://pyngl-integration-backend.onrender.com/api/linkedin/auth/callback';
 
 
 async function getAuthorUrn(accessToken) {

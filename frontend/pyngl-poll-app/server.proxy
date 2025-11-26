@@ -9,7 +9,7 @@ export default defineConfig({
       // This tells Vite to forward any request starting with '/api'
       '/api': {
         // This is the address of your BACKEND server
-        target: 'http://localhost:5000', 
+        target: 'https://pyngl-integration-backend.onrender.com', 
         changeOrigin: true, // Recommended for this to work properly
       },
     },

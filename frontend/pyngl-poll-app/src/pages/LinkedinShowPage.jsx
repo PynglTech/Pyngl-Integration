@@ -51,7 +51,7 @@ export default function LinkedInShowPage() {
   // -----------------------------
   const connectLinkedIn = () => {
     window.location.href =
-      `http://localhost:5000/api/linkedin/auth/linkedin/login?pollId=${pollIdFromQuery}`;
+      `https://pyngl-integration-backend.onrender.com/api/linkedin/auth/linkedin/login?pollId=${pollIdFromQuery}`;
   };
 
   // -----------------------------

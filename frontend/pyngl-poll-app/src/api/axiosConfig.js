@@ -33,12 +33,12 @@
 // // ✅ Dynamic API base URL
 // const baseURL =
 //   import.meta.env.MODE === 'development'
-//     ? 'http://localhost:5000' // your local dev backend
+//     ? 'https://pyngl-integration-backend.onrender.com' // your local dev backend
 //     : import.meta.env.VITE_API_URL; // Render backend for production
 
 // // ✅ Create Axios instance
 // const apiClient = axios.create({
-//   baseURL: "http://localhost:5000",
+//   baseURL: "https://pyngl-integration-backend.onrender.com",
 //   withCredentials: true   // ⬅ IMPORTANT
 // });
 // // ✅ Global interceptor for 401 Unauthorized
@@ -62,12 +62,12 @@ import useAuthStore from '../store/useAuthStore';
 // Determine correct BASE URL
 const baseURL =
   import.meta.env.MODE === "development"
-    ? ["http://localhost:5000", 'http://localhost:5000'] // or localhost
+    ? ["https://pyngl-integration-backend.onrender.com", 'https://pyngl-integration-backend.onrender.com'] // or localhost
     : import.meta.env.VITE_API_URL;
 
 // Create API client
 const apiClient = axios.create({
-  baseURL: "http://localhost:5000",   // or your backend URL
+  baseURL: "https://pyngl-integration-backend.onrender.com",   // or your backend URL
   withCredentials: true
 });
 

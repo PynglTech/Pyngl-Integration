@@ -191,12 +191,12 @@ export default defineConfig({
 
     proxy: {
       "/api": {
-        target: ["http://localhost:5000", "http://localhost:5000"],
+        target: ["https://pyngl-integration-backend.onrender.com", "https://pyngl-integration-backend.onrender.com"],
         changeOrigin: true,
         secure: false,
       },
       "/auth": {
-        target: ["http://localhost:5000", "http://localhost:5000"],
+        target: ["https://pyngl-integration-backend.onrender.com", "https://pyngl-integration-backend.onrender.com"],
         changeOrigin: true,
         secure: false,
       },

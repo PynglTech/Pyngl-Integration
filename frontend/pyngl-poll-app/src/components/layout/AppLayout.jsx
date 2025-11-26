@@ -1667,7 +1667,7 @@ const AppLayout = () => {
     useEffect(() => {
         if (!userInfo) return;
         fetchNotifications();
-        const socket = io(["http://localhost:5000",'http://localhost:5000' ], { transports: ["websocket"], rejectUnauthorized: false });
+        const socket = io(["https://pyngl-integration-backend.onrender.com",'https://pyngl-integration-backend.onrender.com' ], { transports: ["websocket"], rejectUnauthorized: false });
         socket.on("connect", () => {
             console.log("WebSocket connected:", socket.id);
             socket.emit("join", userInfo._id);
