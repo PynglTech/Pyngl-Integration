@@ -67,8 +67,8 @@ const baseURL =
 
 // Create API client
 const apiClient = axios.create({
-  baseURL: "https://pyngl-integration-backend.onrender.com",   // or your backend URL
-  withCredentials: true
+  baseURL: "https://pyngl-integration-backend.onrender.com",
+  withCredentials: true,
 });
 
 // Global 401 handler

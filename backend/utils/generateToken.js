@@ -101,15 +101,14 @@ const generateToken = (res, userId) => {
     expiresIn: '30d',
   });
 
-  res.cookie('jwt', token, {
-    httpOnly: true,
-    // ⚠️ CRITICAL: Set secure to false for development (http)
-    secure: process.env.NODE_ENV === 'production', 
-    // ⚠️ CRITICAL: Use 'Lax' so it works on redirects and normal login
-    sameSite: 'lax', 
-    maxAge: 30 * 24 * 60 * 60 * 1000, 
-    // ❌ DO NOT add a "domain" property here
-  });
+ res.cookie("jwt", token, {
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+  path: "/",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+});
+
 };
 
 export default generateToken;
