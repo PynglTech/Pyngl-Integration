@@ -282,7 +282,11 @@ import Poll from '../models/Poll.js'; // Make sure this path is correct
 
 const LINKEDIN_CLIENT_ID = process.env.LINKEDIN_CLIENT_ID;
 const LINKEDIN_CLIENT_SECRET = process.env.LINKEDIN_CLIENT_SECRET;
-
+const AllowedOrigins = [
+  "https://pyngl-whatsapp-integrations.vercel.app",
+  "https://pyngl.com",
+  "https://www.pyngl.com"
+];
 // IMPORTANT: This URI must match what's in your LinkedIn Dev App settings
 const LINKEDIN_REDIRECT_URI = 'https://pyngl-integration-backend.onrender.com/api/linkedin/auth/callback';
 
@@ -294,7 +298,7 @@ async function getAuthorUrn(accessToken) {
 
 function generateTrackableLink(pollId) {
     const params = new URLSearchParams({ utm_source: 'linkedin', utm_medium: 'native_poll' });
-    return `https://pyngl-whatsapp-integrations.vercel.app/poll/${pollId}?${params.toString()}`;
+    return `${AllowedOrigins[1]}/poll/${pollId}?${params.toString()}`;
 }
 
 // --- AUTHENTICATION CONTROLLERS ---
@@ -397,7 +401,7 @@ export const handleLinkedInCallback = async (req, res) => {
     const pollId = req.session.pollId;
 
     if (!code) {
-      return res.redirect('https://pyngl-whatsapp-integrations.vercel.app/share-linkedin?auth_linkedin=failed');
+      return res.redirect(`${AllowedOrigins[0]}/share-linkedin?auth_linkedin=failed`);
     }
 
     // 1️⃣ EXCHANGE CODE FOR ACCESS TOKEN
@@ -463,13 +467,13 @@ export const handleLinkedInCallback = async (req, res) => {
 
     // 5️⃣ REDIRECT BACK TO FRONTEND
     const redirectUrl = pollId
-      ? `https://pyngl-whatsapp-integrations.vercel.app/share-linkedin?auth_linkedin=success&pollId=${pollId}`
-      : `https://pyngl-whatsapp-integrations.vercel.app/share-linkedin?auth_linkedin=success`;
+      ? `${AllowedOrigins[0]}/share-linkedin?auth_linkedin=success&pollId=${pollId}`
+      : `${AllowedOrigins[0]}/share-linkedin?auth_linkedin=success`;
 
     res.redirect(redirectUrl);
   } catch (error) {
     console.error("LinkedIn Auth Error:", error.response?.data || error.message);
-    res.redirect("https://pyngl-whatsapp-integrations.vercel.app/share-linkedin?auth_linkedin=failed");
+    res.redirect(`${AllowedOrigins[0]}/share-linkedin?auth_linkedin=failed`);
   }
 };
 
