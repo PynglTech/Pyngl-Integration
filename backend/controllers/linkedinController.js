@@ -294,7 +294,7 @@ async function getAuthorUrn(accessToken) {
 
 function generateTrackableLink(pollId) {
     const params = new URLSearchParams({ utm_source: 'linkedin', utm_medium: 'native_poll' });
-    return `https://pyngl-whatsapp-integration-4g09g6ouw-pyngls-projects.vercel.app/poll/${pollId}?${params.toString()}`;
+    return `https://pyngl-whatsapp-integrations.vercel.app/poll/${pollId}?${params.toString()}`;
 }
 
 // --- AUTHENTICATION CONTROLLERS ---
@@ -397,7 +397,7 @@ export const handleLinkedInCallback = async (req, res) => {
     const pollId = req.session.pollId;
 
     if (!code) {
-      return res.redirect('https://pyngl-whatsapp-integration-4g09g6ouw-pyngls-projects.vercel.app/share-linkedin?auth_linkedin=failed');
+      return res.redirect('https://pyngl-whatsapp-integrations.vercel.app/share-linkedin?auth_linkedin=failed');
     }
 
     // 1️⃣ EXCHANGE CODE FOR ACCESS TOKEN
@@ -463,13 +463,13 @@ export const handleLinkedInCallback = async (req, res) => {
 
     // 5️⃣ REDIRECT BACK TO FRONTEND
     const redirectUrl = pollId
-      ? `https://pyngl-whatsapp-integration-4g09g6ouw-pyngls-projects.vercel.app/share-linkedin?auth_linkedin=success&pollId=${pollId}`
-      : `https://pyngl-whatsapp-integration-4g09g6ouw-pyngls-projects.vercel.app/share-linkedin?auth_linkedin=success`;
+      ? `https://pyngl-whatsapp-integrations.vercel.app/share-linkedin?auth_linkedin=success&pollId=${pollId}`
+      : `https://pyngl-whatsapp-integrations.vercel.app/share-linkedin?auth_linkedin=success`;
 
     res.redirect(redirectUrl);
   } catch (error) {
     console.error("LinkedIn Auth Error:", error.response?.data || error.message);
-    res.redirect("https://pyngl-whatsapp-integration-4g09g6ouw-pyngls-projects.vercel.app/share-linkedin?auth_linkedin=failed");
+    res.redirect("https://pyngl-whatsapp-integrations.vercel.app/share-linkedin?auth_linkedin=failed");
   }
 };
 
