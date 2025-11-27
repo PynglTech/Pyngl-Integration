@@ -27,7 +27,7 @@ import { upload } from '../config/cloudinary.js';
 import User from "../models/User.js";
 
 const router = express.Router();
-const FRONTEND_URL = process.env.FRONTEND_URL ||'https://pyngl-whatsapp-integrations.vercel.app' ||'https://pyngl-whatsapp-integrations.vercel.app';
+const FRONTEND_URL = process.env.FRONTEND_URL ||'https://pyngl-whatsapp-integration-4g09g6ouw-pyngls-projects.vercel.app' ||'https://pyngl-whatsapp-integration-4g09g6ouw-pyngls-projects.vercel.app';
 // router.get("/debug-contacts/:email", async (req, res) => {
 //   try {
 //     const user = await User.findOne({ email: req.params.email });

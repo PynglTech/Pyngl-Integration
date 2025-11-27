@@ -161,7 +161,7 @@ app.use(compression());
 // --- Allowed Origins ---
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://pyngl-whatsapp-integrations.vercel.app"
+  "https://pyngl-whatsapp-integration-4g09g6ouw-pyngls-projects.vercel.app"
 ];
 
 app.use(
