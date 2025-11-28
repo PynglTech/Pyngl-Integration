@@ -387,12 +387,19 @@ export default function InstallPrompt() {
       // 2. Not on standalone mode
       // 3. Has a service worker (PWA is ready)
       if (!deferredPrompt && !standalone) {
-        navigator.serviceWorker.getRegistrations().then((registrations) => {
-          if (registrations.length > 0) {
-            console.log("⚠️ Showing fallback install prompt (LAN/HTTP mode)");
-            setShowPrompt(true);
-          }
-        });
+        if ("serviceWorker" in navigator && navigator.serviceWorker) {
+  navigator.serviceWorker.getRegistrations()
+    .then((registrations) => {
+      if (registrations.length > 0) {
+        console.log("⚠️ Showing fallback install prompt (LAN/HTTP mode)");
+        setShowPrompt(true);
+      }
+    })
+    .catch((err) => console.warn("SW registration error:", err));
+} else {
+  console.warn("🚫 Service worker not supported on this domain/IP");
+}
+
       }
     }, 3000);
 

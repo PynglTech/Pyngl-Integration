@@ -134,6 +134,8 @@
   import uploadRoutes from "./routes/uploadRoutes.js";
   import googleRoutes from "./routes/googleRoutes.js";
   import appleRoutes from "./routes/appleRoutes.js";
+  // import whatsappRoutes from "./routes/whatsappRoutes.js";
+  import whatsappWebhookRoutes from "./routes/whatsappWebhookRoutes.js";
 
   // --- Utility Imports ---
   import initScheduledJobs from "./utils/scheduler.js";
@@ -161,10 +163,11 @@
     "https://www.pyngl.com",
     "https://pyngl.com",
     "http://localhost:5173",
+    "https://flaggy-chargable-karter.ngrok-free.dev",
     "https://localhost:5173",
 
     // ⭐ Allow ANY direct IP with optional port
-    "https://192.168.1.12:5173",
+    "http://192.168.1.12:5173",
   ];
 
   // --- CORS Middleware ---
@@ -236,6 +239,7 @@
     });
   });
 
+
   // --- MongoDB Connection ---
   mongoose
     .connect(process.env.MONGO_URI)
@@ -250,11 +254,30 @@
   app.use("/api/upload", uploadRoutes);
   app.use("/auth", googleRoutes);
   app.use("/apple", appleRoutes);
+  // app.use("/api/whatsapp", whatsappRoutes);
+app.use("/webhook/whatsapp", whatsappWebhookRoutes);
 
 
+app.get("/webhook", (req, res) => {
+  const VERIFY_TOKEN ="pyngl_webhook_token"; // SAME AS FB DEVELOPER PORTAL
+
+  const mode = req.query["hub.mode"];
+  const token = req.query["hub.verify_token"];
+  const challenge = req.query["hub.challenge"];
+
+  if (mode && token && mode === "subscribe" && token === VERIFY_TOKEN) {
+    console.log("Webhook verified!");
+    res.status(200).send(challenge);
+  } else {
+    res.sendStatus(403);
+  }
+});
+app.post("/webhook", (req, res) => {
+  console.log("Incoming WhatsApp message:", JSON.stringify(req.body, null, 2));
+  res.sendStatus(200);
+});
 
 
-  // --- Health Check Root ---
 app.get("/", (req, res) => {
   res.send("<h1>✅ Pyngl API is Live at api.pyngl.com</h1>");
 });
@@ -272,3 +295,4 @@ initScheduledJobs(io);
 server.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
 });
+ 

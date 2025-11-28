@@ -1,71 +1,99 @@
+// // import axios from 'axios';
+// // import useAuthStore from '../store/useAuthStore';
+
+// // // Create a new Axios instance
+// // const apiClient = axios.create({
+// //     baseURL: '', // The Vite proxy handles the full URL, so this can be empty
+// //     withCredentials: true, // This is the crucial part that sends cookies
+// // });
+
+// // // 🔥 BONUS: Add an interceptor for global 401 error handling
+// // apiClient.interceptors.response.use(
+// //     (response) => response, // Directly return a successful response
+// //     (error) => {
+// //         // Check if the error is a 401 Unauthorized
+// //         if (error.response && error.response.status === 401) {
+// //             // Use the global logout function from your Zustand store
+// //             // This prevents an infinite loop if the logout call itself fails
+// //             if (!error.config.url.includes('/logout')) {
+// //                 useAuthStore.getState().logout();
+// //                 window.location.href = '/'; // Redirect to the login page
+// //             }
+// //         }
+// //         // Return any other error so that individual components can handle it
+// //         return Promise.reject(error);
+// //     }
+// // );
+
+
+// // export default apiClient;
 // import axios from 'axios';
 // import useAuthStore from '../store/useAuthStore';
 
-// // Create a new Axios instance
-// const apiClient = axios.create({
-//     baseURL: '', // The Vite proxy handles the full URL, so this can be empty
-//     withCredentials: true, // This is the crucial part that sends cookies
-// });
+// // ✅ Dynamic API base URL
+// const baseURL =
+//   import.meta.env.MODE === 'development'
+//     ? 'http://localhost:5000' // your local dev backend
+//     : import.meta.env.VITE_API_URL; // Render backend for production
 
-// // 🔥 BONUS: Add an interceptor for global 401 error handling
+// // ✅ Create Axios instance
+// const apiClient = axios.create({
+//   baseURL: "http://localhost:5000",
+//   withCredentials: true   // ⬅ IMPORTANT
+// });
+// // ✅ Global interceptor for 401 Unauthorized
 // apiClient.interceptors.response.use(
-//     (response) => response, // Directly return a successful response
-//     (error) => {
-//         // Check if the error is a 401 Unauthorized
-//         if (error.response && error.response.status === 401) {
-//             // Use the global logout function from your Zustand store
-//             // This prevents an infinite loop if the logout call itself fails
-//             if (!error.config.url.includes('/logout')) {
-//                 useAuthStore.getState().logout();
-//                 window.location.href = '/'; // Redirect to the login page
-//             }
-//         }
-//         // Return any other error so that individual components can handle it
-//         return Promise.reject(error);
+//   (response) => response,
+//   (error) => {
+//     if (error.response && error.response.status === 401) {
+//       useAuthStore.getState().logout();
+//       window.location.href = '/';
 //     }
+//     return Promise.reject(error);
+//   }
 // );
 
-
 // export default apiClient;
-import axios from 'axios';
-import useAuthStore from '../store/useAuthStore';
 
-// Detect host (works for mobile + desktop)
+
+import axios from "axios";
+import useAuthStore from "../store/useAuthStore";
+
 const host = window.location.hostname;
+const protocol = window.location.protocol; // http: or https:
 
 let baseURL;
 
-// Development mode
+// ============= DEVELOPMENT ENV (localhost or LAN) =============
 if (import.meta.env.MODE === "development") {
   if (host === "localhost") {
-    baseURL = "http://localhost:5000";            // Desktop
-  } else {
-    baseURL = `http://${host}:5000`;              // Mobile on same WiFi
+    baseURL = "http://localhost:5000";
+  } else if (host.startsWith("192.168")) {
+    baseURL = `http://${host}:5000`;
+  } else if (host.endsWith("ngrok-free.dev")) {
+    // ⭐ NGROK FRONTEND → use ngrok backend (same domain)
+    baseURL = `${protocol}//${host}`;
   }
 }
-// Production (Render)
+
+// ============= PRODUCTION ENV =============
 else {
   baseURL = import.meta.env.VITE_API_URL;
 }
 
-// Create Axios instance
 const apiClient = axios.create({
   baseURL,
   withCredentials: true,
 });
 
-// Global interceptor for 401
 apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response && error.response.status === 401) {
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401) {
       useAuthStore.getState().logout();
-      window.location.href = "/";
     }
-    return Promise.reject(error);
+    return Promise.reject(err);
   }
 );
 
 export default apiClient;
-
-

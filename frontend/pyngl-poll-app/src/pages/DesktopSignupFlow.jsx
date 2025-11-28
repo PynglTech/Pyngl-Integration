@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import RegisterForm from "../components/signup/RegisterForm";
 import OtpForm from "../components/signup/OtpForm";
 import DobForm from "../components/signup/DobForm";
-import UsernameForm from "../components/signup/UsernameForm";
+import UsernameForm from "../components/signup/UserNameForm";
 import SetPasswordForm from "../components/signup/SetPasswordForm";
 import SuccessMessage from "../components/signup/SuccessMessage";
 

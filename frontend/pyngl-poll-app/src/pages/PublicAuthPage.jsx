@@ -172,7 +172,7 @@ import ForgotPasswordSheet from '../components/auth/ForgotPasswordSheet';
 import DesktopHomePage from './DesktopHomePage';
 import DesktopAuthPage from '../components/auth/DesktopAuthPage';
 import MobileAuthPage from './MobileAuthPage';
-import InstallPrompt from './InstallPrompt';
+// import InstallPrompt from './InstallPrompt';
 
 // Responsive utility
 const useIsDesktop = () => {
@@ -225,7 +225,7 @@ const PublicAuthPage = () => {
   return (
     <>
       {content}
-      <InstallPrompt />
+      {/* <InstallPrompt /> */}
     </>
   );
 };

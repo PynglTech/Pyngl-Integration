@@ -229,23 +229,22 @@
 // }
 
 import React, { useEffect, useState, useRef } from "react";
-import { X, RotateCw, Edit2, Loader } from "lucide-react";
+import { X, RotateCw, Edit2, Loader, Copy } from "lucide-react";
 import ImageEditPreview from "./ImageEditPreview";
 import PollPreview from "./PollPreview";
 import apiClient from "../../api/axiosConfig";
 import * as htmlToImage from "html-to-image";
+import { toast } from 'react-hot-toast';
+import AppleQR from "../apple/AppleQR";
 
 export default function PlatformPreview({ platform, poll, onClose, onConfirm }) {
   const platformDimensions = {
     instagram: { width: 1080, height: 1920, label: "Reels / Stories", aspect: 9 / 16 },
     twitter: { width: 1200, height: 628, label: "X / Twitter", aspect: 1200 / 628 },
-    linkedin: { width: 1200, height: 627, label: "LinkedIn", aspect: 1200 / 627 },
     facebook: { width: 1200, height: 630, label: "Facebook", aspect: 1200 / 630 },
     whatsapp: { width: 1200, height: 630, label: "WhatsApp", aspect: 1200 / 630 },
     youtube: { width: 1280, height: 720, label: "YouTube", aspect: 16 / 9 },
     gmail: { width: 1200, height: 600, label: "Email Banner", aspect: 2 },
-
-    // NEW PLATFORM
     imessages: { width: 1200, height: 600, label: "Apple iMessage", aspect: 2 },
   };
 
@@ -268,14 +267,16 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
   const POLL_PREVIEW_BASE = `${POLL_PAGE_DOMAIN}/api/polls/`;
 
   // -----------------------------------------------------
-  // 📌 Apple Business Chat iMessage URL
+  // 📌 Apple Business Chat Entry Point Logic
   // -----------------------------------------------------
-  const APPLE_BUSINESS_ID = "urn:biz:539765e3-16f4-4441-95f5-9b984f5617e5"; // REPLACE THIS
+  // This ID must match your registered Apple Business ID
+  const APPLE_BUSINESS_ID = "urn:biz:539765e3-16f4-4441-95f5-9b984f5617e5"; 
+  
+  // The hidden trigger text that starts the bot
   const IMESSAGE_TRIGGER_TEXT = `Start Poll #${poll._id}`;
-  const iMessageUrl = `https://bcrw.apple.com/${APPLE_BUSINESS_ID}?body=${encodeURIComponent(
-    IMESSAGE_TRIGGER_TEXT
-  )}`;
-  console.log("🚀 ~ PlatformPreview ~ iMessageUrl:", iMessageUrl)
+  
+  // The Magic Link: Clicking this opens iMessage with the text pre-filled
+  const iMessageEntryUrl = `https://bcrw.apple.com/${APPLE_BUSINESS_ID}?body=${encodeURIComponent(IMESSAGE_TRIGGER_TEXT)}`;
 
   const handleRestore = () => {
     setImageDimensions(platformDimensions[platform]);
@@ -302,7 +303,7 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
       return res.data.hostedPreviewImage;
     } catch (error) {
       console.error("Failed to upload preview image:", error);
-      alert("Error uploading preview image. Please try again.");
+      toast.error("Error uploading preview image.");
       return null;
     }
   };
@@ -310,150 +311,325 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
   // -----------------------------------------------------
   // 📌 Main Share Function
   // -----------------------------------------------------
+  // const handleShare = async () => {
+  //   if (isLoading) return;
+  //   setIsLoading(true);
+
+  //   try {
+  //     if (!pollRef.current) throw new Error("Poll reference missing.");
+
+  //     // Hide edit buttons in screenshot
+  //     const editButtons = pollRef.current.querySelectorAll(".edit-button, .restore-button");
+  //     editButtons.forEach((btn) => (btn.style.display = "none"));
+
+  //     // Inline ALL images before capturing
+  //     const imgs = pollRef.current.querySelectorAll("img");
+  //     await Promise.all(
+  //       Array.from(imgs).map(async (img) => {
+  //         if (!img.complete || img.naturalWidth === 0) {
+  //           await new Promise((resolve) => {
+  //             img.onload = resolve;
+  //             img.onerror = resolve;
+  //           });
+  //         }
+  //         if (!img.src.startsWith("data:")) {
+  //           try {
+  //             const res = await fetch(img.src, { mode: "cors" });
+  //             const blob = await res.blob();
+  //             const reader = new FileReader();
+  //             await new Promise((resolve) => {
+  //               reader.onload = () => {
+  //                 img.src = reader.result;
+  //                 resolve();
+  //               };
+  //               reader.readAsDataURL(blob);
+  //             });
+  //           } catch {
+  //             console.warn("Skipped non-inlineable image:", img.src);
+  //           }
+  //         }
+  //       })
+  //     );
+
+  //     await new Promise((r) => setTimeout(r, 150));
+
+  //     // Convert DOM to image
+  //     const dataUrl = await htmlToImage.toPng(pollRef.current, {
+  //       cacheBust: true,
+  //       backgroundColor: getComputedStyle(document.body).backgroundColor || "#ffffff",
+  //       quality: 1,
+  //     });
+
+  //     const blob = await (await fetch(dataUrl)).blob();
+  //     editButtons.forEach((btn) => (btn.style.display = ""));
+
+  //     const hostedPreviewImage = await uploadPreviewImage(blob);
+  //     if (!hostedPreviewImage) throw new Error("Image upload failed.");
+
+  //   // -----------------------------------------------------
+  //     // 🚀 APPLE MESSAGES / SMS SHARING FLOW
+  //     // -----------------------------------------------------
+  //     if (platform === "imessages") {
+  //       const shareText = `Vote on my Poll: "${poll.question}"\n Click the link below and click send the prefilled message to vote:\n`;
+  //       const smsBody = encodeURIComponent(`${shareText} ${iMessageEntryUrl}`);
+        
+  //       // 1. Detect OS
+  //       const isAppleDevice = /Mac|iPhone|iPad|iPod/i.test(navigator.platform) || /Macintosh|Mac OS X/i.test(navigator.userAgent);
+  //       const isAndroid = /Android/i.test(navigator.userAgent);
+
+  //       if (isAppleDevice) {
+  //           // ✅ Mac/iOS: Use '&body=' (Apple specific quirk)
+  //           window.location.href = `sms:&body=${smsBody}`;
+  //           toast.success("Opening Messages app...");
+  //       } 
+  //       else if (isAndroid) {
+  //           // ✅ Android: Use '?body=' (Standard SMS scheme)
+  //           window.location.href = `sms:?body=${smsBody}`;
+  //           toast.success("Opening Messages app...");
+  //       } 
+  //       else {
+  //           // 💻 Windows/Linux: Try Native Share Sheet first
+  //           if (navigator.share) {
+  //               try {
+  //                   await navigator.share({
+  //                       title: "Vote on my Poll",
+  //                       text: shareText,
+  //                       url: iMessageEntryUrl,
+  //                   });
+  //                   toast.success("Shared successfully!");
+  //               } catch (err) {
+  //                   // Fallback if user cancels share or it fails
+  //                   console.log("Share cancelled or failed, copying to clipboard...");
+  //                   await navigator.clipboard.writeText(`${shareText} ${iMessageEntryUrl}`);
+  //                   toast.success("Link copied! Share it manually.");
+  //               }
+  //           } else {
+  //               // Fallback if Share Sheet is not supported
+  //               await navigator.clipboard.writeText(`${shareText} ${iMessageEntryUrl}`);
+  //               toast.success("Link copied! Share it manually.");
+  //           }
+  //       }
+        
+  //       setIsLoading(false);
+  //       return;
+  //     }
+  //     // -----------------------------------------------------
+  //     // Twitter Share
+  //     // -----------------------------------------------------
+  //     if (platform === "twitter") {
+  //       const previewUrl = `${POLL_PREVIEW_BASE}${poll._id}/preview?platform=twitter`;
+  //       const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+  //         poll.question
+  //       )}&url=${encodeURIComponent(previewUrl)}`;
+  //       window.open(twitterShareUrl, "_blank");
+  //     }
+
+  //     // Instagram (Native Share of Image)
+  //     else if (platform === "instagram") {
+  //       const file = new File([blob], "poll.png", { type: blob.type });
+  //       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+  //         await navigator.share({
+  //           files: [file],
+  //           title: "Check out my poll!",
+  //           text: "Vote here:",
+  //         });
+  //       } else {
+  //         alert("Instagram sharing is only supported on mobile devices.");
+  //       }
+  //     }
+
+  //     // Default Flow (Download Image)
+  //     else {
+  //       const file = new File([blob], "poll.png", { type: blob.type });
+  //       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+  //         await navigator.share({
+  //           files: [file],
+  //           title: "Check out my poll!",
+  //           text: "Vote here:",
+  //         });
+  //       } else {
+  //         const a = document.createElement("a");
+  //         a.href = URL.createObjectURL(blob);
+  //         a.download = "poll.png";
+  //         a.click();
+  //         toast.success("Image downloaded!");
+  //       }
+  //     }
+      
+
+  //     if (typeof onConfirm === "function") onConfirm(hostedPreviewImage);
+  //   } catch (error) {
+  //     console.error(`${platform} sharing failed:`, error);
+  //     if (!error.message.includes("Image upload failed.")) {
+  //       toast.error("Sharing failed. Please try again.");
+  //     }
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+
   const handleShare = async () => {
-    if (isLoading) return;
-    setIsLoading(true);
+  if (isLoading) return;
+  setIsLoading(true);
 
-    try {
-      if (!pollRef.current) throw new Error("Poll reference missing.");
-
-      // Hide edit buttons in screenshot
-      const editButtons = pollRef.current.querySelectorAll(".edit-button, .restore-button");
-      editButtons.forEach((btn) => (btn.style.display = "none"));
-
-      // Inline ALL images before capturing
-      const imgs = pollRef.current.querySelectorAll("img");
-      await Promise.all(
-        Array.from(imgs).map(async (img) => {
-          if (!img.complete || img.naturalWidth === 0) {
-            await new Promise((resolve) => {
-              img.onload = resolve;
-              img.onerror = resolve;
-            });
-          }
-
-          if (!img.src.startsWith("data:")) {
-            try {
-              const res = await fetch(img.src, { mode: "cors" });
-              const blob = await res.blob();
-              const reader = new FileReader();
-              await new Promise((resolve) => {
-                reader.onload = () => {
-                  img.src = reader.result;
-                  resolve();
-                };
-                reader.readAsDataURL(blob);
-              });
-            } catch {
-              console.warn("Skipped non-inlineable image:", img.src);
-            }
-          }
-        })
-      );
-
-      await new Promise((r) => setTimeout(r, 150));
-
-      // Convert DOM to image
-      const dataUrl = await htmlToImage.toPng(pollRef.current, {
-        cacheBust: true,
-        backgroundColor: getComputedStyle(document.body).backgroundColor || "#ffffff",
-        quality: 1,
-      });
-
-      const blob = await (await fetch(dataUrl)).blob();
-      editButtons.forEach((btn) => (btn.style.display = ""));
-
-      const hostedPreviewImage = await uploadPreviewImage(blob);
-      if (!hostedPreviewImage) throw new Error("Image upload failed.");
-
-      // -----------------------------------------------------
-      // 📌 iMessage Sharing
-      // -----------------------------------------------------
-     if (platform === "imessages") {
   try {
-    if (navigator.share) {
-      await navigator.share({
-        title: "Vote on my Poll!",
-        text: `Hey! I created a poll: "${poll.question}"`,
-        url: iMessageUrl,
-      });
-    } else if (navigator.clipboard && navigator.clipboard.writeText) {
-      await navigator.clipboard.writeText(iMessageUrl);
-      alert("iMessage link copied! Paste it in Messages app.");
-    } else {
-      // Safari / iOS fallback
-      const input = document.createElement("input");
-      input.value = iMessageUrl;
-      document.body.appendChild(input);
-      input.select();
-      document.execCommand("copy");
-      document.body.removeChild(input);
+    // ===============================================
+    // 🚀 SPECIAL CASE: iMessage — SKIP EVERYTHING ELSE
+    // ===============================================
+    if (platform === "imessages") {
+      const shareText = `Vote on my Poll: "${poll.question}"\nClick the link below and send the pre-filled message to vote:\n`;
+      const smsBody = encodeURIComponent(`${shareText} ${iMessageEntryUrl}`);
 
-      alert("iMessage link copied! (Safari fallback)");
-    }
-  } catch (err) {
-    console.error("iMessage share failed:", err);
-  }
+      const isAppleDevice =
+        /iPhone|iPad|iPod|Macintosh|Mac OS X/i.test(navigator.userAgent);
+      const isAndroid = /Android/i.test(navigator.userAgent);
 
-  if (typeof onConfirm === "function") onConfirm(hostedPreviewImage);
-  setIsLoading(false);
-  return;
-}
-
-
-      // -----------------------------------------------------
-      // Twitter Share
-      // -----------------------------------------------------
-      if (platform === "twitter") {
-        const previewUrl = `${POLL_PREVIEW_BASE}${poll._id}/preview?platform=twitter`;
-        const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-          poll.question
-        )}&url=${encodeURIComponent(previewUrl)}`;
-        window.open(twitterShareUrl, "_blank");
+      // 🍏 iPhone / Mac
+      if (isAppleDevice) {
+        window.location.href = `sms:&body=${smsBody}`;
+        toast.success("Opening Apple Messages…");
       }
-
-      // Instagram
-      else if (platform === "instagram") {
-        const file = new File([blob], "poll.png", { type: blob.type });
-        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: "Check out my poll!",
-            text: "Vote here:",
-          });
-        } else {
-          alert("Instagram sharing not supported on this browser.");
-        }
+      // 🤖 Android
+      else if (isAndroid) {
+        window.location.href = `sms:?body=${smsBody}`;
+        toast.success("Opening Messages…");
       }
-
-      // Default Flow
+      // 🖥 Windows / Linux / Unknown device
       else {
-        const file = new File([blob], "poll.png", { type: blob.type });
-        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: "Check out my poll!",
-            text: "Vote here:",
-          });
+        if (navigator.share) {
+          try {
+            await navigator.share({
+              title: "Vote on my Poll",
+              text: shareText,
+              url: iMessageEntryUrl,
+            });
+            toast.success("Shared!");
+          } catch (err) {
+            await navigator.clipboard.writeText(`${shareText} ${iMessageEntryUrl}`);
+            toast.success("Link copied to clipboard!");
+          }
         } else {
-          const a = document.createElement("a");
-          a.href = URL.createObjectURL(blob);
-          a.download = "poll.png";
-          a.click();
-          alert("Sharing not supported — image downloaded.");
+          await navigator.clipboard.writeText(`${shareText} ${iMessageEntryUrl}`);
+          toast.success("Link copied to clipboard!");
         }
       }
 
-      if (typeof onConfirm === "function") onConfirm(hostedPreviewImage);
-    } catch (error) {
-      console.error(`${platform} sharing failed:`, error);
-      if (!error.message.includes("Image upload failed.")) {
-        alert("Sharing failed. Please try again.");
-      }
-    } finally {
       setIsLoading(false);
+      return; // 🔥 stop here — DO NOT run screenshot logic
     }
-  };
+
+    // ===============================================
+    // 🖼️ OTHER PLATFORMS — screenshot + upload
+    // ===============================================
+
+    if (!pollRef.current) throw new Error("Poll reference missing.");
+
+    // Hide edit buttons
+    const editButtons = pollRef.current.querySelectorAll(".edit-button, .restore-button");
+    editButtons.forEach((btn) => (btn.style.display = "none"));
+
+    // Inline all images for iOS rendering
+    const imgs = pollRef.current.querySelectorAll("img");
+    await Promise.all(
+      Array.from(imgs).map(async (img) => {
+        if (!img.complete || img.naturalWidth === 0) {
+          await new Promise((resolve) => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        }
+        if (!img.src.startsWith("data:")) {
+          try {
+            const res = await fetch(img.src, { mode: "cors" });
+            const blob = await res.blob();
+            const reader = new FileReader();
+            await new Promise((resolve) => {
+              reader.onload = () => {
+                img.src = reader.result;
+                resolve();
+              };
+              reader.readAsDataURL(blob);
+            });
+          } catch {
+            console.warn("Skipped image:", img.src);
+          }
+        }
+      })
+    );
+
+    await new Promise((r) => setTimeout(r, 150));
+
+    // Convert DOM to PNG
+    const dataUrl = await htmlToImage.toPng(pollRef.current, {
+      cacheBust: true,
+      backgroundColor: getComputedStyle(document.body).backgroundColor || "#ffffff",
+      quality: 1,
+    });
+
+    const blob = await (await fetch(dataUrl)).blob();
+    editButtons.forEach((btn) => (btn.style.display = ""));
+
+    const hostedPreviewImage = await uploadPreviewImage(blob);
+    if (!hostedPreviewImage) throw new Error("Image upload failed.");
+
+    // ===============================================
+    // 🐦 TWITTER
+    // ===============================================
+    if (platform === "twitter") {
+      const previewUrl = `${POLL_PREVIEW_BASE}${poll._id}/preview?platform=twitter`;
+      const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+        poll.question
+      )}&url=${encodeURIComponent(previewUrl)}`;
+      window.open(twitterShareUrl, "_blank");
+    }
+
+    // ===============================================
+    // 📸 INSTAGRAM
+    // ===============================================
+    else if (platform === "instagram") {
+      const file = new File([blob], "poll.png", { type: blob.type });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: "Check out my poll!",
+          text: "Vote here:",
+        });
+      } else {
+        alert("Instagram sharing works only on supported mobile devices.");
+      }
+    }
+
+    // ===============================================
+    // 🖼️ DEFAULT DOWNLOAD
+    // ===============================================
+    else {
+      const file = new File([blob], "poll.png", { type: blob.type });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: "Check out my poll!",
+          text: "Vote here:",
+        });
+      } else {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "poll.png";
+        a.click();
+        toast.success("Image downloaded!");
+      }
+    }
+
+    if (typeof onConfirm === "function") onConfirm(hostedPreviewImage);
+  } catch (error) {
+    console.error(`${platform} sharing failed:`, error);
+    if (platform !== "imessages") {
+      toast.error("Sharing failed. Please try again.");
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <>
@@ -478,42 +654,100 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
               Preview - {platform}
             </h4>
 
-            <div ref={pollRef} className="flex justify-center relative">
-              <PollPreview
-                poll={poll}
-                croppedImage={previewImage}
-                aspect={platformDimensions[platform]?.aspect || 1}
-              />
+     {platform === "imessages" ? (
+  <div className="px-6 pb-6 mt-2">
+    {/* GUIDE CARD */}
+    <div className="w-full max-w-md  mx-auto bg-white dark:bg-[#1a1d29] rounded-2xl p-5 shadow-lg border border-gray-200 dark:border-gray-700">
+      
+      {/* Icon */}
+      <div className="flex justify-center mb-3">
+        <img 
+          src="/icons/apple-icon.svg" 
+          alt="iMessage" 
+          className="w-12 h-12"
+        />
+      </div>
 
-              {editedOnce && poll.type !== "text" && (
-                <button
-                  onClick={handleRestore}
-                  className="restore-button absolute top-0 left-6 w-8 h-8 bg-pink-100 dark:bg-pink-900/50 rounded-full flex items-center justify-center shadow border border-pink-200 dark:border-pink-800"
-                  disabled={isLoading}
-                >
-                  <RotateCw size={18} className="text-pink-600 dark:text-pink-300" />
-                </button>
-              )}
+      {/* Title */}
+      <h2 className="text-lg font-semibold text-center text-gray-900 dark:text-white">
+        Share your Poll via iMessage
+      </h2>
 
-              {poll.type !== "text" && (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="edit-button absolute top-0 right-6 w-8 h-8 bg-pink-100 dark:bg-pink-900/50 rounded-full flex items-center justify-center shadow border border-pink-200 dark:border-pink-800"
-                  disabled={isLoading}
-                >
-                  <Edit2 size={16} className="text-pink-600 dark:text-pink-300" />
-                </button>
-              )}
+      {/* Description */}
+      <p className="text-sm text-center text-gray-600 dark:text-gray-300 mt-2">
+        Tap the button below to open Apple Messages with your poll link pre-filled.
+        Just send the message and your audience can vote instantly.
+      </p>
+
+      {/* Preview of message */}
+      <div className="bg-gray-100 dark:bg-[#0f121d] p-4 rounded-xl mt-4 text-sm text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700">
+        <strong>Message Preview:</strong> <br />
+        Start Poll #{poll._id}
+      </div>
+
+      {/* Buttons */}
+      <div className="mt-5 flex flex-col gap-3">
+        <button
+          onClick={() => {
+            window.location.href = iMessageEntryUrl;
+          }}
+          className="w-full py-3 bg-pyngl-pink text-white rounded-full font-medium text-base"
+        >
+          Open Messages
+        </button>
+
+        <button
+          onClick={async () => {
+            await navigator.clipboard.writeText(iMessageEntryUrl);
+            toast.success("Link copied!");
+          }}
+          className="w-full py-3 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-full font-medium text-base"
+        >
+          Copy Share Link
+        </button>
+      </div>
+    </div>
+  </div>
+) : (
+  <div ref={pollRef} className="flex justify-center relative">
+    <PollPreview
+      poll={poll}
+      croppedImage={previewImage}
+      aspect={platformDimensions[platform]?.aspect || 1}
+    />
+                      
+                       {editedOnce && poll.type !== "text" && (
+                        <button
+                          onClick={handleRestore}
+                          className="restore-button absolute top-0 left-6 w-8 h-8 bg-pink-100 dark:bg-pink-900/50 rounded-full flex items-center justify-center shadow border border-pink-200 dark:border-pink-800"
+                          disabled={isLoading}
+                        >
+                          <RotateCw size={18} className="text-pink-600 dark:text-pink-300" />
+                        </button>
+                      )}
+
+                      {poll.type !== "text" && (
+                        <button
+                          onClick={() => setIsEditing(true)}
+                          className="edit-button absolute top-0 right-6 w-8 h-8 bg-pink-100 dark:bg-pink-900/50 rounded-full flex items-center justify-center shadow border border-pink-200 dark:border-pink-800"
+                          disabled={isLoading}
+                        >
+                          <Edit2 size={16} className="text-pink-600 dark:text-pink-300" />
+                        </button>
+               )}
             </div>
+            )}
 
-            <div className="flex justify-center mt-3 gap-14">
-              <div className="text-xs font-semibold text-gray-900 dark:text-gray-100">
-                {platformDimensions[platform]?.label || platform}
-              </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">
-                {platformDimensions[platform]?.width}×{platformDimensions[platform]?.height}
-              </div>
-            </div>
+          {platform !== "imessages" && (
+  <div className="flex justify-center mt-3 gap-14">
+    <div className="text-xs font-semibold text-gray-900 dark:text-gray-100">
+      {platformDimensions[platform]?.label || platform}
+    </div>
+    <div className="text-xs text-gray-500 dark:text-gray-400">
+      {platformDimensions[platform]?.width}×{platformDimensions[platform]?.height}
+    </div>
+  </div>
+)}
           </div>
 
           <div className="px-6 pb-6 mt-2">
@@ -528,7 +762,7 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
                   Preparing Share...
                 </>
               ) : platform === "imessages" ? (
-                "Share on iMessage"
+                "Share Link"
               ) : (
                 `Share on ${platform.charAt(0).toUpperCase() + platform.slice(1)}`
               )}
@@ -537,7 +771,7 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
         </div>
       </div>
 
-      {isEditing && (
+      {platform !== "imessages" && isEditing && (
         <ImageEditPreview
           imageSrc={dbImage}
           aspect={platformDimensions[platform]?.aspect || 9 / 16}
@@ -554,5 +788,4 @@ export default function PlatformPreview({ platform, poll, onClose, onConfirm }) 
     </>
   );
 }
-
 

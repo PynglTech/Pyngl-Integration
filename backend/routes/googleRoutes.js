@@ -8,7 +8,8 @@ import {
 
 const router = express.Router();
 
-router.get("/login", login);
+router.get("/google", login);
+
 router.get("/oauth2callback", oauth2callback);
 router.get("/contacts", getContacts);
 

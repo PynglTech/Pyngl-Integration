@@ -184,22 +184,29 @@ export default defineConfig({
       },
     }),
   ],
+server: {
+  https: false,
+  host: true,
+  port: 5173,
+   allowedHosts: [
+      "flaggy-chargable-karter.ngrok-free.dev",
+      // Allow all ngrok free domains (optional)
+      /\.ngrok-free\.dev$/,
+    ],
 
-  server: {
-    https: false, // ✅ CHANGED: Enable HTTPS for LAN access
-    host: true, // ✅ Expose to network
 
-    proxy: {
-      "/api": {
-        target: "http://localhost:5000",
-        changeOrigin: true,
-        secure: false,
-      },
-      "/auth": {
-        target: "http://localhost:5000",
-        changeOrigin: true,
-        secure: false,
-      },
+  proxy: {
+    "/api": {
+      target: "http://localhost:5000",
+      changeOrigin: true,
+      secure: false,
+    },
+    "/auth": {
+      target: "http://localhost:5000",
+      changeOrigin: true,
+      secure: false,
     },
   },
+},
+
 });

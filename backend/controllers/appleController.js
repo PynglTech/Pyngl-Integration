@@ -101,102 +101,155 @@ const STANDARD_MSG_URL = 'https://api.livechatinc.com/v3.5/agent/action/send_eve
 // };
 
 // --- MAIN WEBHOOK HANDLER ---
+
+// --- HELPER: Check Business Hours (Mon-Fri, 9 AM - 5 PM IST) ---
+const isBusinessHours = () => {
+    const now = new Date();
+
+    // Convert current server time to Asia/Kolkata
+    const istTime = new Date(
+        now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+    );
+
+    const day = istTime.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+    const hour = istTime.getHours(); // 0-23
+
+    // Working days: Monday(1) → Friday(5)
+    const isWeekday = day >= 1 && day <= 5;
+
+    // Working hours: 9 AM → 5 PM (17:00)
+    const isWorkingHours = hour >= 9 && hour < 17;
+
+    return isWeekday && isWorkingHours;
+};
+
+
 export const handleWebhook = async (req, res) => {
     try {
-        // 1. Universal Payload Parser
         const payload = req.body.payload || req.body;
-        console.log("🚀 ~ handleWebhook ~ payload:", payload)
-
-        // 2. Validation
         if (!payload || !payload.event) return res.sendStatus(200);
 
-        const event = payload.event;
-        const eventType = event.type;
+        // --- CRITICAL FIX: Ignore Bot/Agent Messages ---
+        // Check author_type (LiveChat standard) or specific author_id
+        const authorType = payload.event.author_type || payload.event.user_type; // varies by API version
         
-        // Robust ID Extraction
-        const chatId = payload.chat_id || event.chat_id;
-        const threadId = payload.thread_id || event.thread_id || null;
+        // If the author is NOT a customer, stop immediately.
+        // This prevents the bot from reading its own "Need support..." message.
+        if (authorType === 'agent' || authorType === 'bot' || payload.event.author_id === 'tech@pyngl.com') {
+            return res.sendStatus(200); 
+        }
+        
+        // 1. Determine Event Type and Extract Data
+        let eventType = payload.event ? payload.event.type : null;
+        let chatId = payload.chat_id || (payload.chat ? payload.chat.id : null);
+        let threadId = payload.thread_id || (payload.chat && payload.chat.thread ? payload.chat.thread.id : null);
+        let messageText = "";
 
-        console.log(`🔔 Event: ${eventType} | Chat: ${chatId}`);
-
-        // --- CASE: MESSAGE EVENT (Used for both "Start Poll" AND "Vote") ---
-        if (eventType === 'message') {
-            const messageText = event.text || "";
-            console.log(`📩 Text Received: "${messageText}"`);
-
-            // -------------------------------------------------------
-            // A. CHECK FOR TRIGGER: "Start Poll #ID"
-            // -------------------------------------------------------
-            const triggerMatch = messageText.match(/Start Poll #([a-f0-9]{24})/i);
-
-            if (triggerMatch) {
-                const pollId = triggerMatch[1];
-                
-                try {
-                    const poll = await Poll.findById(pollId);
-                    if (poll) {
-                        console.log(`🚀 Sending Poll: "${poll.question}"`);
-                        await sendDynamicListPicker(chatId, threadId, poll);
-                    } else {
-                        console.log(`⚠️ Poll #${pollId} not found.`);
-                    }
-                } catch (err) {
-                    console.error("⚠️ DB Error (Trigger):", err.message);
-                }
-                return res.sendStatus(200); // Stop here if it was a trigger
-            }
-
-            // -------------------------------------------------------
-            // B. CHECK FOR VOTE: Match Text to Option Title
-            // -------------------------------------------------------
-            // Apple sends the selected option title as text (e.g., "React")
-            try {
-                // Find a poll that has an option matching this text
-                // Note: Ideally, we should filter by recent activity or active session,
-                // but for now, finding ANY poll with this option text works.
-                const poll = await Poll.findOne({
-                    "options.text": messageText
-                });
-
-                if (poll) {
-                    const optionIndex = poll.options.findIndex(opt => opt.text === messageText);
-
-                    if (optionIndex !== -1) {
-                        console.log(`🗳️ Text Vote Detected: "${messageText}" for Poll ${poll._id}`);
-
-                        // Check if already voted (by Chat ID)
-                        const hasVoted = poll.votedBy.some(v => v.appleChatId === chatId);
-
-                        if (!hasVoted) {
-                            // 1. Update Counts
-                            poll.options[optionIndex].votes += 1;
-                            poll.totalVotes += 1;
-                            
-                            // 2. Save Voter
-                            poll.votedBy.push({
-                                appleChatId: chatId,
-                                optionIndex: optionIndex,
-                                votedAt: new Date()
-                            });
-
-                            await poll.save();
-                            console.log("✅ Vote Saved to MongoDB!");
-
-                            // 3. Send Reply
-                            await sendTextMessage(chatId, threadId, `✅ You voted for: "${messageText}"`);
-                        } else {
-                            await sendTextMessage(chatId, threadId, "⚠️ You have already voted.");
-                        }
-                    }
-                }
-            } catch (err) {
-                console.error("⚠️ DB Error (Vote):", err.message);
+        // --- SCENARIO 1: Active Chat Message (incoming_event) ---
+        if (payload.event && payload.event.type === 'message') {
+            messageText = payload.event.text || "";
+        }
+        
+        // --- SCENARIO 2: New/Reactivated Chat (incoming_chat) ---
+        else if (req.body.action === "incoming_chat" || payload.chat) {
+            // The message is inside the thread history array
+            const thread = payload.chat.thread || {};
+            const events = thread.events || [];
+            // Get the most recent message from the user
+            const lastMessage = events.reverse().find(e => e.type === 'message');
+            
+            if (lastMessage) {
+                messageText = lastMessage.text || "";
+                eventType = 'message'; // Treat it as a message event
             }
         }
 
-        // --- OPTIONAL: Keep Postback Handler just in case ---
-        else if (eventType === 'rich_message_postback') {
-             console.log("📦 Rich Postback received (Unused for Apple Text Votes)");
+        console.log(`🔔 Processed: Type=${eventType} | Chat=${chatId} | Text="${messageText}"`);
+
+        if (!chatId || !messageText) return res.sendStatus(200);
+
+        // --- LOGIC: Check Trigger or Vote ---
+        
+        // 1. Check for "Start Poll" Trigger
+        const triggerMatch = messageText.match(/Start Poll #([a-f0-9]{24})/i);
+
+        if (triggerMatch) {
+            const pollId = triggerMatch[1];
+            console.log(`🚀 Trigger Detected for Poll #${pollId}`);
+            
+            try {
+                const poll = await Poll.findById(pollId);
+                if (poll) {
+                     console.log(`🚀 Found Poll: "${poll.question}". Sending Welcome & List Picker...`);
+                        
+                        // 1. Send Welcome Message
+                        await sendTextMessage(chatId, threadId, `👋 Welcome! You've been invited to vote on the poll by Pyngl". Tap the Poll below to cast your vote.`);
+                        
+                    await sendDynamicListPicker(chatId, threadId, poll);
+                } else {
+                    console.log(`⚠️ Poll #${pollId} not found.`);
+                }
+            } catch (err) {
+                console.error("⚠️ DB Error (Trigger):", err.message);
+            }
+            return res.sendStatus(200);
+        }
+
+        if (/^(help|support|agent|human)/i.test(messageText.trim())) {
+            console.log(`🆘 Help Requested: "${messageText}"`);
+            
+            if (isBusinessHours()) {
+                // --- ONLINE MESSAGE ---
+                await sendTextMessage(
+                    chatId, 
+                    threadId, 
+                    "👋 Need assistance? You can email us at tech@pyngl.com. An agent will be with you shortly if available."
+                );
+            } else {
+                // --- OUT OF HOURS MESSAGE ---
+                await sendTextMessage(
+                    chatId, 
+                    threadId, 
+                    "Our live agents are currently unavailable. Please leave a message or email us at tech@pyngl.com. We will get back to you soon. (Support Hours: Mon–Fri, 9AM–5PM IST)"
+                );
+            }
+            return res.sendStatus(200);
+        }
+
+        // 2. Check for Vote (Text Match)
+        // Only if it's NOT a trigger command
+        try {
+            const poll = await Poll.findOne({ "options.text": messageText });
+
+            if (poll) {
+                const optionIndex = poll.options.findIndex(opt => opt.text === messageText);
+
+                if (optionIndex !== -1) {
+                    console.log(`🗳️ Vote Detected: "${messageText}" for Poll ${poll._id}`);
+
+                    // Check if already voted
+                    const hasVoted = poll.votedBy.some(v => v.appleChatId === chatId);
+
+                    if (!hasVoted) {
+                        poll.options[optionIndex].votes += 1;
+                        poll.totalVotes += 1;
+                        poll.votedBy.push({
+                            appleChatId: chatId,
+                            optionIndex: optionIndex,
+                            votedAt: new Date()
+                        });
+                        await poll.save();
+                        console.log("✅ Vote Saved!");
+                        await sendTextMessage(chatId, threadId, `✅Thank you for voting!`);
+                        await sendTextMessage(chatId, threadId, `Your vote for "${messageText}" has been recorded. Need help? Reply with "help".`);
+                    } else {
+                        await sendTextMessage(chatId, threadId, "⚠️ You have already voted.");
+                        await sendTextMessage(chatId, threadId, `Need help? Reply with "help".`);
+                    }
+                }
+            }
+        } catch (err) {
+            console.error("⚠️ DB Error (Vote):", err.message);
         }
 
         res.sendStatus(200);
@@ -216,7 +269,7 @@ async function sendDynamicListPicker(chatId, threadId, poll) {
         chatId: chatId,       // camelCase
         threadId: threadId,   // camelCase
         title: poll.question,
-        subtitle: "Tap below to vote",
+        subtitle: "Click an option to vote",
         image: poll.imageUrl || "https://via.placeholder.com/300",
         groups: [
             {

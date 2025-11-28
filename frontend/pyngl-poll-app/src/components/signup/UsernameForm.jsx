@@ -1,5 +1,8 @@
+
+
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { ArrowLeft, Loader2 } from "lucide-react";
+import apiClient from "../../api/axiosConfig";
 
 const UsernameForm = ({ onSuccess, onBack }) => {
   const [loading, setLoading] = useState(false);
@@ -18,9 +21,11 @@ const UsernameForm = ({ onSuccess, onBack }) => {
     usernameInputRef.current?.focus();
   }, []);
 
-  // Username availability check
+  // ✅ Real-time Username availability check
   useEffect(() => {
     const usernameTrimmed = username.trim();
+    
+    // Reset state if input is too short
     if (!usernameTrimmed || usernameTrimmed.length < 3) {
       setUsernameSuggestions([]);
       setUsernameTaken(false);
@@ -29,25 +34,28 @@ const UsernameForm = ({ onSuccess, onBack }) => {
 
     setIsCheckingUsername(true);
 
-    // Mock taken usernames
-    const takenUsernames = [
-      "jorge123", "peteLilly", "jay123", "john", "admin", "user", "test", "patel_jay", "jaypatel_21"
-    ];
+    // Debounce: Wait 500ms after user stops typing
+    const timer = setTimeout(async () => {
+      try {
+        // ✅ Using full path '/api/users/check-username' to match backend routes
+        const { data } = await apiClient.post('/api/users/check-username', { 
+            username: usernameTrimmed 
+        });
 
-    const timer = setTimeout(() => {
-      if (takenUsernames.includes(usernameTrimmed.toLowerCase())) {
-        setUsernameTaken(true);
-        // Provide suggestions
-        setUsernameSuggestions([
-          "jay@123",
-          "patel_jay",
-          "jay123",
-        ]);
-      } else {
-        setUsernameTaken(false);
-        setUsernameSuggestions([]);
+        if (data.available) {
+            setUsernameTaken(false);
+            setUsernameSuggestions([]);
+        } else {
+            // If taken, backend returns available: false AND suggestions array
+            setUsernameTaken(true);
+            setUsernameSuggestions(data.suggestions || []);
+        }
+      } catch (error) {
+        console.error("Error checking username:", error);
+        // Optional: Handle server error (e.g., setGeneralError("Network error"))
+      } finally {
+        setIsCheckingUsername(false);
       }
-      setIsCheckingUsername(false);
     }, 500);
 
     return () => clearTimeout(timer);
@@ -71,11 +79,8 @@ const UsernameForm = ({ onSuccess, onBack }) => {
     setLoading(true);
     setGeneralError("");
 
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-      onSuccess(username);
-    }, 1500);
+    // Proceed to next step
+    onSuccess(username);
   };
 
   const applySuggestion = (suggestion) => {
@@ -190,7 +195,7 @@ const UsernameForm = ({ onSuccess, onBack }) => {
             <button
               onClick={handleSubmit}
               disabled={loading || !isFormValid}
-              className="w-full py-3.5 px-4 text-white font-semibold rounded-full shadow-md transition-all bg-pyngl-pink hover:bg-pyngl-pink-dark disabled:bg-gray-400 flex items-center justify-center"
+              className="w-full py-3.5 px-4 text-white font-semibold rounded-full shadow-md transition-all bg-pyngl-pink hover:bg-pyngl-pink-dark disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {loading ? (
                 <>

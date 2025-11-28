@@ -8,6 +8,13 @@ const googleUserSchema = new mongoose.Schema(
     access_token: { type: String, required: true },
     refresh_token: { type: String },
     expiry_date: { type: Number },
+    contacts: [
+      {
+        name: { type: String },
+        email: { type: String },
+        phone: { type: String }
+      }
+    ],
     authProvider: { type: String, default: "google" },
   },
   { timestamps: true }

@@ -1,3 +1,4 @@
+
 import mongoose from "mongoose";
 
 // Sub-schema for poll options (Unchanged)
@@ -42,6 +43,14 @@ const pollSchema = new mongoose.Schema({
         enum: ["13-17", "18-24", "25-34", "35-44", "45+"],
         default: "13-17",
     },
+    whatsappMessages: [
+  {
+    msgId: String,
+    phone: String,
+    optionSelected: Number,
+    sentAt: Date
+  }
+] ,
     shareToTrending: { type: Boolean, default: false    , index:true },
     sharedPlatforms: { type: [String], default: [] },
 

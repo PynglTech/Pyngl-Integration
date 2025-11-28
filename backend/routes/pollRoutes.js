@@ -141,7 +141,7 @@ import {
     addSharedPlatform,
     getPollAnalytics,
     sendPoll as sendGmailPoll,
-    votePoll as voteFromGmail,
+    votePollGmail as voteFromGmail,
     testWhatsappMessage,
     getLast5Polls,
     applyPollFilter

@@ -16,20 +16,44 @@ import {
   updateUserProfilePicture,
   saveUserLocation,
   getUserStatus,
+  getUserContacts,
+  saveUserContacts,
+  checkUsernameAvailability,
+  sendOtpToEmail,
+  checkEmailAvailability,
+  verifyEmailOtp
 } from '../controllers/userController.js';
 import { upload } from '../config/cloudinary.js';
+import User from "../models/User.js";
 
 const router = express.Router();
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const FRONTEND_URL = process.env.FRONTEND_URL ||'http://localhost:5173' ||'http://192.168.1.23:5173';
+// router.get("/debug-contacts/:email", async (req, res) => {
+//   try {
+//     const user = await User.findOne({ email: req.params.email });
+  
+//     if (!user) return res.status(404).json({ message: "User not found" });
 
+//     res.json({
+//       email: user.email,
+//       totalContacts: user.googleContacts?.length || 0,
+//       googleContacts: user.googleContacts
+//     });
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// });
 // =============================
 // USER AUTH ROUTES
 // =============================
 router.post('/register', registerUser);
 router.post('/login', loginUser);
 router.post('/logout', logoutUser);
+router.post('/check-username', checkUsernameAvailability);
+router.post('/send-otp', sendOtpToEmail);
+router.post('/verify-otp', verifyEmailOtp);
 router.get('/status', checkAuth, getUserStatus);
-
+router.post('/check-email', checkEmailAvailability);
 // =============================
 // PASSWORD MANAGEMENT
 // =============================
@@ -41,7 +65,10 @@ router.put('/resetpassword', resetPassword);
 // =============================
 // USER PROFILE
 // =============================
+
 router.get('/profile-stats', protect, getUserProfileStats);
+router.get("/contacts", protect, getUserContacts);
+
 router.put('/profile', protect, updateUserProfile);
 router.put('/profile/password', protect, updateUserPassword);
 router.put(
@@ -68,5 +95,8 @@ router.get(
     res.redirect(`${FRONTEND_URL}/dashboard`);
   }
 );
+
+
+router.post("/save-contacts", protect, saveUserContacts);
 
 export default router;
