@@ -776,7 +776,7 @@ export const generateShareableImage = async (req, res) => {
     res.status(500).json({ error: "Failed to generate shareable image." });
   }
 };
-const SOURCE_ORIGIN = process.env.FRONTEND_URL || "https://pyngl-whatsapp-integrations.vercel.app" || "https://pyngl.com" || "https://www.pyngl.com";
+const SOURCE_ORIGIN = process.env.FRONTEND_URL || "https://pyngl-whatsapp-integrations.vercel.app" || "https://pyngl.com" || "https://www.pyngl.com"  || "http://localhost:3000";
 
 // export const sendGmailPoll = async (req, res) => {
 //   try {
@@ -884,7 +884,7 @@ const SOURCE_ORIGIN = process.env.FRONTEND_URL || "https://pyngl-whatsapp-integr
 //     const accessToken = await getAccessToken();
 //     console.log("🚀 Access token obtained");
 
-//     const voteUrl = process.env.VOTE_URL || "https://pyngl.com";
+//     const voteUrl = process.env.VOTE_URL || "https://pyngl.com" || "https://pyngl-integration.vercel.app";
 
 //     // --- Plain text ---
 //     const plainText = `
@@ -1087,7 +1087,7 @@ const SOURCE_ORIGIN = process.env.FRONTEND_URL || "https://pyngl-whatsapp-integr
 //     const accessToken = await getAccessToken();
 //     console.log("✅ Microsoft Graph access token obtained");
 
-//     const voteUrl = process.env.VOTE_URL || "https://pyngl.com";
+//     const voteUrl = process.env.VOTE_URL || "https://pyngl.com" || "https://pyngl-integration.vercel.app";
 
 //     const plainText = `
 // Hi there 👋,
@@ -1261,7 +1261,7 @@ export const sendPoll = async (req, res) => {
 
     // 🪙 2. Get Microsoft OAuth token (fresh)
     const accessToken = await getAccessToken();
-    const voteUrl = process.env.VOTE_URL || "https://pyngl.com";
+    const voteUrl = process.env.VOTE_URL || "https://pyngl.com" || "https://pyngl-integration.vercel.app";
 
     // 📨 3. Create transporter (OAuth2)
   const transporter = nodemailer.createTransport({

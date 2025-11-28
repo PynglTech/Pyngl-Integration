@@ -522,7 +522,7 @@ const oauth2callback = async (req, res) => {
     let googleUser = await GoogleUser.findOne({ email });
     let mainUser = await User.findOne({ email });
 
-    const CLIENT_URL = process.env.CLIENT_URL || "https://pyngl-whatsapp-integrations.vercel.app" || "https://pyngl.com"  || "https://www.pyngl.com";               ;
+    const CLIENT_URL = process.env.CLIENT_URL || "https://pyngl-whatsapp-integrations.vercel.app" || "https://pyngl.com"  || "https://www.pyngl.com"  || 'https://pyngl-integration.vercel.app'  ;               ;
 
     // ==============
     // POLL SHARE FLOW

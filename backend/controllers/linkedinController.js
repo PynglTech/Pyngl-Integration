@@ -285,7 +285,8 @@ const LINKEDIN_CLIENT_SECRET = process.env.LINKEDIN_CLIENT_SECRET;
 const AllowedOrigins = [
   "https://pyngl-whatsapp-integrations.vercel.app",
   "https://pyngl.com",
-  "https://www.pyngl.com"
+  "https://www.pyngl.com",
+  "https://pyngl-integration.vercel.app"
 ];
 // IMPORTANT: This URI must match what's in your LinkedIn Dev App settings
 const LINKEDIN_REDIRECT_URI = 'https://pyngl-integration-backend.onrender.com/api/linkedin/auth/callback';

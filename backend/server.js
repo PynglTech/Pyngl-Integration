@@ -163,7 +163,8 @@ const allowedOrigins = [
   "http://localhost:5173",
   "https://pyngl-whatsapp-integrations.vercel.app",
   "https://pyngl.com",
-  "https://www.pyngl.com"
+  "https://www.pyngl.com",
+  "https://pyngl-integration.vercel.app"
 ];
 
 app.use(
