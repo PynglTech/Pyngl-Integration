@@ -11,6 +11,7 @@ const optionSchema = new mongoose.Schema({
 const voteSchema = new mongoose.Schema({
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     ipAddress: { type: String },
+    appleChatId: { type: String },
     votedAt: { type: Date, default: Date.now },
 }, { _id: false });
 

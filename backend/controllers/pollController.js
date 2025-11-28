@@ -778,446 +778,8 @@ export const generateShareableImage = async (req, res) => {
 };
 const SOURCE_ORIGIN = process.env.FRONTEND_URL || "https://pyngl-whatsapp-integrations.vercel.app" || "https://pyngl.com" || "https://www.pyngl.com"  || "http://localhost:3000";
 
-// export const sendGmailPoll = async (req, res) => {
-//   try {
-//     const { userEmail, recipients, pollId } = req.body;
-//     console.log("📩 Incoming Gmail share:", { userEmail, recipients, pollId });
-
-//     const user = await GoogleUser.findOne({ email: userEmail });
-//     if (!user) return res.status(404).send("User not found");
-
-//     const poll = await Poll.findById(pollId);
-//     if (!poll) return res.status(404).send("Poll not found");
-
-//     const emails = recipients
-//       .map((r) => (typeof r === "string" ? r : r.email))
-//       .filter(Boolean);
-
-//     if (emails.length === 0)
-//       return res.status(400).send("No valid recipient emails provided");
-
-//     console.log("📤 Sending to:", emails);
-
-//     await Promise.all(emails.map((email) => sendEmail(user, email, poll)));
-
-//     res.send("Poll sent via Gmail!");
-//   } catch (err) {
-//     console.error("❌ sendGmailPoll ERROR:", err);
-//     if (err.response?.data) console.error("📦 Gmail API Error:", err.response.data);
-//     res.status(500).json({ message: "Error sending email", error: err.message });
-//   }
-// };
 
 /* -------------------- GMAIL AMP POLLS -------------------- */
-
-// --- Helper: Get fresh access token from Microsoft
-
-// async function getAccessToken() {
-//   console.log("🧩 ENV loaded:", {
-//     MS_TENANT_ID: process.env.MS_TENANT_ID,
-//     MS_CLIENT_ID: process.env.MS_CLIENT_ID,
-//     MS_REFRESH_TOKEN: process.env.MS_REFRESH_TOKEN ? "✅ exists" : "❌ missing",
-//   });
-
-//   const res = await fetch(
-//     `https://login.microsoftonline.com/${process.env.MS_TENANT_ID}/oauth2/v2.0/token`,
-//     {
-//       method: "POST",
-//       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//       body: new URLSearchParams({
-//         client_id: process.env.MS_CLIENT_ID,
-//         refresh_token: process.env.MS_REFRESH_TOKEN,
-//         grant_type: "refresh_token",
-//         scope: "https://graph.microsoft.com/.default offline_access",
-//       }),
-//     }
-//   );
-
-//   const data = await res.json();
-//   if (!data.access_token) {
-//     console.error("❌ Failed to fetch Microsoft access token:", data);
-//     throw new Error("Could not fetch Microsoft access token");
-//   }
-
-//   console.log("✅ Access token refreshed!");
-//   return data.access_token;
-// }
-
-
-// --- Send Poll Email (with AMP & HTML via Microsoft Graph)
-// async function getAccessToken() {
-//   const res = await fetch(
-//     `https://login.microsoftonline.com/${process.env.MS_TENANT_ID}/oauth2/v2.0/token`,
-//     {
-//       method: "POST",
-//       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//       body: new URLSearchParams({
-//         client_id: process.env.MS_CLIENT_ID,
-//         client_secret: process.env.MS_CLIENT_SECRET,
-//         refresh_token: process.env.MS_REFRESH_TOKEN,
-//         grant_type: "refresh_token",
-//         scope: "https://graph.microsoft.com/.default offline_access",
-//       }),
-//     }
-//   );
-
-//   const data = await res.json();
-//   if (!data.access_token) {
-//     console.error("❌ Failed to fetch Microsoft access token:", data);
-//     throw new Error("Could not fetch Microsoft access token");
-//   }
-//   return data.access_token;
-// }
-
-// export const sendPoll = async (req, res) => {
-//   try {
-//     const { recipients, pollId } = req.body;
-//     const poll = await Poll.findById(pollId);
-//     if (!poll) return res.status(404).send("Poll not found");
-
-//     const emails = recipients
-//       .map((r) => (typeof r === "string" ? r : r.email))
-//       .filter(Boolean);
-//     if (emails.length === 0)
-//       return res.status(400).send("No valid recipient emails provided");
-
-//     const accessToken = await getAccessToken();
-//     console.log("🚀 Access token obtained");
-
-//     const voteUrl = process.env.VOTE_URL || "https://pyngl.com" || "https://pyngl-integration.vercel.app";
-
-//     // --- Plain text ---
-//     const plainText = `
-// Hi there 👋,
-
-// We’d love your quick opinion on this Pyngl poll:
-
-// "${poll.question}"
-
-// Vote now:
-// YES → ${voteUrl}/vote?pollId=${poll._id}&opt=yes
-// NO  → ${voteUrl}/vote?pollId=${poll._id}&opt=no
-
-// Thank you for being part of the Pyngl community.
-// To stop receiving polls, visit https://pyngl.com/unsubscribe
-// `;
-
-//     // --- HTML version ---
-//     const htmlBody = `
-// <div style="padding:20px;text-align:center;font-family:Arial,sans-serif;background:#fafafa;">
-//   <p style="font-size:14px;color:#333;">Hi there 👋,</p>
-//   <p style="font-size:14px;color:#333;">We’d love your quick vote on this Pyngl poll:</p>
-//   <h3 style="color:#111;">${poll.question}</h3>
-//   ${
-//     poll.imageUrl
-//       ? `<img src="${poll.imageUrl}" width="480" height="270" style="border-radius:10px;margin-top:10px;" alt="poll"/>`
-//       : ""
-//   }
-//   <div style="margin-top:20px;">
-//     <a href="${voteUrl}/vote?pollId=${poll._id}&opt=yes"
-//        style="background:#4F46E5;color:#fff;padding:10px 20px;border-radius:20px;text-decoration:none;margin-right:10px;display:inline-block;">
-//        ✅ YES
-//     </a>
-//     <a href="${voteUrl}/vote?pollId=${poll._id}&opt=no"
-//        style="background:#E11D48;color:#fff;padding:10px 20px;border-radius:20px;text-decoration:none;display:inline-block;">
-//        ❌ NO
-//     </a>
-//   </div>
-//   <p style="margin-top:25px;color:#666;font-size:13px;line-height:1.5;">
-//     You're receiving this poll from <strong>Pyngl</strong>.<br/>
-//     Visit <a href="https://pyngl.com" style="color:#4F46E5;text-decoration:none;">pyngl.com</a> for more.
-//   </p>
-//   <hr style="border:none;border-top:1px solid #eee;margin:20px 0;"/>
-//   <p style="font-size:12px;color:#999;">© 2025 Pyngl. All rights reserved.<br/>
-//   <a href="https://pyngl.com/privacy" style="color:#999;">Privacy Policy</a> |
-//   <a href="https://pyngl.com/unsubscribe" style="color:#999;">Unsubscribe</a></p>
-// </div>
-// `;
-
-//     // --- AMP version ---
-//     const ampHtml = `<!doctype html>
-// <html ⚡4email>
-// <head>
-//   <meta charset="utf-8">
-//   <script async src="https://cdn.ampproject.org/v0.js"></script>
-//   <script async custom-element="amp-form" src="https://cdn.ampproject.org/v0/amp-form-0.1.js"></script>
-//   <script async custom-element="amp-selector" src="https://cdn.ampproject.org/v0/amp-selector-0.1.js"></script>
-//   <style amp4email-boilerplate>body{visibility:hidden}</style>
-//   <style amp-custom>
-//     body { font-family: Arial; background: #f9fafb; color: #111; }
-//     .poll-container { background: #fff; border-radius: 16px; padding: 20px; max-width: 480px; margin: auto; border: 1px solid #ddd; }
-//     .poll-question { font-size: 18px; font-weight: 600; margin-bottom: 12px; }
-//     amp-selector div[option] { display: block; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 20px; cursor: pointer; }
-//     amp-selector div[option][selected] { background: linear-gradient(90deg, #ec4899, #8b5cf6); color: white; }
-//     input[type=submit] { width: 100%; padding: 12px; border: none; border-radius: 25px; background: #ff4da6; color: #fff; font-weight: 600; }
-//   </style>
-// </head>
-// <body>
-//   <div class="poll-container">
-//     <p>Hi there 👋,</p>
-//     <p>We’d love your quick vote on this Pyngl poll:</p>
-//     <h3>${poll.question}</h3>
-//     ${
-//       poll.imageUrl
-//         ? `<amp-img src="${poll.imageUrl}" width="480" height="270" layout="responsive"></amp-img>`
-//         : ""
-//     }
-//     <form method="post" action-xhr="https://api.pyngl.com/api/polls/vote-from-gmail">
-//       <input type="hidden" name="pollId" value="${poll._id}" />
-//       <amp-selector name="opt" layout="container" role="listbox">
-//         ${poll.options
-//           .map((opt) => `<div option="${opt.text}">${opt.text}</div>`)
-//           .join("")}
-//       </amp-selector>
-//       <input type="submit" value="Submit Vote" />
-//       <div submit-success>
-//         <template type="amp-mustache">✅ Thanks! Your vote has been recorded.</template>
-//       </div>
-//       <div submit-error>
-//         <template type="amp-mustache">❌ Something went wrong. Please try again.</template>
-//       </div>
-//     </form>
-//   </div>
-// </body>
-// </html>`;
-
-//     // --- Build MIME message (Plain → AMP → HTML) ---
-//     const boundary = "pyngl_boundary";
-//     const mimeMessage = [
-//       "MIME-Version: 1.0",
-//       `From: Pyngl Notifications <notifications@pyngl.com>`,
-//       `To: ${emails.join(", ")}`,
-//       `Subject: ${poll.question || "New Pyngl Poll"}`,
-//       `Reply-To: notifications@pyngl.com`,
-//       `List-Unsubscribe: <https://pyngl.com/unsubscribe>`,
-//       `List-Unsubscribe-Post: List-Unsubscribe=One-Click`,
-//       `Content-Type: multipart/alternative; boundary="${boundary}"`,
-//       "",
-//       `--${boundary}`,
-//       "Content-Type: text/plain; charset=utf-8",
-//       "",
-//       plainText,
-//       `--${boundary}`,
-//       "Content-Type: text/x-amp-html; charset=utf-8",
-//       "",
-//       ampHtml,
-//       `--${boundary}`,
-//       "Content-Type: text/html; charset=utf-8",
-//       "",
-//       htmlBody,
-//       `--${boundary}--`,
-//     ].join("\r\n");
-
-//     // 1️⃣ Create DRAFT message
-//     const createRes = await fetch("https://graph.microsoft.com/beta/me/messages", {
-//       method: "POST",
-//       headers: {
-//         Authorization: `Bearer ${accessToken}`,
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify({
-//         subject: poll.question,
-//         toRecipients: emails.map((e) => ({ emailAddress: { address: e } })),
-//         isDraft: true, // ✅ must be draft for MIME upload
-//       }),
-//     });
-
-//     const draft = await createRes.json();
-//     if (!createRes.ok) {
-//       console.error("❌ Failed to create draft:", draft);
-//       return res.status(createRes.status).send("Failed to create draft");
-//     }
-
-//     // 2️⃣ Upload MIME content (must be octet-stream)
-//     const uploadRes = await fetch(
-//       `https://graph.microsoft.com/beta/me/messages/${draft.id}/$value`,
-//       {
-//         method: "PUT",
-//         headers: {
-//           Authorization: `Bearer ${accessToken}`,
-//           "Content-Type": "application/octet-stream", // ✅ required for Graph
-//         },
-//         body: mimeMessage, // ✅ raw MIME body, not base64
-//       }
-//     );
-
-//     if (!uploadRes.ok) {
-//       const err = await uploadRes.text();
-//       console.error("❌ Failed to upload MIME:", err);
-//       return res.status(uploadRes.status).send("Failed to upload MIME");
-//     }
-
-//     // 3️⃣ Send the message
-//     const sendRes = await fetch(
-//       `https://graph.microsoft.com/beta/me/messages/${draft.id}/send`,
-//       {
-//         method: "POST",
-//         headers: { Authorization: `Bearer ${accessToken}` },
-//       }
-//     );
-
-//     if (!sendRes.ok) {
-//       const err = await sendRes.text();
-//       console.error("❌ Failed to send:", err);
-//       return res.status(sendRes.status).send("Failed to send message");
-//     }
-
-//     console.log("✅ AMP email sent successfully!");
-//     res.send("✅ AMP-enabled poll email sent successfully via Microsoft Graph!");
-//   } catch (err) {
-//     console.error("❌ Error in sendPoll:", err);
-//     res.status(500).send("Error sending poll email");
-//   }
-// };
-
-
-
-// export const sendPoll = async (req, res) => {
-//   try {
-//     const { recipients, pollId } = req.body;
-//     const poll = await Poll.findById(pollId);
-//     if (!poll) return res.status(404).send("Poll not found");
-
-//     const emails = recipients
-//       .map((r) => (typeof r === "string" ? r : r.email))
-//       .filter(Boolean);
-//     if (emails.length === 0)
-//       return res.status(400).send("No valid recipient emails provided");
-
-//     const accessToken = await getAccessToken();
-//     console.log("✅ Microsoft Graph access token obtained");
-
-//     const voteUrl = process.env.VOTE_URL || "https://pyngl.com" || "https://pyngl-integration.vercel.app";
-
-//     const plainText = `
-// Hi there 👋,
-
-// We’d love your quick opinion on this Pyngl poll:
-
-// "${poll.question}"
-
-// Vote now:
-// YES → ${voteUrl}/vote?pollId=${poll._id}&opt=yes
-// NO  → ${voteUrl}/vote?pollId=${poll._id}&opt=no
-
-// Thank you for being part of the Pyngl community.
-// To stop receiving polls, visit https://pyngl.com/unsubscribe
-// `;
-
-//     const htmlBody = `
-// <div style="padding:20px;text-align:center;font-family:Arial,sans-serif;background:#fafafa;">
-//   <p>Hi there 👋,</p>
-//   <p>We’d love your quick vote on this Pyngl poll:</p>
-//   <h3>${poll.question}</h3>
-//   ${
-//     poll.imageUrl
-//       ? `<img src="${poll.imageUrl}" width="480" style="border-radius:10px;" alt="poll"/>`
-//       : ""
-//   }
-//   <div style="margin-top:20px;">
-//     <a href="${voteUrl}/vote?pollId=${poll._id}&opt=yes"
-//        style="background:#4F46E5;color:#fff;padding:10px 20px;border-radius:20px;text-decoration:none;margin-right:10px;">✅ YES</a>
-//     <a href="${voteUrl}/vote?pollId=${poll._id}&opt=no"
-//        style="background:#E11D48;color:#fff;padding:10px 20px;border-radius:20px;text-decoration:none;">❌ NO</a>
-//   </div>
-// </div>
-// `;
-
-//     const ampHtml = `<!doctype html>
-// <html ⚡4email>
-// <head>
-//   <meta charset="utf-8">
-//   <script async src="https://cdn.ampproject.org/v0.js"></script>
-//   <script async custom-element="amp-form" src="https://cdn.ampproject.org/v0/amp-form-0.1.js"></script>
-//   <script async custom-element="amp-selector" src="https://cdn.ampproject.org/v0/amp-selector-0.1.js"></script>
-//   <style amp4email-boilerplate>body{visibility:hidden}</style>
-//   <style amp-custom>
-//     body { font-family: Arial; background:#fafafa; color:#111; }
-//     .poll-container { background:#fff; border-radius:16px; padding:20px; max-width:480px; margin:auto; border:1px solid #ddd; }
-//     amp-selector div[option] { padding:12px; margin:8px 0; border:1px solid #ccc; border-radius:20px; cursor:pointer; }
-//     amp-selector div[option][selected] { background:linear-gradient(90deg,#ec4899,#8b5cf6); color:white; }
-//     input[type=submit] { width:100%; padding:12px; border:none; border-radius:25px; background:#ff4da6; color:#fff; font-weight:600; }
-//   </style>
-// </head>
-// <body>
-//   <div class="poll-container">
-//     <p>Hi there 👋,</p>
-//     <h3>${poll.question}</h3>
-//     ${
-//       poll.imageUrl
-//         ? `<amp-img src="${poll.imageUrl}" width="480" height="270" layout="responsive"></amp-img>`
-//         : ""
-//     }
-//     <form method="post" action-xhr="https://api.pyngl.com/api/polls/vote-from-gmail">
-//       <input type="hidden" name="pollId" value="${poll._id}" />
-//       <amp-selector name="opt" layout="container" role="listbox">
-//         ${poll.options
-//           .map((opt) => `<div option="${opt.text}">${opt.text}</div>`)
-//           .join("")}
-//       </amp-selector>
-//       <input type="submit" value="Submit Vote" />
-//       <div submit-success><template type="amp-mustache">✅ Thanks! Your vote has been recorded.</template></div>
-//       <div submit-error><template type="amp-mustache">❌ Something went wrong.</template></div>
-//     </form>
-//   </div>
-// </body>
-// </html>`;
-
-//     // Construct Graph API message payload
-//     const mailData = {
-//       message: {
-//         subject: "Quick Poll from Pyngl",
-//         body: {
-//           contentType: "HTML",
-//           content: htmlBody,
-//         },
-//         toRecipients: emails.map((e) => ({ emailAddress: { address: e } })),
-//         attachments: [
-//           {
-//             "@odata.type": "#microsoft.graph.fileAttachment",
-//             name: "poll.amp.html",
-//             contentType: "text/x-amp-html",
-//             contentBytes: Buffer.from(ampHtml, "utf8").toString("base64"),
-//           },
-//           {
-//             "@odata.type": "#microsoft.graph.fileAttachment",
-//             name: "poll.txt",
-//             contentType: "text/plain",
-//             contentBytes: Buffer.from(plainText, "utf8").toString("base64"),
-//           },
-//         ],
-//       },
-//       saveToSentItems: false,
-//     };
-
-//     // Send email via Graph API
-//     const sendRes = await fetch(
-//       "https://graph.microsoft.com/v1.0/users/notifications@pyngl.com/sendMail",
-//       {
-//         method: "POST",
-//         headers: {
-//           Authorization: `Bearer ${accessToken}`,
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify(mailData),
-//       }
-//     );
-
-//     if (!sendRes.ok) {
-//       const err = await sendRes.text();
-//       console.error("❌ Graph API sendMail failed:", err);
-//       return res.status(sendRes.status).send("Failed to send poll email");
-//     }
-
-//     console.log("✅ Poll email sent successfully (HTML + AMP + Plain)!");
-//     res.send("✅ Poll sent successfully via Microsoft Graph API (with AMP)");
-
-//   } catch (err) {
-//     console.error("❌ Error in sendPoll:", err);
-//     res.status(500).send("Error sending poll email");
-//   }
-// };
-
 
 
 async function getAccessToken() {
@@ -1245,47 +807,394 @@ async function getAccessToken() {
 }
 
 
+// export const sendPoll = async (req, res) => {
+//   try {
+//     const { recipients, pollId } = req.body;
+
+//     // 🧩 1. Validate poll & recipients
+//     const poll = await Poll.findById(pollId);
+//     if (!poll) return res.status(404).send("Poll not found");
+
+//     const emails = (recipients || [])
+//       .map((r) => (typeof r === "string" ? r : r.email))
+//       .filter(Boolean);
+//     if (emails.length === 0)
+//       return res.status(400).send("No valid recipient emails provided");
+
+//     // 🪙 2. Get Microsoft OAuth token (fresh)
+//     const accessToken = await getAccessToken();
+//     console.log("🚀 Access token obtained");
+
+//     const voteUrl = process.env.VOTE_URL || "https://pyngl.com";
+
+//     // 📨 3. Create transporter (OAuth2)
+//   const transporter = nodemailer.createTransport({
+//   host: "smtp.office365.com", // ✅ Correct host for Microsoft 365
+//   port: 587,                  // ✅ STARTTLS port
+//   secure: false,              // ✅ must be false for STARTTLS
+//   auth: {
+//     type: "OAuth2",
+//     user: "notifications@pyngl.com",
+//     clientId: process.env.MS_CLIENT_ID,
+//     clientSecret: process.env.MS_CLIENT_SECRET,
+//     refreshToken: process.env.MS_REFRESH_TOKEN,
+//     accessToken,
+//   },
+//   tls: {
+//    rejectUnauthorized: false,
+//   },
+//   pool: true,
+//   maxConnections: 3,
+// });
+
+
+//     // 📄 4. Build message parts
+//     const plain = `
+// Hi there 👋,
+
+// We’d love your quick opinion on this Pyngl poll:
+
+// "${poll.question}"
+
+// Vote now:
+// YES → ${voteUrl}/vote?pollId=${poll._id}&opt=yes
+// NO  → ${voteUrl}/vote?pollId=${poll._id}&opt=no
+
+// Thank you for being part of the Pyngl community.
+// To create polls visit our website https://pyngl.com/
+// `;
+
+//     const html = `
+// <div style="padding:20px;text-align:center;font-family:Arial,sans-serif;background:#fafafa;">
+//   <p style="font-size:14px;color:#333;">Hi there 👋,</p>
+//   <p style="font-size:14px;color:#333;">We’d love your quick vote on this Pyngl poll:</p>
+//   <h3 style="color:#111;">${poll.question}</h3>
+//   ${
+//     poll.imageUrl
+//       ? `<img src="${poll.imageUrl}" width="480" height="270" style="border-radius:10px;margin-top:10px;" alt="poll"/>`
+//       : ""
+//   }
+//   <div style="margin-top:20px;">
+//     <a href="${voteUrl}/vote?pollId=${poll._id}&opt=yes"
+//        style="background:#4F46E5;color:#fff;padding:10px 20px;border-radius:20px;text-decoration:none;margin-right:10px;display:inline-block;">
+//        ✅ YES
+//     </a>
+//     <a href="${voteUrl}/vote?pollId=${poll._id}&opt=no"
+//        style="background:#E11D48;color:#fff;padding:10px 20px;border-radius:20px;text-decoration:none;display:inline-block;">
+//        ❌ NO
+//     </a>
+//   </div>
+//   <p style="margin-top:25px;color:#666;font-size:13px;line-height:1.5;">
+//     You're receiving this poll from <strong>Pyngl</strong>.<br/>
+//     Visit <a href="https://pyngl.com" style="color:#4F46E5;text-decoration:none;">pyngl.com</a> for more.
+//   </p>
+//   <hr style="border:none;border-top:1px solid #eee;margin:20px 0;"/>
+//   <p style="font-size:12px;color:#999;">© 2025 Pyngl. All rights reserved.<br/>
+//   <a href="https://pyngl.com/privacy" style="color:#999;">Privacy Policy</a> |
+// </div>`;
+
+//     const ampHtml = `<!doctype html>
+// <html ⚡4email data-css-strict>
+// <head>
+//   <meta charset="utf-8">
+//   <script async src="https://cdn.ampproject.org/v0.js"></script>
+//   <script async custom-element="amp-form" src="https://cdn.ampproject.org/v0/amp-form-0.1.js"></script>
+//   <script async custom-element="amp-selector" src="https://cdn.ampproject.org/v0/amp-selector-0.1.js"></script>
+//   <script async custom-template="amp-mustache" src="https://cdn.ampproject.org/v0/amp-mustache-0.2.js"></script>
+//   <style amp4email-boilerplate>body{visibility:hidden}</style>
+//   <style amp-custom>
+//     body { font-family: Arial; background:#f9fafb; color:#111; padding:20px; }
+//     .poll-container { background:#fff; border-radius:16px; padding:20px; max-width:480px; margin:auto; border:1px solid #ddd; }
+//     amp-selector div[option] {
+//       display:block; padding:12px; margin:8px 0; border:1px solid #ccc;
+//       border-radius:20px; cursor:pointer;
+//     }
+//     amp-selector div[option][selected] {
+//       background:linear-gradient(90deg,#ec4899,#8b5cf6); color:white;
+//     }
+//     input[type=submit] {
+//       width:100%; padding:12px; border:none; border-radius:25px;
+//       background:#ff4da6; color:#fff; font-weight:600;
+//     }
+//   </style>
+// </head>
+// <body>
+//   <div class="poll-container">
+//     <h3>${poll.question}</h3>
+//     ${
+//       poll.imageUrl
+//         ? `<amp-img src="${poll.imageUrl}" width="480" height="270" layout="responsive"></amp-img>`
+//         : ""
+//     }
+//     <form method="post" action-xhr="https://api.pyngl.com/api/polls/vote-from-gmail">
+//       <input type="hidden" name="pollId" value="${poll._id}" />
+//       <amp-selector name="opt" layout="container" role="listbox">
+//         ${poll.options
+//           .map((opt) => `<div option="${opt.text}">${opt.text}</div>`)
+//           .join("")}
+//       </amp-selector>
+//       <input type="submit" value="Submit Vote" />
+//       <div submit-success>
+//         <template type="amp-mustache">✅ Thanks! Your vote has been recorded.</template>
+//       </div>
+//       <div submit-error>
+//         <template type="amp-mustache">❌ Something went wrong. Please try again.</template>
+//       </div>
+//     </form>
+//   </div>
+// </body>
+// </html>`;
+
+//     // ✉️ 5. Send the email
+//     await transporter.sendMail({
+//       from: '"Pyngl Notifications" <notifications@pyngl.com>',
+//       to: emails.join(", "),
+//       subject: poll.question,
+//       text: plain,
+//       html,
+//       amp: ampHtml,
+//       headers: {
+//         "X-List-Unsubscribe":
+//           "<mailto:unsubscribe@pyngl.com>, <https://pyngl.com/unsubscribe>",
+//         "X-List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+//         "Reply-To": "support@pyngl.com",
+//       },
+//     });
+
+//     console.log(`✅ Poll "${poll.question}" sent to: ${emails.join(", ")}`);
+//     res.send("✅ Poll sent via Office365 OAuth2 with AMP + HTML + Text!");
+//   } catch (err) {
+//     console.error("❌ Error in sendPoll:", err);
+//     res.status(500).send("Error sending poll email");
+//   }
+// };
+
+
+// export const votePoll = async (req, res) => {
+//   const { pollId, opt } = req.body;
+//   try {
+//     const poll = await Poll.findById(pollId);
+//     if (!poll) return res.status(404).json({ msg: "Poll not found" });
+
+//     const emails = recipients
+//       .map((r) => (typeof r === "string" ? r : r.email))
+//       .filter(Boolean);
+//     if (emails.length === 0)
+//       return res.status(400).send("No valid recipient emails provided");
+
+//     const accessToken = await getAccessToken();
+//     console.log("✅ Microsoft Graph access token obtained");
+
+//     const voteUrl = process.env.VOTE_URL || "https://pyngl.com";
+
+//     const plainText = `
+// Hi there 👋,
+
+// We’d love your quick opinion on this Pyngl poll:
+
+// "${poll.question}"
+
+// Vote now:
+// YES → ${voteUrl}/vote?pollId=${poll._id}&opt=yes
+// NO  → ${voteUrl}/vote?pollId=${poll._id}&opt=no
+
+// Thank you for being part of the Pyngl community.
+// To stop receiving polls, visit https://pyngl.com/unsubscribe
+// `;
+
+//     option.votes += 1;
+//     await poll.save();
+
+//     const total = poll.options.reduce((sum, o) => sum + o.votes, 0) || 1;
+//     const options = poll.options.map((o) => ({
+//       text: o.text,
+//       votes: o.votes,
+//       pct: Math.round((o.votes / total) * 100),
+//     }));
+//     res.set("Access-Control-Allow-Origin", "https://mail.google.com");
+//     res.set("AMP-Access-Control-Allow-Source-Origin", SOURCE_ORIGIN);
+//     res.set(
+//       "Access-Control-Expose-Headers",
+//       "AMP-Access-Control-Allow-Source-Origin"
+//     );
+//     res.json({ options });
+//   } catch (err) {
+//     res.status(500).json({ msg: "Server error" });
+//   }
+// };
+
+
+// Helper to format date
+const formatDate = (date) => {
+  return new Date(date).toLocaleDateString("en-US", {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+};
+
+// Helper to calculate time remaining text
+const getTimeLeft = (expiresAt) => {
+  const now = new Date();
+  const end = new Date(expiresAt);
+  const diff = end - now;
+
+  if (diff <= 0) return "Expired";
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+  if (days > 0) return `${days} days and ${hours} hours left`;
+  return `${hours} hours left`;
+};
+
+// --- SEND POLL (Generates Email) ---
 export const sendPoll = async (req, res) => {
   try {
     const { recipients, pollId } = req.body;
 
-    // 🧩 1. Validate poll & recipients
     const poll = await Poll.findById(pollId);
     if (!poll) return res.status(404).send("Poll not found");
 
+    // Validate recipients
     const emails = (recipients || [])
       .map((r) => (typeof r === "string" ? r : r.email))
       .filter(Boolean);
-    if (emails.length === 0)
-      return res.status(400).send("No valid recipient emails provided");
 
-    // 🪙 2. Get Microsoft OAuth token (fresh)
-    const accessToken = await getAccessToken();
-    const voteUrl = process.env.VOTE_URL || "https://pyngl.com" || "https://pyngl-integration.vercel.app";
+    if (emails.length === 0) return res.status(400).send("No emails provided");
 
-    // 📨 3. Create transporter (OAuth2)
-  const transporter = nodemailer.createTransport({
-  host: "smtp.office365.com", // ✅ Correct host for Microsoft 365
-  port: 587,                  // ✅ STARTTLS port
-  secure: false,              // ✅ must be false for STARTTLS
-  auth: {
-    type: "OAuth2",
-    user: "notifications@pyngl.com",
-    clientId: process.env.MS_CLIENT_ID,
-    clientSecret: process.env.MS_CLIENT_SECRET,
-    refreshToken: process.env.MS_REFRESH_TOKEN,
-    accessToken,
-  },
-  tls: {
-   rejectUnauthorized: false,
-  },
-  pool: true,
-  maxConnections: 3,
-});
+    const accessToken = await getAccessToken(); // Ensure this function exists in your file
+    const voteUrl = process.env.VOTE_URL || "https://pyngl.com";
 
+    const transporter = nodemailer.createTransport({
+      host: "smtp.office365.com",
+      port: 587,
+      secure: false,
+      auth: {
+        type: "OAuth2",
+        user: "notifications@pyngl.com",
+        clientId: process.env.MS_CLIENT_ID,
+        clientSecret: process.env.MS_CLIENT_SECRET,
+        refreshToken: process.env.MS_REFRESH_TOKEN,
+        accessToken,
+      },
+      tls: { rejectUnauthorized: false },
+      pool: true,
+      maxConnections: 3,
+    });
 
-    // 📄 4. Build message parts
-    const plain = `
+    // Calculate Expiry Info
+    const expiryDate = formatDate(poll.expiresAt);
+    const timeLeft = getTimeLeft(poll.expiresAt);
+    const isExpired = new Date() > new Date(poll.expiresAt);
+
+    // Loop through emails to personalize the vote link (for duplicate checking)
+    // Note: Sending individually is slower but allows per-user tracking in AMP.
+    // For bulk speed, you might send the same body, but here we loop for logic.
+    for (const email of emails) {
+      
+      const ampActionUrl = `https://api.pyngl.com/api/polls/vote-from-gmail?email=${encodeURIComponent(email)}`;
+
+      const ampHtml = `<!doctype html>
+      <html ⚡4email data-css-strict>
+      <head>
+        <meta charset="utf-8">
+        <script async src="https://cdn.ampproject.org/v0.js"></script>
+        <script async custom-element="amp-form" src="https://cdn.ampproject.org/v0/amp-form-0.1.js"></script>
+        <script async custom-element="amp-selector" src="https://cdn.ampproject.org/v0/amp-selector-0.1.js"></script>
+        <script async custom-template="amp-mustache" src="https://cdn.ampproject.org/v0/amp-mustache-0.2.js"></script>
+        <style amp4email-boilerplate>body{visibility:hidden}</style>
+        <style amp-custom>
+          body { font-family: Arial, sans-serif; background:#f9fafb; color:#111; padding:20px; }
+          .poll-card { background:#fff; border-radius:12px; padding:24px; max-width:500px; margin:0 auto; border:1px solid #e5e7eb; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+          .question { font-size: 18px; font-weight: 700; margin-bottom: 16px; color: #111827; }
+          .expiry-info { font-size: 12px; color: #6b7280; margin-bottom: 20px; display: flex; justify-content: space-between; }
+          .expiry-badge { background: #fee2e2; color: #991b1b; padding: 4px 8px; border-radius: 12px; font-weight: 600; }
+          
+          /* Option Styles */
+          amp-selector div[option] {
+            padding: 14px; margin-bottom: 10px; border: 2px solid #e5e7eb;
+            border-radius: 8px; cursor: pointer; font-weight: 500; color: #374151;
+          }
+          amp-selector div[option]:hover { border-color: #a855f7; background: #faf5ff; }
+          amp-selector div[option][selected] {
+            border-color: #a855f7; background: #f3e8ff; color: #6b21a8;
+          }
+
+          /* Submit Button */
+          input[type=submit] {
+            width: 100%; padding: 14px; border: none; border-radius: 8px;
+            background: #a855f7; color: #fff; font-weight: 700; font-size: 16px;
+            cursor: pointer; margin-top: 10px;
+          }
+          input[type=submit]:disabled { background: #d1d5db; }
+
+          /* Results Bar */
+          .result-bar-bg { background: #f3f4f6; border-radius: 6px; height: 10px; width: 100%; margin-top: 6px; overflow: hidden; }
+          .result-fill { background: #a855f7; height: 100%; }
+          .result-row { margin-bottom: 15px; }
+          .result-text { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 2px; }
+        </style>
+      </head>
+      <body>
+        <div class="poll-card">
+          <div class="question">${poll.question}</div>
+          
+          <div class="expiry-info">
+            <span>📅 Ends: ${expiryDate}</span>
+            ${isExpired 
+               ? '<span class="expiry-badge">Expired</span>' 
+               : `<span style="color:#a855f7; font-weight:600;">⏱️ ${timeLeft}</span>`
+            }
+          </div>
+
+          ${poll.imageUrl ? `<amp-img src="${poll.imageUrl}" width="500" height="280" layout="responsive" style="border-radius:8px; margin-bottom:20px;"></amp-img>` : ""}
+
+          <form method="post" action-xhr="${ampActionUrl}">
+            <input type="hidden" name="pollId" value="${poll._id}" />
+            
+            <div submit-success>
+               <template type="amp-mustache">
+                  <div style="text-align:center; margin-bottom:20px;">
+                     <h2 style="color:#059669; margin:0;">🎉 Vote Recorded!</h2>
+                     <p style="color:#6b7280;">Here are the current results:</p>
+                  </div>
+                  {{#options}}
+                  <div class="result-row">
+                    <div class="result-text">
+                      <strong>{{text}}</strong>
+                      <span>{{pct}}% ({{votes}})</span>
+                    </div>
+                    <div class="result-bar-bg">
+                      <div class="result-fill" style="width: {{pct}}%;"></div>
+                    </div>
+                  </div>
+                  {{/options}}
+               </template>
+            </div>
+
+            <div submit-error>
+               <template type="amp-mustache">
+                  <p style="color: #dc2626; background: #fee2e2; padding: 10px; border-radius: 6px; text-align: center;">
+                    ⚠️ {{msg}}
+                  </p>
+               </template>
+            </div>
+
+            ${!isExpired ? `
+            <amp-selector name="opt" layout="container">
+              ${poll.options.map(o => `<div option="${o.text}">${o.text}</div>`).join("")}
+            </amp-selector>
+            <input type="submit" value="Vote Now" />
+            ` : `
+            <div style="text-align:center; padding:20px; background:#f3f4f6; border-radius:8px; color:#6b7280;">
+              ⛔ This poll has expired.
+            </div>
+            `}
+          </form>
+        </div>
+      </body>
+      </html>`;
+
+         const plain = `
 Hi there 👋,
 
 We’d love your quick opinion on this Pyngl poll:
@@ -1297,7 +1206,7 @@ YES → ${voteUrl}/vote?pollId=${poll._id}&opt=yes
 NO  → ${voteUrl}/vote?pollId=${poll._id}&opt=no
 
 Thank you for being part of the Pyngl community.
-To stop receiving polls, visit https://pyngl.com/unsubscribe
+To create polls visit our website https://pyngl.com/
 `;
 
     const html = `
@@ -1327,63 +1236,9 @@ To stop receiving polls, visit https://pyngl.com/unsubscribe
   <hr style="border:none;border-top:1px solid #eee;margin:20px 0;"/>
   <p style="font-size:12px;color:#999;">© 2025 Pyngl. All rights reserved.<br/>
   <a href="https://pyngl.com/privacy" style="color:#999;">Privacy Policy</a> |
-  <a href="https://pyngl.com/unsubscribe" style="color:#999;">Unsubscribe</a></p>
 </div>`;
 
-    const ampHtml = `<!doctype html>
-<html ⚡4email data-css-strict>
-<head>
-  <meta charset="utf-8">
-  <script async src="https://cdn.ampproject.org/v0.js"></script>
-  <script async custom-element="amp-form" src="https://cdn.ampproject.org/v0/amp-form-0.1.js"></script>
-  <script async custom-element="amp-selector" src="https://cdn.ampproject.org/v0/amp-selector-0.1.js"></script>
-  <script async custom-template="amp-mustache" src="https://cdn.ampproject.org/v0/amp-mustache-0.2.js"></script>
-  <style amp4email-boilerplate>body{visibility:hidden}</style>
-  <style amp-custom>
-    body { font-family: Arial; background:#f9fafb; color:#111; padding:20px; }
-    .poll-container { background:#fff; border-radius:16px; padding:20px; max-width:480px; margin:auto; border:1px solid #ddd; }
-    amp-selector div[option] {
-      display:block; padding:12px; margin:8px 0; border:1px solid #ccc;
-      border-radius:20px; cursor:pointer;
-    }
-    amp-selector div[option][selected] {
-      background:linear-gradient(90deg,#ec4899,#8b5cf6); color:white;
-    }
-    input[type=submit] {
-      width:100%; padding:12px; border:none; border-radius:25px;
-      background:#ff4da6; color:#fff; font-weight:600;
-    }
-  </style>
-</head>
-<body>
-  <div class="poll-container">
-    <h3>${poll.question}</h3>
-    ${
-      poll.imageUrl
-        ? `<amp-img src="${poll.imageUrl}" width="480" height="270" layout="responsive"></amp-img>`
-        : ""
-    }
-    <form method="post" action-xhr="https://api.pyngl.com/api/polls/vote-from-gmail">
-      <input type="hidden" name="pollId" value="${poll._id}" />
-      <amp-selector name="opt" layout="container" role="listbox">
-        ${poll.options
-          .map((opt) => `<div option="${opt.text}">${opt.text}</div>`)
-          .join("")}
-      </amp-selector>
-      <input type="submit" value="Submit Vote" />
-      <div submit-success>
-        <template type="amp-mustache">✅ Thanks! Your vote has been recorded.</template>
-      </div>
-      <div submit-error>
-        <template type="amp-mustache">❌ Something went wrong. Please try again.</template>
-      </div>
-    </form>
-  </div>
-</body>
-</html>`;
-
-    // ✉️ 5. Send the email
-    await transporter.sendMail({
+      await transporter.sendMail({
       from: '"Pyngl Notifications" <notifications@pyngl.com>',
       to: emails.join(", "),
       subject: poll.question,
@@ -1397,45 +1252,89 @@ To stop receiving polls, visit https://pyngl.com/unsubscribe
         "Reply-To": "support@pyngl.com",
       },
     });
+    }
 
-    console.log(`✅ Poll "${poll.question}" sent to: ${emails.join(", ")}`);
-    res.send("✅ Poll sent via Office365 OAuth2 with AMP + HTML + Text!");
+    res.send("✅ Polls sent successfully");
   } catch (err) {
-    console.error("❌ Error in sendPoll:", err);
-    res.status(500).send("Error sending poll email");
+    console.error(err);
+    res.status(500).send("Error sending emails");
   }
 };
 
-
-export const votePoll = async (req, res) => {
+// --- VOTE HANDLER (Updates Database) ---
+export const votePollGmail = async (req, res) => {
   const { pollId, opt } = req.body;
+  const userEmail = req.query.email; // Captured from URL parameter
+  const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+  // CORS for AMP Email
+  const sourceOrigin = req.headers['amp-access-control-allow-source-origin'];
+  if (sourceOrigin) {
+      res.set("Access-Control-Allow-Origin", sourceOrigin);
+      res.set("AMP-Access-Control-Allow-Source-Origin", sourceOrigin);
+      res.set("Access-Control-Expose-Headers", "AMP-Access-Control-Allow-Source-Origin");
+  }
+
   try {
     const poll = await Poll.findById(pollId);
     if (!poll) return res.status(404).json({ msg: "Poll not found" });
 
-    const option = poll.options.find((o) => o.text === opt);
-    if (!option) return res.status(400).json({ msg: "Invalid option" });
+    // 1. Check Expiration
+    if (new Date() > new Date(poll.expiresAt)) {
+        return res.status(400).json({ msg: "Poll has expired." });
+    }
 
-    option.votes += 1;
+    // 2. Check if User Already Voted
+    // We use the email passed in query string, OR fallback to IP address
+    const identifier = userEmail || ipAddress;
+    
+    // Check within the votedBy array. 
+    // Note: Schema uses 'ipAddress' string field. We will use that to store email if available, or IP.
+    const alreadyVoted = poll.votedBy.some(
+        (voter) => voter.ipAddress === identifier
+    );
+
+    if (alreadyVoted) {
+        return res.status(400).json({ msg: "You have already voted!" });
+    }
+
+    // 3. Find Option and Increment
+    const optionIndex = poll.options.findIndex((o) => o.text === opt);
+    if (optionIndex === -1) return res.status(400).json({ msg: "Invalid option" });
+
+    poll.options[optionIndex].votes += 1;
+    poll.totalVotes += 1;
+
+    // 4. Add to VotedBy
+    poll.votedBy.push({
+        ipAddress: identifier, // Storing Email or IP here
+        votedAt: new Date(),
+        // user: req.user?._id // If you had auth context, you'd put it here
+    });
+
     await poll.save();
 
-    const total = poll.options.reduce((sum, o) => sum + o.votes, 0) || 1;
+    // 5. Return JSON for AMP Mustache Template
+    const total = poll.totalVotes || 1;
     const options = poll.options.map((o) => ({
       text: o.text,
       votes: o.votes,
       pct: Math.round((o.votes / total) * 100),
     }));
-    res.set("Access-Control-Allow-Origin", "https://mail.google.com");
-    res.set("AMP-Access-Control-Allow-Source-Origin", SOURCE_ORIGIN);
-    res.set(
-      "Access-Control-Expose-Headers",
-      "AMP-Access-Control-Allow-Source-Origin"
-    );
+
     res.json({ options });
+
   } catch (err) {
-    res.status(500).json({ msg: "Server error" });
+    console.error("Vote Error:", err);
+    res.status(500).json({ msg: "Server error processing vote" });
   }
 };
+
+
+
+// -------------------- SCHEDULED JOBS --------------------
+
+
 export const initScheduledJobs = (io) => {
   // This cron job is scheduled to run once every hour, at the top of the hour.
   cron.schedule("0 * * * *", async () => {

@@ -1,3 +1,4 @@
+
 // // import React from 'react';
 // // import { BrowserRouter, Routes, Route } from 'react-router-dom';
 // // import PublicAuthPage from '../pages/PublicAuthPage';
@@ -215,10 +216,11 @@ const AppRoutes = () => {
                 {/* Legal pages (public) */}
                 <Route path="/terms-of-service" element={<Terms />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/help-center" element={<HelpCenter />} />
+
 
                 {/* Public poll voting */}
                 <Route path="/poll/:pollId" element={<VoteOnPollPage />} />
-                <Route path="/share" element={<GmailShare />} />
 
                 {/* PROTECTED ROUTES */}
                 <Route element={<ProtectedRoute />}>
@@ -245,8 +247,8 @@ const AppRoutes = () => {
 
                         <Route path="/profile" element={<ProfilePage />} />
                         <Route path="/notifications" element={<NotificationsPage />} />
+                        <Route path="/share" element={<GmailShare />} />
                         <Route path="/share-linkedin" element={<LinkedinShowPage />} />
-                        <Route path="/help-center" element={<HelpCenter />} />
                         <Route path="/polls" element={<PollActivityPage />} />
 
                     </Route>
@@ -258,3 +260,4 @@ const AppRoutes = () => {
 };
 
 export default AppRoutes;
+    
